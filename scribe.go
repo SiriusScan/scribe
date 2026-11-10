@@ -1,0 +1,118 @@
+// Package scribe executes vulnerability scripts against caller-supplied targets.
+// It performs no host discovery, port discovery, queue consumption, or persistence.
+package scribe
+
+import (
+	"context"
+	"fmt"
+	"net"
+	"strings"
+	"unicode"
+)
+
+// Dialect selects an explicit script contract. There is no automatic fallback.
+type Dialect string
+
+const (
+	Sirius Dialect = "sirius"
+	NSE    Dialect = "nse"
+)
+
+// Target describes a known endpoint. Port zero represents a host-only task.
+// IP, when set, is the connection address; Host remains the logical hostname.
+type Target struct {
+	Host     string `json:"host"`
+	IP       string `json:"ip,omitempty"`
+	Port     uint16 `json:"port,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
+	Service  string `json:"service,omitempty"`
+	State    string `json:"state,omitempty"`
+	TLS      bool   `json:"tls,omitempty"`
+}
+
+// Validate rejects ambiguous or malformed endpoint metadata.
+func (t Target) Validate() error {
+	if strings.TrimSpace(t.Host) == "" || strings.ContainsAny(t.Host, "/?#@\\[]% ") || strings.ContainsFunc(t.Host, func(r rune) bool { return unicode.IsControl(r) || unicode.IsSpace(r) }) {
+		return fmt.Errorf("target host must be a hostname or IP address without a scheme or port")
+	}
+	if strings.Contains(t.Host, ":") && net.ParseIP(t.Host) == nil {
+		return fmt.Errorf("target host must not include a port")
+	}
+	if t.IP != "" && net.ParseIP(t.IP) == nil {
+		return fmt.Errorf("invalid target IP %q", t.IP)
+	}
+	if t.Protocol != "" && t.Protocol != "tcp" && t.Protocol != "udp" {
+		return fmt.Errorf("unsupported target protocol %q", t.Protocol)
+	}
+	switch t.State {
+	case "", "open", "closed", "filtered", "unfiltered", "open|filtered", "closed|filtered":
+	default:
+		return fmt.Errorf("unsupported target port state %q", t.State)
+	}
+	return nil
+}
+
+// Script is source supplied by the caller, not an implicit on-disk catalog.
+type Script struct {
+	ID      string         `json:"id"`
+	Dialect Dialect        `json:"dialect"`
+	Source  []byte         `json:"-"`
+	Args    map[string]any `json:"args,omitempty"`
+}
+
+// Task is one script invocation against one known endpoint.
+type Task struct {
+	Script Script `json:"script"`
+	Target Target `json:"target"`
+}
+
+// Finding is an affirmative script observation with supporting evidence.
+// A runtime error or lack of output must never be converted into a finding.
+type Finding struct {
+	ID         string         `json:"id"`
+	Title      string         `json:"title"`
+	Severity   string         `json:"severity"`
+	Evidence   string         `json:"evidence,omitempty"`
+	References []string       `json:"references,omitempty"`
+	Metadata   map[string]any `json:"metadata,omitempty"`
+}
+
+// Output preserves raw NSE output separately from normalized native findings.
+type Output struct {
+	Data     any       `json:"data,omitempty"`
+	Findings []Finding `json:"findings,omitempty"`
+	Skipped  bool      `json:"-"`
+}
+
+// Runtime implements a dialect. Execute must support concurrent invocations,
+// own its interpreter state, and enforce its own execution and I/O limits.
+type Runtime interface {
+	Dialect() Dialect
+	Execute(context.Context, Task) (Output, error)
+}
+
+// Function is a compiled-in Go capability exposed by the Sirius runtime.
+// Implementations must honor ctx and bound their allocations and output.
+// Registering a function grants trusted Go code the embedding process's authority.
+type Function func(ctx context.Context, target Target, args []any) (any, error)
+
+type Status string
+
+const (
+	Completed Status = "completed"
+	Skipped   Status = "skipped"
+	Failed    Status = "error"
+)
+
+// Result reports execution status independently of vulnerability status.
+type Result struct {
+	SchemaVersion int     `json:"schema_version"`
+	ScriptID      string  `json:"script_id"`
+	ScriptSHA256  string  `json:"script_sha256"`
+	Dialect       Dialect `json:"dialect"`
+	Target        Target  `json:"target"`
+	Status        Status  `json:"status"`
+	Output        Output  `json:"output"`
+	Error         string  `json:"error,omitempty"`
+	ElapsedMS     int64   `json:"elapsed_ms"`
+}

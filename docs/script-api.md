@@ -1,0 +1,118 @@
+# Native script API version 1
+
+Select `sirius` explicitly. A script chunk returns this descriptor:
+
+```lua
+return {
+  api_version = 1,
+  rule = function(target, args)
+    return target.protocol == "tcp" and target.port > 0
+  end,
+  action = function(target, args)
+    local response = sirius.call("http.get", args.path or "/")
+    return { data = { status = response.status }, findings = {} }
+  end
+}
+```
+
+`rule` is optional and must return a boolean. A false rule skips the action.
+`action` is required and returns an output table. The top-level chunk executes
+before rule evaluation, under the same finite invocation budget.
+
+## Target and arguments
+
+`target` exposes `host`, `ip`, `port`, `protocol`, `state`, `service`, and `tls` from
+the submitted task. Host is the logical hostname or unbracketed IP. Optional IP is
+the fixed connection address. Port zero means a host-only task. State, protocol,
+and service are supplied facts; scripts must not infer that missing information
+is known. `args` is the caller's argument object, or an empty table.
+
+Source is limited to 1 MiB. Go arguments and capability values use explicit
+JSON-compatible scalars, string-keyed maps, and arrays. Lua integers are signed
+64-bit. Nonfinite numbers, functions, userdata, mixed-key tables, sparse arrays,
+cycles, and non-UTF-8 strings cannot be represented in the JSON result contract.
+Empty Lua tables normally encode as objects; an empty `findings` table is accepted
+as an empty list. Nil array elements are rejected because Lua cannot retain them.
+
+## Go capabilities
+
+The host registers compiled Go functions by name in `lua54.Options.Functions`.
+The script calls them with `sirius.call(name, ...)`. `require("sirius")` also returns
+the same module. Unregistered names produce an execution error. No dynamic Go
+imports, reflection bridge, shell, or automatic module installation is provided.
+
+The function receives `context.Context`, the caller's `scribe.Target`, and its
+converted arguments. It returns one JSON-compatible value or an error. The host
+function must honor cancellation, validate inputs, and bound its own allocations
+and output; VM quotas do not turn arbitrary Go code into contained code. Registered
+functions may be called concurrently by different invocations.
+
+The CLI registers `http.get`. Embedders must register it explicitly if wanted:
+
+```go
+client, err := httpcap.New(httpcap.Options{})
+if err != nil { return err }
+defer client.Close()
+runtime, err := lua54.NewNative(lua54.Options{
+    Functions: map[string]scribe.Function{"http.get": client.Function},
+})
+```
+
+`sirius.call("http.get", "/path?query=value")` issues a GET to the task's known TCP
+endpoint. TLS is selected by `Target.TLS`; a fixed IP preserves logical Host and
+TLS server name. It returns `{status, headers, body}`. Header names are lowercase
+and values are arrays of strings. Non-2xx responses remain observations.
+
+Absolute URLs, alternate authorities, fragments, and redirects are not followed.
+There is no ambient proxy, authentication, cookie jar, or automatic compression.
+The capability defaults to a 10-second request timeout, 1 MiB body limit, and
+64 KiB response-header limit. The CLI sets the HTTP timeout to the per-script
+timeout. Oversized responses return errors rather than truncated successes.
+
+## Output and findings
+
+An action returns `data`, `findings`, or both. Unknown top-level output fields
+produce an error. `data` is structured observation data. Each finding has:
+
+```lua
+{
+  id = "check-specific-id",
+  title = "Concrete observed issue",
+  severity = "low",
+  evidence = "The observed condition supporting this finding",
+  references = { "https://example.test/advisory" },
+  metadata = { affected_component = "example" }
+}
+```
+
+ID, title, and severity are required. Valid severities are `info`, `low`, `medium`,
+`high`, `critical`, and `unknown`. Evidence, references, and metadata are optional.
+Finding IDs must be unique within one output. At most 256 findings are accepted.
+References, when present, are limited to 64 strings per finding.
+Scripts choose a severity from evidence; the engine does not create a score or
+infer a vulnerability from textual keywords.
+
+Conversion is bounded to 1 MiB, 10,000 value nodes, and depth 32; serialized output
+also has a 1 MiB bound. An error clears the output and is reported independently
+of findings. A completed action with no findings means only that it completed.
+
+## Runtime environment and budgets
+
+The profile includes selected base functions and the `string`, `table`, `math`,
+and `utf8` libraries. It omits host I/O, shell, package search paths, arbitrary
+loading, debug APIs, coroutine APIs, garbage-collection control, and metatable
+mutation. Standard output is not available to scripts. The custom `require`
+returns allowlisted modules only. This is deliberately narrower than full Lua.
+`math.random`, `math.randomseed`, and `string.dump` are also omitted; the upstream
+random functions mutate process-global state rather than per-job state.
+
+The default limits are 10,000,000 VM CPU accounting units, 32 MiB VM memory
+accounting, and 5 seconds per invocation. Zero option fields choose finite defaults.
+Go I/O uses the invocation context. CPU-only code is stopped by finite VM quotas;
+the implementation does not mutate a running VM from a cancellation goroutine.
+These are accounting and bounded-work controls, not a process RSS ceiling or a
+hard security boundary against hostile code.
+
+See [http-header.lua](../examples/scripts/http-header.lua) for an original,
+explicitly labeled demonstration and [the Go example](../examples/embed/main.go)
+for an additional compiled-in function.
