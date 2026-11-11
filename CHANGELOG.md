@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.9.0
+
+- Add SDK evidence deduplication and conservative summary counts; expose --summary in CLI and /run.
+- Drain HTTP handlers during bounded graceful shutdown.
+- Refresh library result-processing quickstart and executable examples.
+
+## v0.8.0
+
+- Add structured SDK lifecycle observations and versioned event JSONL.
+
+## v0.7.0
+
+- Add mixed-corpus planner regression and execution benchmarks.
+
+## v0.6.0
+
+- Extend identification, planning and bounded execution controls.
+
 ## v0.5.0
 
 - Require match metadata in corpus lint; declare products for legacy fixtures.

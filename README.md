@@ -327,3 +327,21 @@ Postfix, Exim, vsftpd, ProFTPD, MySQL/MariaDB version banners, Redis INFO versio
 lines and Dropbear SSH banners. These produce identification/CPE hints only.
 Passive probes do not actively request database or Redis identification; callers
 can use package fingerprint on protocol payloads they already collected.
+
+### Result summaries for library consumers
+
+Import `github.com/SiriusScan/scribe`. After collecting SDK results, use
+`unique := scribe.Deduplicate(results)` and
+`summary := scribe.Summarize(unique)`. The executable godoc example
+`ExampleSummarize` demonstrates this API. Deduplication compares full evidence
+except elapsed time; conflicting results remain separate. Memory scales with
+the supplied result slice. Streaming consumers can call `Summary.Add` without
+retaining execution records.
+
+CLI `--summary` appends a schema-version-1 record with `type: "summary"`,
+`total`, `by_status`, `by_verdict`, and `by_skip_reason`. Pass the same flag
+in POST /run args. Counts include every delivered record (no implicit dedupe).
+Only completed explicit verdicts count as vulnerable or not_vulnerable.
+A summary describes delivered evidence; it does not prove stream completeness.
+Service shutdown cancels execution and allows up to five seconds for handlers
+to drain terminal records before closing connections.

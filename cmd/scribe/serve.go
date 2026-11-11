@@ -118,15 +118,22 @@ func serve(ctx context.Context, args []string, stderr io.Writer) int {
 	}
 	server := &http.Server{Handler: runHandler(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: time.Minute, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16 << 10, BaseContext: func(net.Listener) context.Context { return ctx }}
 	done := make(chan struct{})
+	stopped := make(chan struct{})
 	go func() {
+		defer close(stopped)
 		select {
 		case <-ctx.Done():
-			_ = server.Close()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if server.Shutdown(shutdownCtx) != nil {
+				_ = server.Close()
+			}
 		case <-done:
 		}
 	}()
 	err = server.Serve(listener)
 	close(done)
+	<-stopped
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fmt.Fprintln(stderr, err)
 		return 1

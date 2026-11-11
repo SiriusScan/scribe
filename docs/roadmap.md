@@ -363,3 +363,14 @@ and POST /run. Planning events are retrospective at result delivery.
 The versioned wire contract is documented in jsonl-v1.md and pinned by a golden
 fixture. Phase 3 stays paused. Build and local service validation remain separate
 from scanner/agent workflow acceptance.
+
+## v0.9.0
+
+SDK result deduplication preserves conflicting evidence and ignores only elapsed
+timing. Incremental summaries count statuses, conservative verdicts and skip
+reasons; CLI --summary and POST /run share the implementation. Summary counts
+include duplicates unless SDK callers explicitly deduplicate. HTTP shutdown
+cancels work and drains handlers for up to five seconds. Library quickstart and
+compiling examples cover result processing. Phase 3 remains paused.
+Build/service checks are repository and local transport evidence, not scanner,
+agent or full vGPT acceptance.

@@ -81,6 +81,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	flags.SetOutput(stderr)
 	pingppPath := flags.String("pingpp-jsonl", "", "read pingpp.scan/v1 JSONL endpoint facts")
 	factsJSONL := flags.String("facts-jsonl", "", "stream known endpoint facts from a JSONL file; at most 65536 records of 64 KiB")
+	summary := flags.Bool("summary", false, "append a summary JSONL record")
 	events := flags.Bool("events", false, "emit schema v1 SDK lifecycle events as JSONL")
 	factsPath := flags.String("facts", "", "JSON array of known endpoint facts (maximum 1024)")
 	community := flags.String("snmp-community", "", "explicit SNMP v2c planner community (empty disables)")
@@ -341,7 +342,11 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	if err != nil {
 		return fail(err)
 	}
+	counts := scribe.Summarize(nil)
 	sink := func(result scribe.Result) error {
+		if *summary {
+			counts.Add(result)
+		}
 		if *events {
 			return nil
 		}
@@ -351,6 +356,11 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 		err = engine.RunTargetStream(ctx, idx, targetStream, sink)
 	} else {
 		err = engine.RunSelected(ctx, idx, targets, sink)
+	}
+	if *summary {
+		if encodeErr := encoder.Encode(counts); encodeErr != nil {
+			return fail(encodeErr)
+		}
 	}
 	if err != nil {
 		return fail(err)
