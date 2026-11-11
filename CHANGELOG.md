@@ -127,3 +127,11 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
 - Verify complete SDK ping++ fixture result persistence through a synced JSONL
   journal, including failed and skipped records.
 - Live consumer acceptance and expanded vulnerability corpus remain outstanding.
+
+## v1.2.0 — 2026-11-11
+
+- Complete pinned real ping++ emitter-to-Lua acceptance and expand identity guards.
+- Benchmark samples were run on a shared host. The idle-host benchmark gate is
+  explicitly waived for this release; no performance improvement is claimed.
+- Repository checks and local acceptance passed; live consumer workflow acceptance
+  remains separate. Phase 3 stays paused.

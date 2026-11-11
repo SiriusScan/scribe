@@ -633,3 +633,7 @@ ok  	github.com/SiriusScan/scribe/runtime/lua54	11.108s
 ```
 
 Final make check and make acceptance-local passed after all fixture edits. Noninteractive service reinstall and smoke-http passed all three verdict cases and TCP banner. Release tag withheld pending the requested idle-host benchmark; v1.3.0 has not started.
+
+Release decision: v1.2.0 idle-host benchmark gate explicitly waived by the user
+(shared host). Recorded samples remain shared-host evidence without performance
+claims. Proceed with publication and installed-service smoke checks.
