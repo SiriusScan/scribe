@@ -76,3 +76,8 @@ inventory enumeration. Callers must select trusted local filesystems; kernel
 filesystem calls are not context-interruptible. Unsupported inventory platforms
 return errors, never empty successful inventories. Never add a command runner.
 Version() reports module metadata; an embedder's VCS revision is not Scribe's.
+
+Engine hardening checks: `make check` runs the race suite, including the original
+Sirius verdict corpus in testdata/sirius and bounded batch load/recovery tests,
+plus Windows/Darwin amd64 CLI cross-compilation. Cross-compilation is build
+ evidence only, not platform runtime or scanner integration acceptance.

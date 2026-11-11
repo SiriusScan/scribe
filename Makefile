@@ -33,3 +33,13 @@ restart-service:
 	systemctl restart scribe.service
 smoke-http:
 	python3 scripts/smoke-http.py
+
+.PHONY: cross-compile
+cross-compile:
+	@set -eu; tmp=$$(mktemp -d); trap 'rm -rf "$$tmp"' EXIT; \
+	for platform in windows darwin; do \
+		CGO_ENABLED=0 GOOS=$$platform GOARCH=amd64 go build -o "$$tmp/scribe-$$platform" ./cmd/scribe; \
+	done
+
+check: cross-compile
+	CGO_ENABLED=0 go build -o /tmp/scribe-check ./cmd/scribe

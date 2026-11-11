@@ -131,3 +131,11 @@ measured 88.8 us/op without selection and 3.80 us/op with selection. These numbe
 are local scheduling evidence only; actual Lua throughput and ping++ integration
 acceptance remain consumer validation. `make check` and the CGO-disabled CLI build
 passed for this slice.
+
+Engine fault-recovery slice: original testdata/sirius verdict fixtures execute in
+`make check` through the race suite. A bounded 576-execution matrix checks verdict
+isolation and goroutine return to baseline. Mixed batches cover Lua errors,
+capability panics, endpoint errors and CPU/I/O waits alongside healthy siblings.
+Windows and Darwin amd64 CLI cross-builds are part of `make check`; these are
+build evidence only. Actual platform runtime and Sirius integration acceptance
+remain outstanding.
