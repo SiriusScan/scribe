@@ -254,3 +254,7 @@ missing facts only. UDP, TLS and HTTP header probing remain unsupported and
 unresolved facts remain inconclusive. Probing applies to selected/stream runs;
 direct Run uses supplied facts. CPE/confidence and full integration acceptance
 remain open. These checks establish repository evidence only.
+
+Implemented: declarative exact CPE alternatives and minimum identification confidence
+(0–1), HTTP HEAD header fingerprinting, TLS subject/ALPN/version facts, and opt-in
+direct SDK planner probes. UDP and CPE inference remain outside probe coverage.

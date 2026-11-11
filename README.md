@@ -260,3 +260,22 @@ Ports are advisory. Missing or mismatched required facts yield skipped/unknown.
 A clean verdict with a match block requires a matching product declaration;
 service, port and banner alone cannot establish product identity. Direct engine
 runs enforce the same gate. Legacy metadata keeps its previous behavior.
+
+Planner identification facts include target `cpe` (an array of exact identifiers)
+and `confidence` (0–1; zero means unspecified). Match metadata accepts the same
+fields: CPE alternatives use OR, and confidence is a minimum threshold. These
+constraints combine with existing fields using AND. Low confidence skips include
+a threshold reason; exhaustive execution still preserves the clean-verdict gate.
+
+Selected runs with `on_unknown:"probe"` can collect a passive TCP banner, then
+HTTP HEAD response headers, or TLS handshake facts when the target has TLS set.
+Results include `cert_subject`, `alpn`, and `tls_version`. Certificate collection
+does not validate trust. Probes offer HTTP/1.1 ALPN, have a 250 ms endpoint budget
+and an 8 KiB response input bound. Successful HTTP identification uses confidence
+0.8. Probe failures are cached, as are successes, within each run up to MaxHosts.
+Caller product/version facts are preserved. CPEs remain caller supplied.
+
+Direct SDK Run enables this same bounded cache with `Options{PlannerProbes:true}`;
+the default performs no probes. UDP, automatic TLS detection, certificate trust
+assessment, HTTP/2, redirects, and CPE inference remain unsupported. These checks
+provide build/runtime evidence, not scanner or Activepieces integration acceptance.

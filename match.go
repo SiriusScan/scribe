@@ -10,6 +10,8 @@ import (
 // Match combines fields with AND; alternatives within a field use OR.
 // Ports are advisory and never exclude an endpoint.
 type Match struct {
+	CPE         []string `json:"cpe,omitempty"`
+	Confidence  float64  `json:"confidence,omitempty"`
 	OnUnknown   string   `json:"on_unknown,omitempty"`
 	Ports       []uint16 `json:"ports,omitempty"`
 	Services    []string `json:"services,omitempty"`
@@ -31,6 +33,9 @@ func version(v string) string {
 func (m Match) validate(depth int) error {
 	if m.OnUnknown != "" && m.OnUnknown != "run" && m.OnUnknown != "skip" && m.OnUnknown != "probe" {
 		return fmt.Errorf("invalid on_unknown policy")
+	}
+	if !(m.Confidence >= 0 && m.Confidence <= 1) {
+		return fmt.Errorf("confidence must be between zero and one")
 	}
 	if depth > 8 {
 		return fmt.Errorf("match nesting exceeds 8")
@@ -64,6 +69,18 @@ func (m Match) validate(depth int) error {
 
 // evaluate returns applicability and positive product identification separately.
 func (m Match) evaluate(t Target) (bool, bool) {
+	if t.Confidence < m.Confidence {
+		return false, false
+	}
+	if len(m.CPE) > 0 {
+		matched := false
+		for _, c := range t.CPE {
+			matched = matched || contains(m.CPE, c)
+		}
+		if !matched {
+			return false, false
+		}
+	}
 	if m.OnUnknown == "run" && m.missing(t) {
 		return true, false
 	}
@@ -113,6 +130,9 @@ func (m Match) evaluate(t Target) (bool, bool) {
 }
 
 func (m Match) missing(t Target) bool {
+	if len(m.CPE) > 0 && len(t.CPE) == 0 || t.Confidence < m.Confidence {
+		return true
+	}
 	if len(m.Services) > 0 && t.Service == "" || len(m.Products) > 0 && t.Product == "" || len(m.Protocols) > 0 && t.Protocol == "" || (m.MinVersion != "" || m.MaxVersion != "") && t.Version == "" || m.BannerRegex != "" && t.Banner == "" {
 		return true
 	}
@@ -124,4 +144,18 @@ func (m Match) missing(t Target) bool {
 		}
 	}
 	return false
+}
+
+func (m Match) skipReason(t Target) string {
+	if t.Confidence < m.Confidence {
+		return "declarative match: identification confidence below script threshold"
+	}
+	for _, g := range [][]Match{m.AnyOf, m.AllOf} {
+		for _, c := range g {
+			if t.Confidence < c.Confidence {
+				return c.skipReason(t)
+			}
+		}
+	}
+	return "declarative match: required identification facts missing or mismatched"
 }

@@ -12,6 +12,7 @@ const MaxSourceBytes = 1 << 20
 
 // Options controls orchestration, independently of each runtime's limits.
 type Options struct {
+	PlannerProbes        bool
 	StrictIdentification bool
 	Exhaustive           bool
 	Concurrency          int
@@ -106,12 +107,16 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	cache := make(probeCache)
 	n := 0
 	return e.run(ctx, func(context.Context) (Task, bool, error) {
 		if n == len(tasks) {
 			return Task{}, false, nil
 		}
 		t := tasks[n]
+		if e.options.PlannerProbes {
+			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts)
+		}
 		n++
 		return t, true, nil
 	}, onResult, true)
@@ -131,7 +136,7 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 	if planErr == nil && idx.entries[0].hints.Match != nil {
 		ok, _ := idx.entries[0].hints.Match.evaluate(task.Target)
 		if !ok && !e.options.Exhaustive {
-			task.planSkip = "declarative match: required identification facts missing or mismatched"
+			task.planSkip = idx.entries[0].hints.Match.skipReason(task.Target)
 		}
 	}
 	var output Output

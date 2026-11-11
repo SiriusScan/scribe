@@ -22,20 +22,28 @@ const (
 // Target describes a known endpoint. Port zero represents a host-only task.
 // IP, when set, is the connection address; Host remains the logical hostname.
 type Target struct {
-	Banner   string `json:"banner,omitempty"`
-	Host     string `json:"host"`
-	IP       string `json:"ip,omitempty"`
-	Port     uint16 `json:"port,omitempty"`
-	Protocol string `json:"protocol,omitempty"`
-	Product  string `json:"product,omitempty"`
-	Version  string `json:"version,omitempty"`
-	Service  string `json:"service,omitempty"`
-	State    string `json:"state,omitempty"`
-	TLS      bool   `json:"tls,omitempty"`
+	CPE         []string `json:"cpe,omitempty"`
+	Confidence  float64  `json:"confidence,omitempty"`
+	CertSubject string   `json:"cert_subject,omitempty"`
+	ALPN        string   `json:"alpn,omitempty"`
+	TLSVersion  string   `json:"tls_version,omitempty"`
+	Banner      string   `json:"banner,omitempty"`
+	Host        string   `json:"host"`
+	IP          string   `json:"ip,omitempty"`
+	Port        uint16   `json:"port,omitempty"`
+	Protocol    string   `json:"protocol,omitempty"`
+	Product     string   `json:"product,omitempty"`
+	Version     string   `json:"version,omitempty"`
+	Service     string   `json:"service,omitempty"`
+	State       string   `json:"state,omitempty"`
+	TLS         bool     `json:"tls,omitempty"`
 }
 
 // Validate rejects ambiguous or malformed endpoint metadata.
 func (t Target) Validate() error {
+	if !(t.Confidence >= 0 && t.Confidence <= 1) {
+		return fmt.Errorf("confidence must be between zero and one")
+	}
 	if strings.TrimSpace(t.Host) == "" || strings.ContainsAny(t.Host, "/?#@\\[]% ") || strings.ContainsFunc(t.Host, func(r rune) bool { return unicode.IsControl(r) || unicode.IsSpace(r) }) {
 		return fmt.Errorf("target host must be a hostname or IP address without a scheme or port")
 	}

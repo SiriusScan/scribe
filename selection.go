@@ -149,7 +149,7 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 	if ctx == nil || idx == nil || next == nil || sink == nil {
 		return fmt.Errorf("context, index, target producer and sink are required")
 	}
-	cache := make(map[string]Target)
+	cache := make(probeCache)
 	var target Target
 	pos := len(idx.entries)
 	return e.run(ctx, func(ctx context.Context) (Task, bool, error) {
@@ -161,16 +161,9 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 			if err := t.Validate(); err != nil {
 				return Task{}, false, err
 			}
-			key := fmt.Sprintf("%s/%s/%d/%s/%t", t.Host, t.IP, t.Port, t.Protocol, t.TLS)
 			for _, entry := range idx.entries {
 				if m := entry.hints.Match; m != nil && m.OnUnknown == "probe" && m.missing(t) {
-					if f, ok := cache[key]; ok {
-						t = mergeProbe(t, f)
-					} else if len(cache) < e.options.MaxHosts {
-						f := probe(ctx, t)
-						cache[key] = f
-						t = mergeProbe(t, f)
-					}
+					t = cache.enrich(ctx, t, e.options.MaxHosts)
 					break
 				}
 			}
