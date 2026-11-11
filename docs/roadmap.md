@@ -637,3 +637,18 @@ Final make check and make acceptance-local passed after all fixture edits. Nonin
 Release decision: v1.2.0 idle-host benchmark gate explicitly waived by the user
 (shared host). Recorded samples remain shared-host evidence without performance
 claims. Proceed with publication and installed-service smoke checks.
+
+## v1.3.0 — planner identity evidence hardening (2026-11-11)
+
+Probe merges now reject inferred CPE and confidence when the probe product
+conflicts with the supplied product. Previously those fields could strengthen
+an unrelated caller identity. Matching products retain enrichment; supplied
+facts remain authoritative. Focused regression covers both paths. No public API
+or wire schema changes, interpreter sharing, or NSE coverage expansion.
+
+make check and make acceptance-local passed, covering race tests, vet,
+CGO-disabled CLI, cross-builds, parallel engine fixtures and pinned real ping++
+emitter-to-Lua execution. These establish repository/local transport evidence.
+Real Sirius/vGPT cancellation and persisted report acceptance remain unfinished;
+Phase 3 remains paused. Shared-host benchmark evidence and its v1.2.0 waiver
+remain recorded above; this change makes no throughput claim.

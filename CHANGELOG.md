@@ -135,3 +135,18 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
   explicitly waived for this release; no performance improvement is claimed.
 - Repository checks and local acceptance passed; live consumer workflow acceptance
   remains separate. Phase 3 stays paused.
+
+## v1.3.0 — planner identity evidence hardening (2026-11-11)
+
+Probe merges now reject inferred CPE and confidence when the probe product
+conflicts with the supplied product. Previously those fields could strengthen
+an unrelated caller identity. Matching products retain enrichment; supplied
+facts remain authoritative. Focused regression covers both paths. No public API
+or wire schema changes, interpreter sharing, or NSE coverage expansion.
+
+make check and make acceptance-local passed, covering race tests, vet,
+CGO-disabled CLI, cross-builds, parallel engine fixtures and pinned real ping++
+emitter-to-Lua execution. These establish repository/local transport evidence.
+Real Sirius/vGPT cancellation and persisted report acceptance remain unfinished;
+Phase 3 remains paused. Shared-host benchmark evidence and its v1.2.0 waiver
+remain recorded above; this change makes no throughput claim.

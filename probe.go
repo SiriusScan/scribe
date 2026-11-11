@@ -27,10 +27,11 @@ func mergeProbe(t, f Target) Target {
 	if t.Banner == "" {
 		t.Banner = f.Banner
 	}
-	if t.Confidence == 0 {
+	identityCompatible := t.Product == "" || f.Product == "" || t.Product == f.Product
+	if t.Confidence == 0 && identityCompatible {
 		t.Confidence = f.Confidence
 	}
-	if len(t.CPE) == 0 {
+	if len(t.CPE) == 0 && identityCompatible {
 		t.CPE = f.CPE
 	}
 	if t.CertSubject == "" {

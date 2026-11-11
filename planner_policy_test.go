@@ -54,3 +54,16 @@ func TestExhaustiveMiss(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestProbeConflictingIdentityEvidence(t *testing.T) {
+	for _, product := range []string{"nginx", "Apache"} {
+		got := mergeProbe(Target{Product: product}, Target{Product: "nginx", Confidence: .9, CPE: []string{"cpe:/a:nginx:nginx"}})
+		if product == "nginx" {
+			if got.Confidence != .9 || len(got.CPE) != 1 {
+				t.Fatalf("matching evidence lost: %+v", got)
+			}
+		} else if got.Confidence != 0 || len(got.CPE) != 0 {
+			t.Fatalf("conflicting evidence promoted: %+v", got)
+		}
+	}
+}
