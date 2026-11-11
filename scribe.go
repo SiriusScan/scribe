@@ -78,7 +78,16 @@ type Finding struct {
 }
 
 // Output preserves raw NSE output separately from normalized native findings.
+type Verdict string
+
+const (
+	Unknown       Verdict = "unknown"
+	Vulnerable    Verdict = "vulnerable"
+	NotVulnerable Verdict = "not_vulnerable"
+)
+
 type Output struct {
+	Verdict  Verdict   `json:"-"`
 	Data     any       `json:"data,omitempty"`
 	Findings []Finding `json:"findings,omitempty"`
 	Skipped  bool      `json:"-"`
@@ -112,6 +121,7 @@ type Result struct {
 	Dialect       Dialect `json:"dialect"`
 	Target        Target  `json:"target"`
 	Status        Status  `json:"status"`
+	Verdict       Verdict `json:"verdict"`
 	Output        Output  `json:"output"`
 	Error         string  `json:"error,omitempty"`
 	ElapsedMS     int64   `json:"elapsed_ms"`

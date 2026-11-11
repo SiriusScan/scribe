@@ -17,6 +17,7 @@ import (
 
 	"github.com/SiriusScan/scribe"
 	"github.com/SiriusScan/scribe/capability/httpcap"
+	"github.com/SiriusScan/scribe/capability/tcpcap"
 	"github.com/SiriusScan/scribe/runtime/lua54"
 )
 
@@ -125,7 +126,7 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	defer httpClient.Close()
 	options := lua54.Options{
 		Limits:    lua54.Limits{CPU: *cpu, Memory: *memory, Timeout: *timeout},
-		Functions: map[string]scribe.Function{"http.get": httpClient.Function},
+		Functions: map[string]scribe.Function{"http.get": httpClient.Function, "tcp.exchange": tcpcap.Function},
 	}
 	var runtime scribe.Runtime
 	if *dialect == string(scribe.Sirius) {

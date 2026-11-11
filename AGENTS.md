@@ -31,3 +31,7 @@ No development surfaces are assigned.
 
 These assignments document intended access; they do not provision credentials or enforce infrastructure permissions. Keep secrets outside the repository. Use credential references, inspect shared resources, and avoid interrupting other projects.
 <!-- apps01:surfaces:end -->
+
+Sirius is the MVP superset direction. Extend native capabilities as needed;
+do not pursue NSE library coverage. Keep execution status separate from explicit
+verdicts; missing verdicts remain unknown.

@@ -253,11 +253,24 @@ func nativeOutput(ctx context.Context, vm *rt.Runtime, value rt.Value) (scribe.O
 		return scribe.Output{}, errors.New("Sirius action must return an output table")
 	}
 	for key := range object {
-		if key != "data" && key != "findings" {
+		if key != "data" && key != "findings" && key != "verdict" {
 			return scribe.Output{}, fmt.Errorf("unknown output field %q", key)
 		}
 	}
 	output := scribe.Output{Data: object["data"]}
+	if raw, exists := object["verdict"]; exists {
+		v, ok := raw.(string)
+		if !ok {
+			return scribe.Output{}, errors.New("verdict must be a string")
+		}
+		output.Verdict = scribe.Verdict(v)
+		switch output.Verdict {
+		case scribe.Unknown, scribe.Vulnerable, scribe.NotVulnerable:
+		default:
+			return scribe.Output{}, errors.New("invalid verdict")
+		}
+	}
+
 	if raw, exists := object["findings"]; exists {
 		findings, ok := arrayValue(raw)
 		if !ok || len(findings) > MaxFindings {
@@ -275,6 +288,9 @@ func nativeOutput(ctx context.Context, vm *rt.Runtime, value rt.Value) (scribe.O
 			seen[finding.ID] = true
 			output.Findings = append(output.Findings, finding)
 		}
+	}
+	if output.Verdict == scribe.NotVulnerable && len(output.Findings) > 0 {
+		return scribe.Output{}, errors.New("not_vulnerable conflicts with findings")
 	}
 	return output, checkOutputSize(output)
 }

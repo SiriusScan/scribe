@@ -89,12 +89,18 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 				}
 				start := time.Now()
 				output, err := e.runtimes[task.Script.Dialect].Execute(runCtx, task)
-				result := Result{SchemaVersion: 1, ScriptID: task.Script.ID, ScriptSHA256: fmt.Sprintf("%x", sha256.Sum256(task.Script.Source)), Dialect: task.Script.Dialect, Target: task.Target, Output: output, Status: Completed, ElapsedMS: time.Since(start).Milliseconds()}
+				result := Result{SchemaVersion: 1, ScriptID: task.Script.ID, ScriptSHA256: fmt.Sprintf("%x", sha256.Sum256(task.Script.Source)), Dialect: task.Script.Dialect, Target: task.Target, Output: output, Status: Completed, Verdict: Unknown, ElapsedMS: time.Since(start).Milliseconds()}
 				if err != nil {
 					result.Status, result.Error, result.Output = Failed, err.Error(), Output{}
 				} else if output.Skipped {
 					result.Status = Skipped
 					result.Output = Output{Skipped: true}
+				}
+				if result.Status == Completed && task.Script.Dialect == Sirius {
+					switch output.Verdict {
+					case Vulnerable, NotVulnerable:
+						result.Verdict = output.Verdict
+					}
 				}
 				results <- result
 			}

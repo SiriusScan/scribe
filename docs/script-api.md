@@ -116,3 +116,33 @@ hard security boundary against hostile code.
 See [http-header.lua](../examples/scripts/http-header.lua) for an original,
 explicitly labeled demonstration and [the Go example](../examples/embed/main.go)
 for an additional compiled-in function.
+
+### Explicit Sirius verdicts
+
+A Sirius action may return `{verdict="vulnerable", data=...}`,
+`{verdict="not_vulnerable", data=...}`, or `{verdict="unknown"}`.
+Omitting verdict means unknown, including empty output. Findings do not infer a
+verdict. A not_vulnerable verdict with findings is rejected as contradictory.
+Invalid verdicts fail execution.
+
+JSONL results always include a top-level verdict. Stable execution statuses are
+completed (action returned successfully), skipped (rule did not match), and
+error (execution failed, including unsupported APIs). Errors, skips, and NSE
+output always have unknown verdicts. Completed alone does not establish health.
+
+### Raw TCP and TLS
+
+The CLI registers `sirius.call("tcp.exchange", payload)`. Embedders register
+`tcpcap.Function` in their native runtime's Functions map under that name.
+Omit payload to grab a banner. Each call connects, sends the optional string,
+receives one chunk, and closes. Results contain data and eof; data is at most
+64 KiB and may be a partial protocol message. Scripts must not treat one chunk
+as a complete response without protocol validation. Payloads are also limited
+to 64 KiB. Calls have a five-second deadline shortened by the invocation context.
+
+Only the caller-supplied explicit TCP endpoint is accessible; IP overrides the
+connection address while Host remains the TLS server name. Target TLS enables
+a verified handshake (system trust, TLS 1.2 minimum). The tls result contains
+version, cipher_suite, subject, issuer, not_before and not_after for the leaf
+certificate. Verification failures are errors. There is no insecure TLS mode,
+persistent socket handle, or NSE socket emulation.
