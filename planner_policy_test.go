@@ -67,3 +67,32 @@ func TestProbeConflictingIdentityEvidence(t *testing.T) {
 		}
 	}
 }
+
+func FuzzProbeIdentityAuthority(f *testing.F) {
+	f.Add("Apache", "nginx", .9)
+	f.Add("nginx", "nginx", .5)
+	f.Fuzz(func(t *testing.T, supplied, probed string, confidence float64) {
+		if len(supplied) > 256 || len(probed) > 256 {
+			t.Skip()
+		}
+		got := mergeProbe(Target{Product: supplied, Version: "caller"}, Target{Product: probed, Version: "probe", Confidence: confidence, CPE: []string{"probe"}})
+		if supplied != "" && got.Product != supplied {
+			t.Fatal("replaced caller product")
+		}
+		if got.Version != "caller" {
+			t.Fatal("replaced caller version")
+		}
+	})
+}
+
+func TestProductSkipReasonsAndCleanGuard(t *testing.T) {
+	m := Match{Products: []string{"nginx"}}
+	for _, tc := range []struct{ product, reason string }{{"", "declarative match: product identification missing"}, {"Apache", "declarative match: product identification mismatched"}} {
+		if got := m.skipReason(Target{Product: tc.product}); got != tc.reason {
+			t.Fatalf("%q", got)
+		}
+		if ok, id := m.evaluate(Target{Product: tc.product}); ok || id {
+			t.Fatal("unrelated identity admitted")
+		}
+	}
+}

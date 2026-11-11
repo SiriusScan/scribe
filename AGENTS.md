@@ -137,3 +137,9 @@ The ping++ emitter remains a follow-up; use the pinned Scribe adapter fixtures.
 Phase 3 remains paused.
 
 The optional real emitter acceptance uses PINGPP_REPO (default local nested checkout), cmd/pingpp-scan at pingpp commit 2c397a1. It verifies TCP observations through the adapter, not execution or workflow persistence. Phase 3 remains paused.
+
+v1.4.0 local cancellation/persistence acceptance uses a fake consumer JSONL report
+store, requires all active/queued terminal records after cooperative cancellation,
+and reopens synced evidence to EOF. This is local persistence evidence only.
+Planner product skips distinguish missing and mismatched identification; retain
+conservative clean gates and caller identity authority. Phase 3 stays paused.

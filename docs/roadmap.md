@@ -655,3 +655,24 @@ remain recorded above; this change makes no throughput claim.
 
 v1.3.0 bounded planner fuzz campaign passed 11,505 executions in 10 seconds.
 v1.2.0 installed-service smoke passed all three verdicts and TCP banner.
+
+## v1.4.0 — local cancellation and persistence acceptance (2026-11-11)
+
+Repeated cooperative mid-run cancellation now exercises active and queued tasks
+through a fake consumer report store: sync, close, reopen, decode to EOF, require
+all 12 unique terminal records with source digests and inconclusive assessments.
+Twenty repetitions assert the runtime has exited before Run returns. Existing
+real-Lua cancellation and load/goroutine-baseline fixtures remain in the race
+suite; this fake runtime test does not prove arbitrary capabilities interruptible.
+No engine behavior change was needed. Disk errors still propagate through the
+existing sink-error tests. Live Sirius/vGPT report storage remains unvalidated;
+this closes the locally testable substitute, not live workflow acceptance.
+
+Planner product skips now distinguish missing identity from mismatched identity.
+Focused applicability/identity tests retain the false-clean gate; new probe merge
+fuzzing checks caller product/version authority (495714 executions in 10 seconds).
+No public API/schema changes, NSE expansion or Phase 3 endpoint-agent work.
+
+Release gates: make check and make acceptance-local passed, including the pinned
+real ping++ emitter and emitter-to-Lua fixtures. Further live consumer acceptance
+and longer fuzz campaigns remain follow-up work; no performance claim.

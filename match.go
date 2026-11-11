@@ -170,5 +170,13 @@ func (m Match) skipReason(t Target) string {
 			}
 		}
 	}
+	if len(m.Products) > 0 {
+		if t.Product == "" {
+			return "declarative match: product identification missing"
+		}
+		if !contains(m.Products, t.Product) {
+			return "declarative match: product identification mismatched"
+		}
+	}
 	return "declarative match: required identification facts missing or mismatched"
 }
