@@ -161,3 +161,7 @@ backpressure; retain cancellation/drain and sink error behavior. Lua TCP edge
 fixtures require unknown partial-read results and error/cancelled transport
 failures. POST inline scripts reuse runScripts; do not introduce a second runner.
 Phase 3 remains paused.
+
+v1.8.0 pins parallel diagnostic isolation across shared compiled Sirius code.
+Keep logs invocation-owned, bounded and retained on action failure. Existing
+log capture, --check and --version are reused. Phase 3 remains paused.

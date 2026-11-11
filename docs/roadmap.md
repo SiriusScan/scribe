@@ -783,3 +783,18 @@ inline verdicts and conflicting source modes, so no second implementation was ad
 make check, make acceptance-local and go run ./examples/embed passed. These are
 local SDK/transport/build checks, not live Sirius/vGPT persistence acceptance.
 Phase 3 remains paused. No performance claim.
+
+## v1.8.0 — parallel diagnostic isolation (2026-11-11)
+
+Selected the engine-hardening follow-up: 32 parallel Sirius invocations reuse
+one runtime and script identity while asserting exact per-invocation logs and
+independent action failure. Existing diagnostics truncation/failure fixtures,
+static checks and CLI version implementation remain in place; no duplicate path
+was added. No public API change or NSE coverage expansion.
+
+make check and make acceptance-local passed, including race, vet, CGO-disabled
+build, cross-builds and pinned emitter local acceptance. These are repository
+and local transport evidence only. Real-script corpus growth, further verdict
+and planner-reason coverage, and live Sirius cancellation/persistence remain
+follow-up work. This release adds an original regression, not upstream corpus
+compatibility. Phase 3 stays paused; no performance claim.
