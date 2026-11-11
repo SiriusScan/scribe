@@ -6,7 +6,7 @@
 // Execution status and verdict are independent: only completed explicit verdicts
 // establish findings; unknown, skipped, failed, and missing results are inconclusive.
 //
-// Versioning follows semantic versions. Before v1.0, minor releases may change
-// APIs; consumers should pin a tagged module version. Job and report envelopes
+// Versioning follows semantic versions. The v1 public Go API is stable within major version 1; consumers should pin
+// a tagged module version. The NSE dialect remains an experimental subset. Job and report envelopes
 // have independent schema versions. Version reports Scribe module metadata.
 package scribe

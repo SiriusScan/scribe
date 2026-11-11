@@ -87,6 +87,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	community := flags.String("snmp-community", "", "explicit SNMP v2c planner community (empty disables)")
 	strict := flags.Bool("strict-identification", false, "require declared matching product for clean verdicts")
 	exhaustive := flags.Bool("exhaustive", false, "execute excluded scripts and report planner misses")
+	listModules := flags.Bool("list-modules", false, "emit validated module metadata and lint warnings as JSONL without execution")
 	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
 	showVersion := flags.Bool("version", false, "print module version and commit")
 	var paths scriptPaths
@@ -150,6 +151,29 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	}
 	if *concurrency < 1 || *concurrency > 256 {
 		return fail(errors.New("--concurrency must be between 1 and 256"))
+	}
+	if *listModules {
+		scripts := make([]scribe.Script, 0, len(paths)+len(inline))
+		for _, path := range paths {
+			source, err := readSource(path)
+			if err != nil {
+				return fail(err)
+			}
+			scripts = append(scripts, scribe.Script{ID: path, Dialect: scribe.Dialect(*dialect), Source: source})
+		}
+		for _, item := range inline {
+			scripts = append(scripts, scribe.Script{ID: item.ID, Dialect: scribe.Dialect(*dialect), Source: []byte(item.Source)})
+		}
+		index, err := scribe.NewIndex(scripts)
+		if err != nil {
+			return fail(err)
+		}
+		for _, module := range index.Modules() {
+			if err := json.NewEncoder(stdout).Encode(module); err != nil {
+				return fail(err)
+			}
+		}
+		return 0
 	}
 	if *check {
 		failed := false

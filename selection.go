@@ -25,6 +25,7 @@ type indexedScript struct {
 // Scripts without hints and endpoints without identifying facts run conservatively.
 type Index struct{ entries []indexedScript }
 
+// NewIndex validates metadata and snapshots scripts for bounded selection.
 func NewIndex(scripts []Script) (*Index, error) {
 	idx := &Index{}
 	for _, s := range scripts {
@@ -212,4 +213,33 @@ func CheckIdentification(s Script) error {
 		return nil
 	}
 	return fmt.Errorf("clean verdict requires declared product identification")
+}
+
+// Module describes validated script selection metadata without executing Lua.
+type Module struct {
+	Script   string   `json:"script"`
+	Dialect  Dialect  `json:"dialect"`
+	Match    *Match   `json:"match"`
+	Warnings []string `json:"warnings"`
+}
+
+// Modules returns an inventory detached from the index's internal metadata.
+func (idx *Index) Modules() []Module {
+	out := make([]Module, 0, len(idx.entries))
+	for _, e := range idx.entries {
+		warnings := []string{}
+		if e.hints.Match == nil {
+			warnings = append(warnings, "missing match block")
+		}
+		if e.script.Dialect == NSE {
+			warnings = append(warnings, "experimental NSE subset")
+		}
+		var match *Match
+		if e.hints.Match != nil {
+			data, _ := json.Marshal(e.hints.Match)
+			_ = json.Unmarshal(data, &match)
+		}
+		out = append(out, Module{e.script.ID, e.script.Dialect, match, warnings})
+	}
+	return out
 }

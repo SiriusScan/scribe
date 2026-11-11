@@ -345,3 +345,8 @@ Only completed explicit verdicts count as vulnerable or not_vulnerable.
 A summary describes delivered evidence; it does not prove stream completeness.
 Service shutdown cancels execution and allows up to five seconds for handlers
 to drain terminal records before closing connections.
+
+Module inventory: `scribe --dialect sirius --script path/to/check.lua --list-modules`
+prints one JSONL object per script with `script`, `dialect`, `match`, and
+`warnings`. It validates metadata without executing scripts or probing targets.
+Invalid metadata fails the invocation; missing match blocks produce lint warnings.

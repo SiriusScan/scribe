@@ -374,3 +374,11 @@ cancels work and drains handlers for up to five seconds. Library quickstart and
 compiling examples cover result processing. Phase 3 remains paused.
 Build/service checks are repository and local transport evidence, not scanner,
 agent or full vGPT acceptance.
+
+## v1.0.0 preparation (in progress)
+
+Module inventory and initial metadata/JSONL fuzz targets are implemented. A root
+exported-symbol golden detects name removals; it does not yet pin signatures or
+subpackage APIs. Full API documentation audit, expanded pinned Sirius corpus and
+false-clean coverage remain release gates. Phase 3 stays paused. Do not interpret
+this preparation as released v1.0.0 or scanner/agent acceptance.

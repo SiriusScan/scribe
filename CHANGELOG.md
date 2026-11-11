@@ -70,3 +70,8 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
   reasons, module timing and verdicts.
 - Share opt-in --events JSONL across CLI and streaming POST /run.
 - Document schema v1, callback ownership and compatibility; pin a golden fixture.
+
+## Unreleased — v1.0.0 preparation
+
+- Add JSONL module metadata inventory with `--list-modules`.
+- Add match metadata and inventory JSONL fuzz targets and a root exported-symbol golden.
