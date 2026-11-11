@@ -102,3 +102,7 @@ on standard ports or explicitly supplied dns/ntp services. They share the 250 ms
 budget and 8 KiB response ceiling, infer service only, and never infer a product
 or verdict. SNMP v2c identification requires explicit Options.SNMPCommunity / --snmp-community; empty disables it. Never guess communities or promote sysDescr to a product/verdict.
 Corpus metadata lint fails missing match blocks under the default strict test; invalid metadata fails. Preserve fixture verdicts with declared matching caller facts.
+
+Public API declarations are pinned in testdata/api-signatures-v1.txt across
+importable first-party packages, including platform source variants. Update with
+SCRIBE_UPDATE_API=1 only after compatibility review. Phase 3 remains paused.

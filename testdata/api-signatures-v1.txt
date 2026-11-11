@@ -1,0 +1,453 @@
+.: const (
+	Cancelled Status = "cancelled"
+	Completed Status = "completed"
+	Skipped   Status = "skipped"
+	Failed    Status = "error"
+)
+
+.: const (
+	HostSpray Strategy = "host-spray"
+
+	ScriptSpray Strategy = "script-spray"
+)
+
+.: const (
+	Sirius Dialect = "sirius"
+	NSE    Dialect = "nse"
+)
+
+.: const (
+	Unknown       Verdict = "unknown"
+	Vulnerable    Verdict = "vulnerable"
+	NotVulnerable Verdict = "not_vulnerable"
+)
+
+.: const MaxSourceBytes = 1 << 20
+
+.: func (e *CapabilityDeniedError) Error() string
+
+.: func (e *Engine) Batch(ctx context.Context, tasks []Task) ([]Result, error)
+
+.: func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) error) error
+
+.: func (e *Engine) RunSelected(ctx context.Context, idx *Index, targets []Target, sink func(Result) error) error
+
+.: func (e *Engine) RunTargetStream(ctx context.Context, idx *Index, next func(context.Context) (Target, bool, error), sink func(Result) error) error
+
+.: func (e *Engine) Stream(ctx context.Context, index *Index, next func(context.Context) (Target, bool, error), sink func(Result) error) error
+
+.: func (idx *Index) Matches(t Target) bool
+
+.: func (idx *Index) Modules() []Module
+
+.: func (idx *Index) Select(t Target) []Script
+
+.: func (s *Summary) Add(r Result)
+
+.: func (t Target) Validate() error
+
+.: func CheckIdentification(s Script) error
+
+.: func Deduplicate(results []Result) []Result
+
+.: func Events(result Result) []Event
+
+.: func New(options Options, runtimes ...Runtime) (*Engine, error)
+
+.: func NewIndex(scripts []Script) (*Index, error)
+
+.: func Summarize(results []Result) Summary
+
+.: func Version() VersionInfo
+
+.: type CapabilityDeniedError struct{ Capability string }
+
+.: type Dialect string
+
+.: type Engine struct {
+	// contains filtered or unexported fields
+}
+
+.: type Event struct {
+	SchemaVersion int    `json:"schema_version"`
+	Type          string `json:"type"`
+	Result        Result `json:"result"`
+}
+
+.: type Finding struct {
+	ID         string         `json:"id"`
+	Title      string         `json:"title"`
+	Severity   string         `json:"severity"`
+	Evidence   string         `json:"evidence,omitempty"`
+	References []string       `json:"references,omitempty"`
+	Metadata   map[string]any `json:"metadata,omitempty"`
+}
+
+.: type Function func(ctx context.Context, target Target, args []any) (any, error)
+
+.: type Index struct {
+	// contains filtered or unexported fields
+}
+
+.: type Limits struct {
+	CPU     uint64        `json:"cpu,omitempty"`
+	Memory  uint64        `json:"memory,omitempty"`
+	Timeout time.Duration `json:"timeout,omitempty"`
+}
+
+.: type Match struct {
+	CPE         []string `json:"cpe,omitempty"`
+	Confidence  float64  `json:"confidence,omitempty"`
+	OnUnknown   string   `json:"on_unknown,omitempty"`
+	Ports       []uint16 `json:"ports,omitempty"`
+	Services    []string `json:"services,omitempty"`
+	Products    []string `json:"products,omitempty"`
+	Protocols   []string `json:"protocols,omitempty"`
+	MinVersion  string   `json:"min_version,omitempty"`
+	MaxVersion  string   `json:"max_version,omitempty"`
+	BannerRegex string   `json:"banner_regex,omitempty"`
+	AnyOf       []Match  `json:"any_of,omitempty"`
+	AllOf       []Match  `json:"all_of,omitempty"`
+}
+
+.: type Module struct {
+	Script   string   `json:"script"`
+	Dialect  Dialect  `json:"dialect"`
+	Match    *Match   `json:"match"`
+	Warnings []string `json:"warnings"`
+}
+
+.: type Options struct {
+	OnEvent func(Event) error
+
+	Plan                 bool
+	ScriptTimeout        time.Duration
+	GlobalInterval       time.Duration
+	SNMPCommunity        string
+	PlannerProbes        bool
+	StrictIdentification bool
+	Exhaustive           bool
+	Concurrency          int
+
+	HostConcurrency int
+
+	HostInterval time.Duration
+
+	HostErrorBudget int
+	Strategy        Strategy
+
+	Window int
+
+	MaxHosts int
+}
+
+.: type Output struct {
+	Logs          string    `json:"logs,omitempty"`
+	LogsTruncated bool      `json:"logs_truncated,omitempty"`
+	Verdict       Verdict   `json:"-"`
+	Data          any       `json:"data,omitempty"`
+	Findings      []Finding `json:"findings,omitempty"`
+	Skipped       bool      `json:"-"`
+	SkipReason    string    `json:"skip_reason,omitempty"`
+}
+
+.: type Result struct {
+	PlannerMiss   bool    `json:"planner_miss,omitempty"`
+	SchemaVersion int     `json:"schema_version"`
+	ScriptID      string  `json:"script_id"`
+	ScriptSHA256  string  `json:"script_sha256"`
+	Dialect       Dialect `json:"dialect"`
+	Target        Target  `json:"target"`
+	Status        Status  `json:"status"`
+	Verdict       Verdict `json:"verdict"`
+	Output        Output  `json:"output"`
+	Error         string  `json:"error,omitempty"`
+	ElapsedMS     int64   `json:"elapsed_ms"`
+}
+
+.: type Runtime interface {
+	Dialect() Dialect
+	Execute(context.Context, Task) (Output, error)
+}
+
+.: type Script struct {
+	ID      string         `json:"id"`
+	Dialect Dialect        `json:"dialect"`
+	Source  []byte         `json:"-"`
+	Args    map[string]any `json:"args,omitempty"`
+}
+
+.: type Status string
+
+.: type Strategy string
+
+.: type Summary struct {
+	SchemaVersion int             `json:"schema_version"`
+	Type          string          `json:"type"`
+	Total         int             `json:"total"`
+	ByVerdict     map[Verdict]int `json:"by_verdict"`
+	ByStatus      map[Status]int  `json:"by_status"`
+	BySkipReason  map[string]int  `json:"by_skip_reason"`
+}
+
+.: type Target struct {
+	CPE         []string `json:"cpe,omitempty"`
+	Confidence  float64  `json:"confidence,omitempty"`
+	CertSubject string   `json:"cert_subject,omitempty"`
+	ALPN        string   `json:"alpn,omitempty"`
+	TLSVersion  string   `json:"tls_version,omitempty"`
+	Banner      string   `json:"banner,omitempty"`
+	Host        string   `json:"host"`
+	IP          string   `json:"ip,omitempty"`
+	Port        uint16   `json:"port,omitempty"`
+	Protocol    string   `json:"protocol,omitempty"`
+	Product     string   `json:"product,omitempty"`
+	Version     string   `json:"version,omitempty"`
+	Service     string   `json:"service,omitempty"`
+	State       string   `json:"state,omitempty"`
+	TLS         bool     `json:"tls,omitempty"`
+}
+
+.: type Task struct {
+	Capabilities []string `json:"capabilities,omitempty"`
+	Limits       Limits   `json:"limits,omitempty"`
+	Script       Script   `json:"script"`
+	Target       Target   `json:"target"`
+	// contains filtered or unexported fields
+}
+
+.: type Verdict string
+
+.: type VersionInfo struct {
+	Module   string
+	Version  string
+	Commit   string
+	Modified bool
+}
+
+.: var BuildCommit string
+
+.: var BuildVersion string
+
+adapter/pingpp: const SchemaVersion = "pingpp.scan/v1"
+
+adapter/pingpp: func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error)
+
+adapter/pingpp: func NewReader(r io.Reader) *Reader
+
+adapter/pingpp: func Targets(d Document) ([]scribe.Target, error)
+
+adapter/pingpp: type Claim struct {
+	Subject          string   `json:"subject"`
+	Kind             string   `json:"kind"`
+	Product          string   `json:"product"`
+	Value            string   `json:"value"`
+	Version          string   `json:"version"`
+	Confidence       string   `json:"confidence"`
+	ContradictionIDs []string `json:"contradiction_ids"`
+}
+
+adapter/pingpp: type Document struct {
+	SchemaVersion string          `json:"schema_version"`
+	Error         json.RawMessage `json:"error"`
+	Asset         *struct {
+		Endpoints []Endpoint `json:"endpoints"`
+		Claims    []Claim    `json:"claims"`
+	} `json:"asset"`
+}
+
+adapter/pingpp: type Endpoint struct {
+	Address   string `json:"address"`
+	Port      uint16 `json:"port"`
+	Transport string `json:"transport"`
+	State     string `json:"state"`
+	Execution string `json:"execution"`
+}
+
+adapter/pingpp: type Reader struct {
+	// contains filtered or unexported fields
+}
+
+capability/httpcap: func (c *Client) Close()
+
+capability/httpcap: func (c *Client) Function(ctx context.Context, target scribe.Target, args []any) (any, error)
+
+capability/httpcap: func New(options Options) (*Client, error)
+
+capability/httpcap: type Client struct {
+	// contains filtered or unexported fields
+}
+
+capability/httpcap: type Options struct {
+	Timeout      time.Duration
+	MaxBodyBytes int64
+
+	DisableReuse bool
+}
+
+capability/localcap: const MaxBytes = 64 << 10
+
+capability/localcap: const MaxEntries = 1024
+
+capability/localcap: func New(directory string) (map[string]scribe.Function, func() error, error)
+
+capability/tcpcap: func Function(ctx context.Context, target scribe.Target, args []any) (any, error)
+
+compat: const (
+	Pass        Status = "pass"
+	Fail        Status = "fail"
+	Unsupported Status = "unsupported"
+)
+
+compat: func (m Manifest) Validate() error
+
+compat: func (r Report) OK() bool
+
+compat: func LoadManifest(path string) (Manifest, error)
+
+compat: func Run(ctx context.Context, manifest Manifest) (Report, error)
+
+compat: type Case struct {
+	ID     string         `json:"id"`
+	Script string         `json:"script"`
+	SHA256 string         `json:"sha256"`
+	Target scribe.Target  `json:"target"`
+	Args   map[string]any `json:"args,omitempty"`
+	Expect Expect         `json:"expect"`
+}
+
+compat: type Corpus struct {
+	Name                    string `json:"name"`
+	Revision                string `json:"revision,omitempty"`
+	ReferenceNmapVersion    string `json:"reference_nmap_version,omitempty"`
+	ReferenceNmapRevision   string `json:"reference_nmap_revision,omitempty"`
+	ReferenceCorpusRevision string `json:"reference_corpus_revision,omitempty"`
+	PinStatus               string `json:"pin_status,omitempty"`
+}
+
+compat: type Entry struct {
+	ID              string `json:"id"`
+	Script          string `json:"script"`
+	SHA256          string `json:"sha256,omitempty"`
+	ExpectedSHA256  string `json:"expected_sha256,omitempty"`
+	Status          Status `json:"status"`
+	Reason          string `json:"reason"`
+	ExecutionStatus string `json:"execution_status,omitempty"`
+	Error           string `json:"error,omitempty"`
+	Unexpected      bool   `json:"unexpected,omitempty"`
+}
+
+compat: type Expect struct {
+	Status        string          `json:"status"`
+	Data          json.RawMessage `json:"data,omitempty"`
+	ErrorContains string          `json:"error_contains,omitempty"`
+}
+
+compat: type Manifest struct {
+	SchemaVersion int    `json:"schema_version"`
+	Corpus        Corpus `json:"corpus"`
+	Cases         []Case `json:"cases"`
+	BaseDir       string `json:"-"`
+}
+
+compat: type Report struct {
+	SchemaVersion int     `json:"schema_version"`
+	Corpus        Corpus  `json:"corpus"`
+	Summary       Summary `json:"summary"`
+	Results       []Entry `json:"results"`
+}
+
+compat: type Status string
+
+compat: type Summary struct {
+	Total       int `json:"total"`
+	Pass        int `json:"pass"`
+	Fail        int `json:"fail"`
+	Unsupported int `json:"unsupported"`
+	Unexpected  int `json:"unexpected"`
+}
+
+fingerprint: func (m *Matcher) Match(banner string, headers http.Header) Facts
+
+fingerprint: func Default() *Matcher
+
+fingerprint: func New(rules ...Rule) *Matcher
+
+fingerprint: type Facts struct{ Service, Product, Version string }
+
+fingerprint: type Matcher struct {
+	// contains filtered or unexported fields
+}
+
+fingerprint: type Rule struct {
+	Header           string
+	Pattern          *regexp.Regexp
+	Service, Product string
+}
+
+job: func Run(ctx context.Context, engine *scribe.Engine, request Request, resolve Resolver) (Result, error)
+
+job: type Request struct {
+	SchemaVersion int            `json:"schema_version"`
+	ID            string         `json:"id"`
+	ScriptID      string         `json:"script_id"`
+	Source        string         `json:"source,omitempty"`
+	Dialect       scribe.Dialect `json:"dialect"`
+	Args          map[string]any `json:"args,omitempty"`
+	Target        scribe.Target  `json:"target"`
+	Limits        scribe.Limits  `json:"limits"`
+	Capabilities  []string       `json:"capabilities"`
+}
+
+job: type Resolver func(context.Context, string, scribe.Dialect) ([]byte, error)
+
+job: type Result struct {
+	SchemaVersion int             `json:"schema_version"`
+	ID            string          `json:"id"`
+	Report        report.Envelope `json:"report"`
+}
+
+report: func Map(r scribe.Result) Envelope
+
+report: type Envelope struct {
+	SchemaVersion int            `json:"schema_version"`
+	Source        Source         `json:"source"`
+	Assessment    string         `json:"assessment"`
+	Verdict       scribe.Verdict `json:"verdict"`
+	Evidence      scribe.Result  `json:"evidence"`
+}
+
+report: type Source struct {
+	Name   string            `json:"name"`
+	Config map[string]string `json:"config"`
+}
+
+runtime/lua54: const (
+	MaxOutputBytes = 1 << 20
+	MaxValueNodes  = 10_000
+	MaxValueDepth  = 32
+	MaxFindings    = 256
+)
+
+runtime/lua54: func (b *logBuffer) Write(p []byte) (int, error)
+
+runtime/lua54: func (r *runtime) Dialect() scribe.Dialect
+
+runtime/lua54: func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.Output, err error)
+
+runtime/lua54: func Check(script scribe.Script) error
+
+runtime/lua54: func NewNSE(options Options) (scribe.Runtime, error)
+
+runtime/lua54: func NewNative(options Options) (scribe.Runtime, error)
+
+runtime/lua54: type Limits = scribe.Limits
+
+runtime/lua54: type Options struct {
+	Limits    Limits
+	Functions map[string]scribe.Function
+
+	CacheEntries int
+
+	CacheBytes uint64
+}

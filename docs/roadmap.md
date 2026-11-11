@@ -382,3 +382,9 @@ exported-symbol golden detects name removals; it does not yet pin signatures or
 subpackage APIs. Full API documentation audit, expanded pinned Sirius corpus and
 false-clean coverage remain release gates. Phase 3 stays paused. Do not interpret
 this preparation as released v1.0.0 or scanner/agent acceptance.
+
+Signature gate progress: exported declarations now have a separate golden across
+all importable first-party packages, including receiver signatures, struct fields,
+JSON tags and constant expressions. Platform source variants are included.
+`make check` passed on apps01 on 2026-11-11. Full documentation audit and expanded
+pinned fingerprint/false-clean corpus remain outstanding; v1.0.0 is not tagged.
