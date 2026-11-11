@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — v1.2.0
+
+- Add optional real ping++ TCP emitter-to-adapter acceptance.
+- Extend product clean guards to PostgreSQL, MongoDB, Apache, IIS, Exim and Dovecot.
+- Full fingerprint corpus and emitter-to-execution acceptance remain release gates.
+
 ## v1.1.0 — 2026-11-11
 
 - Expand pinned HTTP/FTP/SMTP identities and real-service false-clean guards, including TLS-marked targets.

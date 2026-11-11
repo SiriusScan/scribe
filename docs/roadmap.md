@@ -586,3 +586,27 @@ Follow-up: implement and pin an upstream pingpp.scan/v1 emitter, then exercise r
 scanner cancellation and persisted consumer reports. The existing Scribe adapter
 and CLI remain fixture-tested. Live Sirius/vGPT acceptance is outstanding and
 does not block this release. Phase 3 remains paused.
+
+## v1.2.0 preparation — 2026-11-11
+
+Pushed pingpp branch scribe-v1.2.0-emitter at 2c397a1 and Scribe adapter acceptance at 7bd2f54. Minimal literal-IP TCP emitter bounds targets to 4096 and each connection to 250 ms; failures remain unknown and it emits no identity claims. Optional make acceptance-local check verifies complete adapter consumption from a controlled open socket. Full emitter-to-Lua execution, emitter behavioral tests and requested expanded fingerprint fixtures remain unfinished; no v1.2.0 tag yet. Phase 3 stays paused.
+
+make check and make acceptance-local passed. Service reinstall and smoke-http passed. These are local evidence, not Sirius/vGPT acceptance.
+
+Sequential benchmark after checks, Go linux/amd64 i9-13900H, existing verified 32 x 16 matrix, four workers, count=3:
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/selected=false-4         	     121	  11260203 ns/op	     45470 actions/s	15978040 B/op	  158472 allocs/op
+BenchmarkPlannerExecution/selected=false-4         	     100	  12703621 ns/op	     40303 actions/s	15983690 B/op	  158627 allocs/op
+BenchmarkPlannerExecution/selected=false-4         	     104	   9690278 ns/op	     52836 actions/s	15983371 B/op	  158592 allocs/op
+BenchmarkPlannerExecution/selected=true-4          	     858	   1686555 ns/op	     37947 actions/s	 2212343 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/selected=true-4          	     658	   1658055 ns/op	     38599 actions/s	 2212419 B/op	   21862 allocs/op
+BenchmarkPlannerExecution/selected=true-4          	     793	   1356468 ns/op	     47181 actions/s	 2212399 B/op	   21861 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	11.400s
+```
+Previous v1.0.2 unfiltered 43199/48444/40718 actions/s and selected 40337/47089/45897 overlap these samples; no clear throughput regression established. Deployment started during benchmark completion, so repeat isolated samples before release performance conclusions.

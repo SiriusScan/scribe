@@ -135,3 +135,5 @@ and product-specific false-clean guards across HTTP, SSH, FTP, SMTP and database
 families, including TLS-marked endpoints. TLS alone never identifies a product.
 The ping++ emitter remains a follow-up; use the pinned Scribe adapter fixtures.
 Phase 3 remains paused.
+
+The optional real emitter acceptance uses PINGPP_REPO (default local nested checkout), cmd/pingpp-scan at pingpp commit 2c397a1. It verifies TCP observations through the adapter, not execution or workflow persistence. Phase 3 remains paused.
