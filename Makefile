@@ -47,6 +47,7 @@ cross-compile:
 # Controlled local sockets and SDK fixtures; not a live consumer workflow gate.
 acceptance-local: acceptance
 	go test -race -count=1 ./runtime/lua54 -run TestMarkerCorpus
+	go test -race -count=1 . -run 'Test(CancellationPersistenceAcceptance|NestedMatcherSelection)$$'
 	go test -race -count=1 -v . -run 'Test(PingppSelectionParallelHTTP|HTTPAndTLSProbeCache|DirectSDKProbeOption|SSHListenerAcceptance)$$'
 	go test -race -count=1 ./cmd/scribe -run 'Test(PingppSelection|RealEmitterExecution)$$'
 

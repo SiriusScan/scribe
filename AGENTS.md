@@ -170,3 +170,8 @@ v1.9.0 pins Sirius verdict field types and an original HTTP marker corpus script
 with a SHA-256 fixture assertion. Keep its normal/exhaustive product skip reasons
 and false-clean guards in acceptance-local. This registered-response fixture is
 local API evidence, not upstream corpus or live workflow acceptance. Phase 3 stays paused.
+
+v1.10.0 extends nested all_of/any_of selection coverage and pins original TCP/TLS
+marker scripts alongside HTTP in acceptance-local. Registered responses establish
+Lua bridge/verdict behavior, not socket interoperability. acceptance-local explicitly
+runs the cancellation fake-store EOF/completeness gate. Phase 3 stays paused.

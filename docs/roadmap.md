@@ -822,3 +822,24 @@ cross-compilation, CGO-disabled build and pinned local emitter checks. Registere
 HTTP responses establish Lua API behavior; controlled socket acceptance remains
 separate from live consumer integration. Tagged service installation and /run smoke
 are required as the final operational release step.
+
+## v1.10.0 — nested selection and local acceptance (2026-11-11)
+
+Added nested all_of/any_of product, service, version-boundary and banner cases
+under normal/exhaustive execution. Rejected combinations require skipped status,
+unknown verdict and a reason; accepted combinations require completed clean verdicts.
+Two original MIT TCP/TLS marker scripts join the HTTP script with pinned SHA-256
+digests and the shared three-marker/product/exhaustive matrix. These execute the
+Lua capability bridge with registered responses; they are not real CVE checks
+or additional controlled TLS socket acceptance. Existing socket tests remain separate.
+
+acceptance-local now explicitly runs the repeated cooperative cancellation fake
+consumer store gate: active/queued terminal records, synced disk, reopen and decode
+to EOF, unique complete evidence and inconclusive assessments. This reuses existing
+coverage rather than adding another store. No production bug or API change found.
+
+make check and make acceptance-local passed, including race, vet, CGO-disabled
+build, cross-builds and pinned ping++ emitter checks. Remaining: more executable
+protocol checks over controlled sockets, exact nested skip-reason distinctions,
+and live Sirius/vGPT report persistence. Existing ping++ adapter remains the path;
+no NSE expansion. Phase 3 stays paused. No performance claim.
