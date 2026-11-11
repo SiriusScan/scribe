@@ -79,3 +79,13 @@ installed Sirius acceptance.
 go test -race ./internal/thirdparty/golua/...
 GOTOOLCHAIN=go1.24.1 go test ./internal/thirdparty/golua/runtime -run '^TestScribe'
 ```
+
+## Immutable VM code templates
+
+`runtime/scribe_cache.go` adds `Runtime.BindCode`, which creates a fresh closure
+and environment cell around an immutable VM `Code` graph. Scribe caches only
+compiler-produced constants/code, never closures, tables, grants or invocation
+state. The caller charges retained code memory before binding. Every invocation
+still owns a new runtime, globals, module tables and upvalues. The upstream
+version and Lua 5.4 baseline are unchanged. This fork extension follows the
+upstream Apache-2.0 license.

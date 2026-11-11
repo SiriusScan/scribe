@@ -27,12 +27,17 @@ type Limits = scribe.Limits
 type Options struct {
 	Limits    Limits
 	Functions map[string]scribe.Function
+	// CacheEntries defaults to 128; -1 disables the bounded code/template cache.
+	CacheEntries int
+	// CacheBytes defaults to 16 MiB and bounds retained template accounting.
+	CacheBytes uint64
 }
 
 type runtime struct {
 	dialect   scribe.Dialect
 	limits    Limits
 	functions map[string]scribe.Function
+	cache     programCache
 }
 
 // NewNative creates the version 1 Sirius script profile.
@@ -63,7 +68,16 @@ func newRuntime(dialect scribe.Dialect, options Options) (*runtime, error) {
 		}
 		functions[name] = function
 	}
-	return &runtime{dialect: dialect, limits: limits, functions: functions}, nil
+	if options.CacheEntries < -1 || options.CacheEntries > 4096 {
+		return nil, errors.New("cache entries must be -1 through 4096")
+	}
+	if options.CacheEntries == 0 {
+		options.CacheEntries = 128
+	}
+	if options.CacheBytes == 0 {
+		options.CacheBytes = 16 << 20
+	}
+	return &runtime{dialect: dialect, limits: limits, functions: functions, cache: programCache{entries: options.CacheEntries, ceiling: options.CacheBytes}}, nil
 }
 
 func (r *runtime) Dialect() scribe.Dialect { return r.dialect }
@@ -99,6 +113,18 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 	if task.Limits.Timeout > 0 {
 		limits.Timeout = min(limits.Timeout, task.Limits.Timeout)
 	}
+	ctx, cancel := context.WithTimeout(ctx, limits.Timeout)
+	defer cancel()
+	plan, key, planErr := r.plan(task.Script)
+	if planErr != nil {
+		return output, planErr
+	}
+	if err := ctx.Err(); err != nil {
+		return output, err
+	}
+	if !plan.Matches(task.Target) {
+		return scribe.Output{Skipped: true, SkipReason: "script hints exclude supplied endpoint facts"}, nil
+	}
 	var denied *scribe.CapabilityDeniedError
 	defer func() {
 		if denied != nil {
@@ -106,8 +132,7 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 			output = scribe.Output{}
 		}
 	}()
-	ctx, cancel := context.WithTimeout(ctx, limits.Timeout)
-	defer cancel()
+
 	logs := &logBuffer{}
 	defer func() { output.Logs = string(logs.data); output.LogsTruncated = logs.truncated }()
 	vm := rt.New(logs)
@@ -155,7 +180,7 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		chunk, err := vm.CompileAndLoadLuaChunk(task.Script.ID, task.Script.Source, rt.TableValue(vm.GlobalEnv()))
+		chunk, err := r.load(vm, task.Script, key)
 		if err != nil {
 			return fmt.Errorf("load script: %w", err)
 		}
@@ -296,7 +321,7 @@ func runNative(ctx context.Context, vm *rt.Runtime, task scribe.Task, value rt.V
 			return scribe.Output{}, err
 		}
 		if !matches {
-			return scribe.Output{Skipped: true}, nil
+			return scribe.Output{Skipped: true, SkipReason: "script rule did not match"}, nil
 		}
 	}
 	action := script.Get(rt.StringValue("action"))
