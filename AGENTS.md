@@ -20,3 +20,14 @@ discovery, orchestration queues, persistence, and service fingerprinting in call
   Sirius scanner/agent integration acceptance.
 - Do not upgrade golua beyond v0.1.2 without deliberately reviewing the Lua
   language baseline: later upstream releases target Lua 5.5.
+
+<!-- apps01:surfaces:start -->
+## Development environment
+
+Project: Scribe
+Host: apps01
+
+No development surfaces are assigned.
+
+These assignments document intended access; they do not provision credentials or enforce infrastructure permissions. Keep secrets outside the repository. Use credential references, inspect shared resources, and avoid interrupting other projects.
+<!-- apps01:surfaces:end -->
