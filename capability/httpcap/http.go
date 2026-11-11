@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/SiriusScan/scribe"
@@ -25,15 +26,20 @@ const (
 type Options struct {
 	Timeout      time.Duration
 	MaxBodyBytes int64
+	// DisableReuse forces a fresh connection for each request.
+	DisableReuse bool
 }
 
 // Client grants GET requests only to the endpoint supplied by the caller.
-// Connections are not reused, so changing a target's fixed IP can never reuse a
-// connection to another IP under the same logical hostname.
+// Reusable connections are partitioned by logical authority, fixed IP and TLS.
 type Client struct {
 	client       *http.Client
 	transport    *http.Transport
 	maxBodyBytes int64
+	mu           sync.Mutex
+	pools        map[string]*endpointPool
+	closed       bool
+	disableReuse bool
 }
 
 type dialAddressKey struct{}
@@ -56,8 +62,9 @@ func New(options Options) (*Client, error) {
 	dialer := &net.Dialer{Timeout: options.Timeout, KeepAlive: -1}
 	transport := &http.Transport{
 		// A nil Proxy deliberately ignores HTTP_PROXY and HTTPS_PROXY.
-		Proxy:                  nil,
-		DisableKeepAlives:      true,
+		Proxy:             nil,
+		DisableKeepAlives: options.DisableReuse,
+		MaxIdleConns:      2, MaxIdleConnsPerHost: 2, MaxConnsPerHost: 32,
 		DisableCompression:     true,
 		TLSHandshakeTimeout:    options.Timeout,
 		ResponseHeaderTimeout:  options.Timeout,
@@ -84,12 +91,19 @@ func New(options Options) (*Client, error) {
 		},
 		transport:    transport,
 		maxBodyBytes: options.MaxBodyBytes,
+		pools:        make(map[string]*endpointPool), disableReuse: options.DisableReuse,
 	}, nil
 }
 
 // Close releases any idle transport resources. It does not cancel active calls.
 func (c *Client) Close() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.closed = true
 	c.transport.CloseIdleConnections()
+	for _, p := range c.pools {
+		p.transport.CloseIdleConnections()
+	}
 }
 
 // Function implements scribe.Function for the "http.get" capability. Its single
@@ -136,7 +150,12 @@ func (c *Client) Function(ctx context.Context, target scribe.Target, args []any)
 	if err != nil {
 		return nil, fmt.Errorf("create HTTP request: %w", err)
 	}
-	resp, err := c.client.Do(req)
+	client, release, err := c.acquire(u.Scheme + "://" + u.Host + "/" + connectionHost)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request: %w", err)
 	}
@@ -180,3 +199,51 @@ func originPath(path string) (*url.URL, error) {
 }
 
 var _ scribe.Function = (*Client)(nil).Function
+
+// endpointPool owns a transport for exactly one connection identity. Active
+// pools are never evicted; admission fails conservatively at the finite bound.
+type endpointPool struct {
+	transport *http.Transport
+	client    *http.Client
+	active    int
+}
+
+func (c *Client) acquire(key string) (*http.Client, func(), error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.closed {
+		return nil, nil, fmt.Errorf("HTTP client is closed")
+	}
+	if c.disableReuse {
+		return c.client, func() {}, nil
+	}
+	p := c.pools[key]
+	if p == nil {
+		if len(c.pools) >= 64 {
+			for k, old := range c.pools {
+				if old.active == 0 {
+					old.transport.CloseIdleConnections()
+					delete(c.pools, k)
+					break
+				}
+			}
+			if len(c.pools) >= 64 {
+				return nil, nil, fmt.Errorf("HTTP endpoint pool limit exceeded")
+			}
+		}
+		transport := c.transport.Clone()
+		client := *c.client
+		client.Transport = transport
+		p = &endpointPool{transport: transport, client: &client}
+		c.pools[key] = p
+	}
+	p.active++
+	return p.client, func() {
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		p.active--
+		if c.closed {
+			p.transport.CloseIdleConnections()
+		}
+	}, nil
+}

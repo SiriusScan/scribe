@@ -225,3 +225,63 @@ func TestOptionValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestReuseAndFixedIPPartition(t *testing.T) {
+	var connections atomic.Int64
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write([]byte("ok")) }))
+	server.Config.ConnState = func(_ net.Conn, state http.ConnState) {
+		if state == http.StateNew {
+			connections.Add(1)
+		}
+	}
+	server.Start()
+	defer server.Close()
+	target := fixtureTarget(t, server.URL)
+	target.IP = target.Host
+	target.Host = "logical.invalid"
+	c := newClient(t, Options{})
+	for range 3 {
+		if _, err := c.Function(context.Background(), target, []any{"/"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if connections.Load() != 1 {
+		t.Fatalf("connections=%d", connections.Load())
+	}
+	// Same logical hostname and port with a changed fixed IP must dial anew.
+	target.IP = "127.0.0.2"
+	if _, err := c.Function(context.Background(), target, []any{"/"}); err == nil {
+		t.Fatal("reused previous fixed IP connection")
+	}
+	c.Close()
+	if _, err := c.Function(context.Background(), target, []any{"/"}); err == nil {
+		t.Fatal("closed client accepted request")
+	}
+}
+
+func TestEndpointPoolBound(t *testing.T) {
+	c := newClient(t, Options{})
+	var releases []func()
+	for i := 0; i < 64; i++ {
+		_, release, err := c.acquire(strconv.Itoa(i))
+		if err != nil {
+			t.Fatal(err)
+		}
+		releases = append(releases, release)
+	}
+	if _, _, err := c.acquire("overflow"); err == nil {
+		t.Fatal("unbounded pools")
+	}
+	releases[0]()
+	_, release, err := c.acquire("replacement")
+	if err != nil {
+		t.Fatal(err)
+	}
+	release()
+	for _, r := range releases[1:] {
+		r()
+	}
+	if len(c.pools) != 64 {
+		t.Fatalf("pool count %d", len(c.pools))
+	}
+}
