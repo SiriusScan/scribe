@@ -7,9 +7,9 @@ Use it as a Go module inside an endpoint agent or scanner, or run the same engin
 through the `scribe` CLI. It does not discover hosts, scan port ranges, fingerprint
 services, consume job queues, or persist findings.
 
-This is an initial working foundation. The native Sirius dialect and experimental
-NSE profile have distinct contracts. **Full Nmap NSE compatibility is a roadmap
-goal and has not been established.** See the [compatibility contract](docs/compatibility.md).
+Version v0.2.0 provides an importable SDK. The native Sirius dialect and experimental
+NSE profile have distinct contracts. **Full Nmap NSE compatibility has not been established; native Sirius capabilities
+are the development priority.** See the [compatibility contract](docs/compatibility.md).
 
 ## Two script dialects
 
@@ -227,3 +227,25 @@ existing selection. Only attempted confirmed-open endpoints are scheduled;
 strong/exact endpoint claims supply unambiguous service/product/version facts.
 No eligible endpoints means no results, never a clean assessment. Upstream target
 errors fail the stream. Input is bounded to 4 MiB/document and 65536 documents.
+
+## Go SDK v0.2.0
+
+Import `github.com/SiriusScan/scribe` for `Options`, `New`, tasks and results.
+Register an explicit runtime from `runtime/lua54`; the root package has no CLI
+flags, logging side effects or interpreter types. `Engine.Run` accepts tasks and a
+serial callback; `Batch` collects results in completion order; `Stream` consumes
+endpoint facts with bounded lookahead and smart selection. `RunSelected` handles
+a known endpoint slice. Existing entry points remain supported.
+
+See [executable godoc examples](sdk_example_test.go) for a single invocation,
+ping++ JSONL batch input, and selection with skip reasons. `adapter/pingpp`
+preserves supplied endpoint claims; it does no fingerprinting. Producers own
+blocking input interruption. Pass a context to every run; inspect both the
+returned error and every record's status/verdict. Unsupported calls and selection
+skips remain unknown. A callback failure can prevent terminal delivery.
+
+The public extension contracts are `Runtime` and `Function`; capabilities and
+adapters remain opt-in packages. Selection metadata is private implementation.
+The local [integration test](sdk_integration_test.go) feeds a pinned JSONL fixture
+through selection and parallel HTTP execution and checks unsupported coverage.
+This is SDK fixture evidence, not full Sirius scanner/agent acceptance.

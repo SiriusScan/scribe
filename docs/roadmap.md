@@ -20,7 +20,7 @@ at this repository until a tagged release exists); `make acceptance`, part of
 `make check` and CI, runs it. This is build/SDK evidence only, not Sirius
 scanner or endpoint-agent integration acceptance.
 
-## 1. Measured NSE compatibility
+## 1. Experimental NSE profile (coverage expansion deferred)
 
 - Select exact Nmap version and external Sirius NSE corpus revision; audit their
   distribution constraints separately from the MIT engine.
@@ -220,3 +220,16 @@ planning needs richer Scribe facts, rather than additional ping++ discovery.
 Fixtures and CLI tests cover mapping, conservative omissions, errors, cancellation
 and hint-based skips. `make check` provides in-repository build/test evidence;
 real ping++ to Sirius workflow acceptance remains outstanding.
+
+## v0.2.0 library polish
+
+Delivered: root SDK options and Run/Batch/Stream entry points, context-aware
+bounded scheduling, executable single/batch/selection examples, and ping++ JSONL
+selection through parallel local HTTP fixtures. Unsupported API errors and
+selection exclusions remain unknown with execution status preserved. Internal
+selection metadata no longer expands the public API.
+
+Next: extend native Sirius capabilities with pinned fixtures as scanner and agent
+needs arise. Do not pursue NSE library coverage. Release checks and service smoke
+tests establish build and local transport evidence only; full vGPT and endpoint
+agent workflow acceptance remains a separate gate.

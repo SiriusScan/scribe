@@ -1,0 +1,1 @@
+{"schema_version":"pingpp.scan/v1","asset":{"endpoints":[{"address":"127.0.0.1","port":PORT,"transport":"tcp","state":"open","execution":"attempted"}],"claims":[{"subject":"127.0.0.1/tcp/PORT","kind":"service","value":"http","confidence":"exact"}]}}

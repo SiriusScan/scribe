@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// Hints are optional selection alternatives. Protocol constrains all alternatives.
-type Hints struct {
+// selectionHints are optional selection alternatives. Protocol constrains all alternatives.
+type selectionHints struct {
 	Services  []string `json:"services"`
 	Products  []string `json:"products"`
 	Ports     []uint16 `json:"ports"`
@@ -16,7 +16,7 @@ type Hints struct {
 }
 type indexedScript struct {
 	script Script
-	hints  Hints
+	hints  selectionHints
 }
 
 // Index caches script-declared metadata and owns a snapshot of source bytes.
@@ -30,7 +30,7 @@ func NewIndex(scripts []Script) (*Index, error) {
 		if s.ID == "" || len(s.Source) == 0 || len(s.Source) > MaxSourceBytes || (s.Dialect != Sirius && s.Dialect != NSE) {
 			return nil, fmt.Errorf("invalid script %q", s.ID)
 		}
-		var h Hints
+		var h selectionHints
 		found := false
 		for _, line := range strings.Split(string(s.Source), "\n") {
 			line = strings.TrimSpace(line)
@@ -59,7 +59,7 @@ func contains(values []string, value string) bool {
 	}
 	return false
 }
-func (h Hints) matches(t Target) bool {
+func (h selectionHints) matches(t Target) bool {
 	if t.Protocol != "" && len(h.Protocols) > 0 && !contains(h.Protocols, t.Protocol) {
 		return false
 	}
