@@ -47,7 +47,10 @@ func (c *testCollector) FinalizerCount() int {
 
 // Replace the Go runtime.SetFinalizer function with the testCollector version,
 // for testing of UnsafePool.
-func installTestCollector() *testCollector {
+func installTestCollector(t *testing.T) *testCollector {
+	t.Helper()
+	original := setFinalizer
+	t.Cleanup(func() { setFinalizer = original })
 	c := &testCollector{
 		pending: make(map[interface{}]func(Value)),
 	}
@@ -57,7 +60,7 @@ func installTestCollector() *testCollector {
 
 func TestUnsafePoolFinalize(t *testing.T) {
 	const nObjs = 100
-	c := installTestCollector()
+	c := installTestCollector(t)
 	p := NewUnsafePool()
 	objs := make([]Value, nObjs)
 	ws := make([]WeakRef, nObjs/2)
@@ -82,8 +85,11 @@ func TestUnsafePoolFinalize(t *testing.T) {
 		p.Mark(n, Finalize)
 	}
 
-	// In the "GC thread", go collect all the objs in reverse index order.
+	// Join the simulated collector before starting another collection cycle.
+	// Extracting the last pending value does not mean its producer has returned.
+	collected := make(chan struct{})
 	go func() {
+		defer close(collected)
 		for j := nObjs - 1; j >= 0; j-- {
 			c.GC(objs[j])
 		}
@@ -100,6 +106,8 @@ func TestUnsafePoolFinalize(t *testing.T) {
 			j -= 2
 		}
 	}
+
+	<-collected
 
 	// All weakrefs are still alive because the pool cleared their resurrected
 	// and reinstalled a finalizer for them.
@@ -149,7 +157,7 @@ func TestUnsafePoolFinalize(t *testing.T) {
 
 func TestUnsafePoolRelease(t *testing.T) {
 	const nObjs = 100
-	c := installTestCollector()
+	c := installTestCollector(t)
 	p := NewUnsafePool()
 	objs := make([]Value, nObjs)
 	ws := make([]WeakRef, nObjs/2)
@@ -174,8 +182,11 @@ func TestUnsafePoolRelease(t *testing.T) {
 		p.Mark(n, Release)
 	}
 
-	// In the "GC thread", go collect all the objs in reverse index order.
+	// Join the simulated collector before starting another collection cycle.
+	// Extracting the last pending value does not mean its producer has returned.
+	collected := make(chan struct{})
 	go func() {
+		defer close(collected)
 		for j := nObjs - 1; j >= 0; j-- {
 			c.GC(objs[j])
 		}
@@ -192,6 +203,8 @@ func TestUnsafePoolRelease(t *testing.T) {
 			j -= 2
 		}
 	}
+
+	<-collected
 
 	// All weakrefs are still alive because the pool cleared their resurrected
 	// and reinstalled a finalizer for them.
@@ -242,7 +255,7 @@ func TestUnsafePoolRelease(t *testing.T) {
 func TestUnsafePoolFinalizeRelease(t *testing.T) {
 
 	// We're testing how finalize + release interact.
-	c := installTestCollector()
+	c := installTestCollector(t)
 	p := NewUnsafePool()
 	n := newIntPtr(1)
 	p.Mark(n, Finalize|Release)

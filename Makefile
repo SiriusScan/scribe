@@ -13,8 +13,9 @@ acceptance:
 	cd examples/external && go test -race ./... && go vet ./...
 compat:
 	go run ./cmd/scribe-compat --manifest compat/manifest.json --out compat/report.json
-check: test acceptance
+check: test acceptance cross-compile
 	go vet ./...
+	CGO_ENABLED=0 go build -o /tmp/scribe-check ./cmd/scribe
 
 .PHONY: install
 install: build
@@ -41,5 +42,3 @@ cross-compile:
 		CGO_ENABLED=0 GOOS=$$platform GOARCH=amd64 go build -o "$$tmp/scribe-$$platform" ./cmd/scribe; \
 	done
 
-check: cross-compile
-	CGO_ENABLED=0 go build -o /tmp/scribe-check ./cmd/scribe

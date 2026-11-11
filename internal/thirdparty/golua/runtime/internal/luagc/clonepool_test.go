@@ -49,7 +49,7 @@ func TestClonePoolGC(t *testing.T) {
 	// fact that GC normally happens in a separate goroutine.  As all operations
 	// on the pool are protected by a mutex, this should still be a valuable
 	// test.
-	c := installTestCollector()
+	c := installTestCollector(t)
 	p := NewClonePool()
 
 	n1 := newIntPtr(1)

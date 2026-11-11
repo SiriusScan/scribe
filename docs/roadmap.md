@@ -139,3 +139,21 @@ capability panics, endpoint errors and CPU/I/O waits alongside healthy siblings.
 Windows and Darwin amd64 CLI cross-builds are part of `make check`; these are
 build evidence only. Actual platform runtime and Sirius integration acceptance
 remain outstanding.
+
+Next ordered backlog (supersedes the phase ordering above):
+
+1. Declarative per-script match blocks: product/CPE, version range, protocol,
+   minimum confidence, and `on_unknown = run|probe|skip`. A Go planner decides
+   before building any Lua VM. Ports order work and never exclude scripts;
+   every skip records a reason.
+2. False-clean guard: `not_vulnerable` must cite product identification, enforced
+   by `--check`. Add cheap cached fingerprint probes for unknown facts and an
+   exhaustive mode that measures planner misses.
+3. Benchmark-driven engine work: streaming targets, per-host concurrency/rates,
+   host error budgets, host-spray/script-spray strategies, connection reuse, and
+   compile/VM caching. Skipped pairs currently cost 34–53 us because each builds
+   a VM; use the benchmark harness to guide changes.
+4. Adapt ping++ `pingpp.scan/v1` output (ping++ PR #1 branch) to Scribe facts.
+
+Phase 3 endpoint-agent work is paused: the SDK side has landed; remaining work
+belongs in app-agent.
