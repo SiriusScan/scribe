@@ -164,15 +164,26 @@ const (
 
 // Result reports execution status independently of vulnerability status.
 type Result struct {
-	PlannerMiss   bool    `json:"planner_miss,omitempty"`
-	SchemaVersion int     `json:"schema_version"`
-	ScriptID      string  `json:"script_id"`
-	ScriptSHA256  string  `json:"script_sha256"`
-	Dialect       Dialect `json:"dialect"`
-	Target        Target  `json:"target"`
-	Status        Status  `json:"status"`
-	Verdict       Verdict `json:"verdict"`
-	Output        Output  `json:"output"`
-	Error         string  `json:"error,omitempty"`
-	ElapsedMS     int64   `json:"elapsed_ms"`
+	// PlannerMiss reports a completed explicit verdict from an exhaustively run, planner-excluded task. False means no such evidence; it is not a verdict.
+	PlannerMiss bool `json:"planner_miss,omitempty"`
+	// SchemaVersion identifies the execution record schema. Engine records use 1; zero is an uninitialized record, not a supported schema.
+	SchemaVersion int `json:"schema_version"`
+	// ScriptID copies the caller-supplied script identifier. Empty means no identifier was supplied.
+	ScriptID string `json:"script_id"`
+	// ScriptSHA256 is the lowercase hexadecimal SHA-256 digest of the executed source bytes. Empty means no digest was recorded.
+	ScriptSHA256 string `json:"script_sha256"`
+	// Dialect records the explicitly selected script contract. Empty is unspecified and never selects a fallback.
+	Dialect Dialect `json:"dialect"`
+	// Target preserves endpoint facts associated with this execution. Its zero value has no valid host.
+	Target Target `json:"target"`
+	// Status records execution completion independently of Verdict. Empty is uninitialized and cannot establish successful execution.
+	Status Status `json:"status"`
+	// Verdict records the conservative assessment. Empty or unknown is inconclusive; only completed explicit verdicts establish a conclusion.
+	Verdict Verdict `json:"verdict"`
+	// Output preserves script data, findings, logs and skip evidence. Its zero value contains no evidence.
+	Output Output `json:"output"`
+	// Error describes an execution failure. Empty means no error text was recorded and does not establish a clean verdict.
+	Error string `json:"error,omitempty"`
+	// ElapsedMS is elapsed execution time in whole milliseconds. Zero includes unmeasured terminal queue records and executions shorter than one millisecond.
+	ElapsedMS int64 `json:"elapsed_ms"`
 }

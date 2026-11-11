@@ -27,3 +27,13 @@ func ExampleSummarize() {
 	summary := Summarize(Deduplicate(results))
 	_ = summary.ByVerdict[Unknown]
 }
+
+// Uninitialized records must remain inconclusive, including forged clean verdicts.
+func TestSummaryUninitializedResult(t *testing.T) {
+	for _, r := range []Result{{}, {Verdict: NotVulnerable}, {Status: Failed, Verdict: Vulnerable}, {Status: Cancelled, Verdict: NotVulnerable}} {
+		s := Summarize([]Result{r})
+		if s.SchemaVersion != 1 || s.Type != "summary" || s.Total != 1 || s.ByStatus[r.Status] != 1 || s.ByVerdict[Unknown] != 1 || s.ByVerdict[NotVulnerable] != 0 || s.ByVerdict[Vulnerable] != 0 {
+			t.Fatalf("uninitialized or unsuccessful record promoted: %+v", s)
+		}
+	}
+}

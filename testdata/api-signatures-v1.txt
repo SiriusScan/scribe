@@ -162,17 +162,27 @@
 }
 
 .: type Result struct {
-	PlannerMiss   bool    `json:"planner_miss,omitempty"`
-	SchemaVersion int     `json:"schema_version"`
-	ScriptID      string  `json:"script_id"`
-	ScriptSHA256  string  `json:"script_sha256"`
-	Dialect       Dialect `json:"dialect"`
-	Target        Target  `json:"target"`
-	Status        Status  `json:"status"`
-	Verdict       Verdict `json:"verdict"`
-	Output        Output  `json:"output"`
-	Error         string  `json:"error,omitempty"`
-	ElapsedMS     int64   `json:"elapsed_ms"`
+	PlannerMiss bool `json:"planner_miss,omitempty"`
+
+	SchemaVersion int `json:"schema_version"`
+
+	ScriptID string `json:"script_id"`
+
+	ScriptSHA256 string `json:"script_sha256"`
+
+	Dialect Dialect `json:"dialect"`
+
+	Target Target `json:"target"`
+
+	Status Status `json:"status"`
+
+	Verdict Verdict `json:"verdict"`
+
+	Output Output `json:"output"`
+
+	Error string `json:"error,omitempty"`
+
+	ElapsedMS int64 `json:"elapsed_ms"`
 }
 
 .: type Runtime interface {

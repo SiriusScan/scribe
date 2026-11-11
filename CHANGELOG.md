@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Begin field-level API audit with Result godoc and conservative handling tests for uninitialized and unsuccessful execution records. Full audit remains a v1.0.0 release gate.
+
 ## v0.9.0
 
 - Add SDK evidence deduplication and conservative summary counts; expose --summary in CLI and /run.

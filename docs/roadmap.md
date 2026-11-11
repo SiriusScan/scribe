@@ -410,3 +410,22 @@ is not eligible. Release version is v0.9.1. Phase 3 stays paused.
 `make check` passed race tests, external SDK acceptance, Windows/Darwin CLI
 cross-compilation, vet and CGO-disabled CLI build on apps01. These checks are
 build/local execution evidence, not scanner/agent or vGPT integration acceptance.
+
+Field audit chunk 1 (2026-11-11): documented every Result field, including schema,
+source digest, execution status versus verdict, planner misses, and elapsed
+milliseconds/zero behavior. Added conservative summary coverage for uninitialized,
+failed and cancelled records carrying explicit verdicts. The signature golden
+change is whitespace only; declarations and JSON tags are unchanged.
+
+Remaining release audit: Target, Script, Limits (numeric defaults and nonpositive
+behavior), CapabilityDeniedError, Task, Finding, Verdict/Status zero semantics,
+Output, Summary, Match, Options, Plan, Module, Event, VersionInfo, and exported
+fields in adapter/pingpp, capability/httpcap, capability/localcap,
+capability/tcpcap, compat, fingerprint, job, report and runtime/lua54. Each needs
+implementation and existing-test review for meaning, units, defaults and zero
+behavior, with focused tests for uncovered behavior. Types without exported
+fields still need zero-value/API documentation review. v1.0.0 remains untagged;
+service deployment is deferred until that gate is complete. Phase 3 stays paused.
+Validation for chunk 1: `make check` passed on apps01 (race suite, external SDK
+acceptance, Windows/Darwin cross-compilation, vet and CGO-disabled CLI build).
+This is build/local execution evidence, not scanner/agent integration acceptance.
