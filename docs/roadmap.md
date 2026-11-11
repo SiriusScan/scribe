@@ -709,3 +709,57 @@ ok  	github.com/SiriusScan/scribe/runtime/lua54	2.700s
 Remaining: broader combined matcher matrices, module-limit throughput comparisons,
 longer bounded fuzz campaigns, and live Sirius/vGPT cancellation/persistence
 acceptance. Phase 3 remains paused. Local checks do not establish live integration.
+
+## v1.6.0 — matcher matrices and bounded measurements (2026-11-11)
+
+Added a combined Cartesian matrix across product, service, CPE, inclusive and
+excluded/missing versions, advisory matching/nonmatching ports, script dialect,
+and exhaustive policy. Stub runtimes isolate planner/false-clean policy; the NSE
+axis establishes conservative verdict handling, not upstream compatibility.
+Skipped records require reasons; no runtime/API or NSE expansion.
+
+Reused BenchmarkPlannerExecution with ModuleConcurrency=0 and 1, four workers,
+32 scripts × 16 endpoints, verified action values and complete terminal counts.
+Selected runs execute 64 actions and skip 448; unfiltered runs execute 512.
+Go 1.26.10 linux/amd64, i9-13900H, shared apps01. Samples ran sequentially after
+checks and fuzzing, without overlapping Scribe load. Other host activity remains
+uncontrolled. Overlapping timing samples establish no speedup or regression;
+this CPU fixture does not predict network workloads or module-limit fairness.
+
+Command: go test ./runtime/lua54 -run '^$' -bench BenchmarkPlannerExecution -benchmem -count=3.
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	     100	  10377540 ns/op	     49337 actions/s	15986224 B/op	  158604 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	     122	  11593530 ns/op	     44163 actions/s	15981293 B/op	  158512 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	     100	  10491460 ns/op	     48802 actions/s	15983856 B/op	  158636 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     814	   1565394 ns/op	     40884 actions/s	 2212278 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     628	   1690638 ns/op	     37856 actions/s	 2212374 B/op	   21862 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     868	   1321300 ns/op	     48437 actions/s	 2212301 B/op	   21860 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	     100	  13099761 ns/op	     39085 actions/s	15974292 B/op	  158424 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	     100	  10294101 ns/op	     49737 actions/s	15972266 B/op	  158412 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	     100	  10551238 ns/op	     48525 actions/s	15973002 B/op	  158412 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     885	   1704182 ns/op	     37555 actions/s	 2212367 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     849	   1497543 ns/op	     42737 actions/s	 2212322 B/op	   21860 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     842	   1627014 ns/op	     39336 actions/s	 2212359 B/op	   21860 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	19.259s
+```
+
+Longer bounded campaigns, sequential, each with -race -fuzztime=120s -parallel=4:
+FuzzParallelPlanner passed 30,666 executions; FuzzMixedFailures passed 143,604.
+These bounded campaigns do not establish absence of defects.
+
+make check and make acceptance-local passed, including real pinned ping++
+emitter-to-Lua execution over controlled sockets. Docker lists healthy local
+Sirius databases/brokers and running API/UI containers, but the accessible
+app-scanner-seams source has no Scribe execution path. No live correlated Sirius
+job, cancellation, or report-store persistence acceptance is claimed. Those
+require consumer wiring and a controlled workflow/report retrieval contract.
+Local fake-store acceptance remains separate. Phase 3 stays paused.
+
+Release deployment: reinstall tagged v1.6.0 on apps01 and require make smoke-http
+for completed explicit three-verdict records and the TCP banner fixture.

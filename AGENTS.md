@@ -148,3 +148,10 @@ v1.5.0 adds per-run ModuleConcurrency keyed by exact dialect and script ID;
 zero uses global concurrency. Retain bounded active-only module accounting and
 host/global pacing. examples/embed documents cooperative deadlines and limits.
 Phase 3 remains paused.
+
+v1.6.0 broadens combined matcher/dialect policy matrices and reuses the verified
+executed-Lua benchmark with ModuleConcurrency 0/1. Preserve complete counts and
+action outputs; shared-host samples make no speedup claim. Planner and mixed
+failure fuzz campaigns run sequentially with race instrumentation and finite
+budgets. Live Sirius workflow persistence remains separate from pinned real
+ping++ emitter-to-Lua local acceptance. Phase 3 stays paused.

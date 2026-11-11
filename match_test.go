@@ -63,7 +63,7 @@ func TestMatchCleanGate(t *testing.T) {
 func TestServiceCorpusFalseClean(t *testing.T) {
 	for _, product := range []string{"Caddy", "OpenResty", "OpenSSH", "Dropbear", "vsftpd", "Pure-FTPd", "Postfix", "Sendmail", "MySQL", "MariaDB", "Redis", "PostgreSQL", "MongoDB", "Apache", "IIS", "Exim", "Dovecot", "ProFTPD", "lighttpd", "Tomcat", "Jetty"} {
 		for _, exhaustive := range []bool{false, true} {
-			e, err := New(Options{StrictIdentification: true, Exhaustive: exhaustive}, cleanMatchRuntime{})
+			e, err := New(Options{StrictIdentification: true, Exhaustive: exhaustive}, cleanMatchRuntime{}, matrixNSERuntime{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -95,6 +95,46 @@ func TestCombinedMatchBoundaries(t *testing.T) {
 			}
 			if !valid && (r.Verdict != Unknown || (!exhaustive && r.Output.SkipReason == "")) {
 				t.Fatalf("%+v", r)
+			}
+		}
+	}
+}
+
+type matrixNSERuntime struct{ cleanMatchRuntime }
+
+func (matrixNSERuntime) Dialect() Dialect { return NSE }
+
+func TestCombinedMatcherMatrix(t *testing.T) {
+	source := []byte(`-- scribe: {"match":{"ports":[80],"services":["http"],"products":["Acme"],"min_version":"1.2.0","max_version":"2.0.0","cpe":["cpe:/a:acme:server"]}}`)
+	for _, exhaustive := range []bool{false, true} {
+		e, err := New(Options{StrictIdentification: true, Exhaustive: exhaustive}, cleanMatchRuntime{}, matrixNSERuntime{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, product := range []string{"Acme", "", "Other"} {
+			for _, service := range []string{"http", "ssh"} {
+				for _, cpe := range []string{"cpe:/a:acme:server", "cpe:/a:other:server"} {
+					for _, version := range []string{"1.2.0", "2.0.0", "3.0.0", ""} {
+						for _, port := range []uint16{80, 999} {
+							for _, dialect := range []Dialect{Sirius, NSE} {
+								r := e.execute(context.Background(), Task{Script: Script{ID: "matrix", Dialect: dialect, Source: source}, Target: Target{Host: "fixture.invalid", Product: product, Service: service, CPE: []string{cpe}, Version: version, Port: port}})
+								valid := dialect == Sirius && product == "Acme" && service == "http" && cpe == "cpe:/a:acme:server" && (version == "1.2.0" || version == "2.0.0")
+								if valid {
+									if r.Verdict != NotVulnerable || r.Status != Completed {
+										t.Fatalf("%+v", r)
+									}
+								} else {
+									if r.Verdict != Unknown {
+										t.Fatalf("false clean: %+v", r)
+									}
+									if r.Status == Skipped && r.Output.SkipReason == "" {
+										t.Fatalf("missing reason: %+v", r)
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
