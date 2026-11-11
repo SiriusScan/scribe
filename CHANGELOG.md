@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.1 — 2026-11-11
+
+- Stop redundant script-spray scheduling scans after the first eligible task.
+- Report verified executed-Lua actions/s and add bounded planner/engine fuzz coverage.
+- Record raw measurements and remaining post-v1 work; Phase 3 stays paused.
+
 ## v1.0.0 — 2026-11-11
 
 - Complete the exported-field audit across the SDK, adapters, capabilities, jobs, reports, compatibility tools and Lua runtime; document units, defaults and zero behavior.

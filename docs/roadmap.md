@@ -433,3 +433,50 @@ Phase 3 stays paused.
 Validation: `make check` passed on apps01 on 2026-11-11, including the race
 suite, external SDK acceptance, Windows/Darwin cross-compilation, vet and
 CGO-disabled CLI build.
+
+## v1.0.1 post-release hardening (2026-11-11)
+
+v1.0.0 is tagged and installed; earlier preparation status above is historical.
+Phase 3 endpoint-agent work remains paused.
+
+Extended the existing executed-Lua benchmark rather than adding a duplicate:
+BenchmarkPlannerExecution now reports actions/s, with 32 original local modules
+× 16 supplied endpoints, four workers, 100 additions per action and verified
+5050 outputs. Unfiltered executes 512 actions; selection executes 64 and emits
+448 skips. Warm bounded caches, Go 1.26.10 linux/amd64, i9-13900H.
+Command: go test ./runtime/lua54 -run '^$' -bench BenchmarkPlannerExecution -benchmem -count=3.
+
+CPU profiling attributed 13.55% cumulative samples to Engine.run. Its script-spray
+admission scanned the entire pending window even after finding the first eligible
+task. Stop immediately at that task; host-spray still scans for fairness.
+Existing scheduling tests cover ordering and host constraints. This fixes redundant
+scheduler work without sharing interpreter states or changing public declarations.
+VM table initialization/allocation remains a larger runtime cost.
+
+Unprofiled unfiltered before: 10.861/10.058/11.115 ms per 512 actions;
+after: 12.931/11.393/11.160 ms, 39595/44938/45880 actions/s,
+16.153–16.160 MB/op and 162165–162208 allocations/op.
+Selected after: 1.304/1.788/1.248 ms, 49067/35795/51291 actions/s,
+2.234 MB/op, 22308–22310 allocations/op. These samples do not establish
+an end-to-end speedup. Earlier samples overlapped fuzzing and were discarded.
+Further optimization needs allocation profiles and isolated repeat measurements;
+do not introduce live VM pooling based on these results.
+
+FuzzParallelPlanner bounds matrices to 16 × 16, executes real actions through
+shared runtime caches and checks conservative verdicts, outputs, terminal counts,
+skip reasons and cancellation. Its seeds run under make check's race suite.
+A 10-second fuzz campaign passed 5394 executions; a race-instrumented five-second
+campaign passed while processing the accumulated seed corpus.
+
+Next unfinished work:
+- Profile VM library/table initialization allocations and measure a safe reduction
+  while retaining invocation isolation and finite accounting.
+- Broaden planner/engine fuzzing to mixed errors, grants and sink failures, with
+  longer scheduled campaigns.
+- Validate real app-scanner/ping++/vGPT cancellation and report persistence.
+  Local benchmarks, cross-builds and HTTP smoke checks do not establish this.
+- Keep Phase 3 paused; extend native capabilities only for demonstrated needs.
+
+Validation: make check passed, including go test -race ./..., external SDK
+acceptance, Windows/Darwin cross-builds, go vet ./... and CGO-disabled CLI build.
+Service installation and POST /run smoke results are reported with delivery.

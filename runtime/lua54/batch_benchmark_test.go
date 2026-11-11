@@ -108,6 +108,11 @@ func BenchmarkPlannerExecution(b *testing.B) {
 					b.Fatalf("completed=%d records=%d err=%v", completed, records, err)
 				}
 			}
+			actions := 512.0
+			if selected {
+				actions = 64
+			}
+			b.ReportMetric(actions*float64(b.N)/b.Elapsed().Seconds(), "actions/s")
 		})
 	}
 }

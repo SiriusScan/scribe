@@ -106,3 +106,10 @@ Corpus metadata lint fails missing match blocks under the default strict test; i
 Public API declarations are pinned in testdata/api-signatures-v1.txt across
 importable first-party packages, including platform source variants. Update with
 SCRIBE_UPDATE_API=1 only after compatibility review. Phase 3 remains paused.
+
+Post-v1 hardening: reuse BenchmarkPlannerExecution for the 32 × 16 executed-Lua
+matrix; report verified actions/s and raw samples, and avoid performance claims
+from runs overlapping fuzz/load work. Script-spray stops at its first eligible
+pending task; host-spray retains its fairness scan. FuzzParallelPlanner seeds run
+in the race suite; run explicit bounded fuzz campaigns for planner/engine changes.
+Phase 3 remains paused.
