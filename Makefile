@@ -1,7 +1,7 @@
 VERSION ?= $(shell git describe --tags --always)
 COMMIT := $(shell git rev-parse HEAD)
 PREFIX ?= /usr/local
-LDFLAGS = -X main.version=$(VERSION) -X main.commit=$(COMMIT)
+LDFLAGS = -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X github.com/SiriusScan/scribe.BuildVersion=$(VERSION) -X github.com/SiriusScan/scribe.BuildCommit=$(COMMIT)
 
 .PHONY: build test acceptance compat check
 build:

@@ -106,3 +106,19 @@ mapping, exact-name per-job capability grants, and tightening VM limits. Focused
 fixtures cover grants, typed denial, cancellation, and limits. Agent registration,
 coordinated merger/UI changes, pinned releases, and installed-agent acceptance
 remain consumer work; no endpoint-agent repository is changed by this slice.
+
+Phase 3/4 in-repo slice: capability/localcap registers opt-in, exact-name
+local.file.stat, local.file.read, local.process.list and local.package.list.
+File paths are confined with os.Root to a caller-selected directory, regular-file
+reads are limited to 64 KiB, and inventory is limited to 1024 entries. Linux
+process inventory provides PIDs from /proc; package inventory reads dpkg metadata
+(up to 4 MiB). Other inventory platforms return explicit unsupported errors;
+Windows and Darwin compilation does not establish native inventory support.
+Callers own root lifetime and must choose trusted local filesystems: synchronous
+kernel filesystem calls cannot guarantee prompt cancellation on stalled mounts.
+No shell or subprocess is exposed. Runtime grant denial remains typed and missing
+job grants deny all calls. SDK Version() exposes module version and commit when
+available, with optional BuildVersion/BuildCommit linker values; consumer VCS
+metadata is deliberately excluded. Local job benchmarks and bounded concurrent
+execution/cancellation tests provide in-repo evidence only. Installed agent and
+real Sirius workflow acceptance remain outstanding.

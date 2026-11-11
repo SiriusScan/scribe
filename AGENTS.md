@@ -68,3 +68,11 @@ job grants deny all registered capability calls; grants match exact function
 names. Keep typed runtime denial errors and conservative report semantics. Job
 limits may tighten, never enlarge, configured runtime ceilings. Legacy nil Task
 grants retain SDK compatibility; do not use that convention in job envelopes.
+
+Endpoint-local SDK capabilities live in capability/localcap and are opt-in.
+Keep exact local.file.stat/read, local.process.list and local.package.list grants.
+Confine file access with os.Root, require regular files, and bound reads and
+inventory enumeration. Callers must select trusted local filesystems; kernel
+filesystem calls are not context-interruptible. Unsupported inventory platforms
+return errors, never empty successful inventories. Never add a command runner.
+Version() reports module metadata; an embedder's VCS revision is not Scribe's.
