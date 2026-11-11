@@ -165,3 +165,8 @@ Phase 3 remains paused.
 v1.8.0 pins parallel diagnostic isolation across shared compiled Sirius code.
 Keep logs invocation-owned, bounded and retained on action failure. Existing
 log capture, --check and --version are reused. Phase 3 remains paused.
+
+v1.9.0 pins Sirius verdict field types and an original HTTP marker corpus script
+with a SHA-256 fixture assertion. Keep its normal/exhaustive product skip reasons
+and false-clean guards in acceptance-local. This registered-response fixture is
+local API evidence, not upstream corpus or live workflow acceptance. Phase 3 stays paused.

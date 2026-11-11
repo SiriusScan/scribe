@@ -24,11 +24,22 @@ func TestVerdict(t *testing.T) {
 		{"return {verdict='vulnerable'}", scribe.Vulnerable, false},
 		{"return {verdict='not_vulnerable'}", scribe.NotVulnerable, false},
 		{"return {}", scribe.Unknown, false},
+		{"return {verdict='unknown'}", scribe.Unknown, false},
+		{"return {verdict=nil}", scribe.Unknown, false},
+		{"return {verdict=false}", scribe.Unknown, true},
+		{"return {verdict=1}", scribe.Unknown, true},
+		{"return {verdict={}}", scribe.Unknown, true},
+		{"return {verdict='VULNERABLE'}", scribe.Unknown, true},
+		{"return {verdict=' vulnerable'}", scribe.Unknown, true},
+		{"return {data={verdict='vulnerable'}}", scribe.Unknown, false},
 		{"error('unsupported')", scribe.Unknown, true},
 		{"return {verdict='bogus'}", scribe.Unknown, true},
 	} {
 		task := scribe.Task{Target: scribe.Target{Host: "localhost"}, Script: scribe.Script{ID: "test", Dialect: scribe.Sirius, Source: []byte("return {api_version=1,action=function() " + tc.body + " end}")}}
 		err := engine.Run(context.Background(), []scribe.Task{task}, func(r scribe.Result) error {
+			if (r.Status == scribe.Completed) == tc.failed {
+				t.Errorf("unexpected status: %+v", r)
+			}
 			if r.Verdict != tc.want {
 				t.Errorf("%s: %s", tc.body, r.Verdict)
 			}

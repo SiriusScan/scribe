@@ -798,3 +798,27 @@ and local transport evidence only. Real-script corpus growth, further verdict
 and planner-reason coverage, and live Sirius cancellation/persistence remain
 follow-up work. This release adds an original regression, not upstream corpus
 compatibility. Phase 3 stays paused; no performance claim.
+
+## v1.9.0 — verdict fields and executable corpus selection (2026-11-11)
+
+Expanded Sirius verdict-field coverage for nil, explicit unknown, boolean, numeric,
+table, case/whitespace-invalid values and nested data. Assertions require terminal
+execution status as well as conservative verdicts. Added an original MIT HTTP
+marker script with a pinned SHA-256 digest, exercising the actual http.get Lua
+capability bridge against registered response fixtures. Its 18-case matrix covers
+three response markers, matching/missing/conflicting products and normal/exhaustive
+selection, with exact product skip reasons and false-clean guards. The fixture is
+included in acceptance-local. No production bug was found; no API changes needed.
+
+This grows the executable first-party corpus by one script; it is not an imported
+real-world vulnerability corpus or upstream compatibility claim. Broader real-world
+script acquisition and protocol acceptance remain unfinished, along with additional
+nested matcher/reason cases and live Sirius/vGPT cancellation/report persistence.
+Priority remains smart selection, parallel engine, then the existing ping++ adapter.
+Phase 3 stays paused. No NSE expansion or performance claim.
+
+Validation: make check and make acceptance-local passed, including race, vet,
+cross-compilation, CGO-disabled build and pinned local emitter checks. Registered
+HTTP responses establish Lua API behavior; controlled socket acceptance remains
+separate from live consumer integration. Tagged service installation and /run smoke
+are required as the final operational release step.
