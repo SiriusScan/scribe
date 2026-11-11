@@ -40,7 +40,7 @@ func (r *runtime) plan(s scribe.Script) (*scribe.Index, programKey, error) {
 	c.mu.Unlock()
 	idx, err := scribe.NewIndex([]scribe.Script{{ID: s.ID, Dialect: s.Dialect, Source: s.Source}})
 	if err == nil {
-		c.put(program{key: key, plan: idx, cost: uint64(len(s.Source))*2 + uint64(len(s.ID)) + 256})
+		c.put(program{key: key, plan: idx, cost: uint64(len(s.Source))*32 + uint64(len(s.ID)) + 1024})
 	}
 	return idx, key, err
 }
@@ -92,6 +92,7 @@ func (r *runtime) load(vm *rt.Runtime, s scribe.Script, key programKey) (*rt.Clo
 		return nil, err
 	}
 	closure := vm.LoadLuaUnit(unit, rt.TableValue(vm.GlobalEnv()))
+	// A 32x source allowance bounds dense JSON hint arrays as well as source.
 	// Conservative retained-code accounting covers source, constants, opcodes,
 	// VM Code wrappers and selection metadata; oversized entries are not cached.
 	memory := uint64(len(unit.Code))*8 + uint64(len(unit.Lines))*4 + uint64(len(unit.Constants))*32
@@ -106,7 +107,7 @@ func (r *runtime) load(vm *rt.Runtime, s scribe.Script, key programKey) (*rt.Clo
 			}
 		}
 	}
-	cost := size*8 + uint64(len(s.Source))*2 + uint64(len(s.ID)) + 1024
+	cost := size*8 + uint64(len(s.Source))*32 + uint64(len(s.ID)) + 1024
 	if hit.plan != nil {
 		c.put(program{key: key, plan: hit.plan, code: closure.Code, cost: cost, memory: memory})
 	}

@@ -94,3 +94,16 @@ func TestCachedCodePreservesGrantsAndCPU(t *testing.T) {
 		t.Fatal("cached code bypassed CPU limit")
 	}
 }
+
+func TestTinyCacheDoesNotRetainOversizedPlan(t *testing.T) {
+	r, _ := newRuntime(scribe.Sirius, Options{CacheBytes: 256})
+	input := task(scribe.Sirius, `return {api_version=1,action=function() return {} end}`)
+	for range 2 {
+		if _, err := r.Execute(context.Background(), input); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(r.cache.items) != 0 || r.cache.used != 0 {
+		t.Fatal("retained entry above byte ceiling")
+	}
+}
