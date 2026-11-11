@@ -144,3 +144,43 @@ proxy. Request bodies are limited to 128 KiB, with four concurrent requests (exc
 requests return 503), and finite HTTP read/write timeouts. Client disconnects and
 server termination cancel execution through the existing context path. There is no
 queue or persistence. CLI help/version commands are not HTTP execution requests.
+
+## apps01 HTTP deployment
+
+Service URL: `http://192.168.123.22:18081/run` (POST). Port 18081 was
+checked with `ss -ltnp`; the service binds only the LAN address. The host firewall
+allows trusted LAN `192.168.123.0/24` and Activepieces network `172.22.0.0/16`.
+This endpoint has no authentication; keep those access boundaries in place.
+
+From this checkout on apps01, run `sudo env PATH="$PATH" make install-service`.
+This installs the pinned checkout build and `deploy/scribe.service`, enables it
+at boot, and restarts it. Subsequent `make install` restarts an active service;
+`make restart-service` explicitly restarts it (both require system privileges).
+The unit runs as `agi`, uses `/home/agi/Projects/scribe` as its working directory,
+and restarts on failure. Adjust these paths/user for another host. Scripts must
+exist on the server; its private `/tmp` is separate from caller `/tmp`.
+Use `systemctl status scribe` and `journalctl -u scribe` for diagnostics.
+
+Example request body (script path relative to the service working directory):
+```json
+{"args":["--dialect","sirius","--script","examples/scripts/http-header.lua","--host","127.0.0.1","--port","8080"]}
+```
+The response is newline-delimited JSON, with `schema_version`, script identity
+and digest, target, execution `status`, explicit `verdict`, `output`, optional
+`error`, and elapsed time. HTTP 400 means request/pre-execution rejection; 503
+means capacity exhausted. HTTP 200 only means result streaming started.
+
+Activepieces pass/fail rule: require a complete stream and the expected number
+of records, each with `status == "completed"`. Only explicit `vulnerable` is a
+positive detection; only explicit `not_vulnerable` is a negative detection.
+`unknown`, errors, skips, empty output, and interrupted streams are inconclusive
+and must never become a clean bill of health or a positive detection.
+
+Run `make smoke-http` in a separate shell while the service is running. It starts
+local ephemeral HTTP/TCP fixtures, POSTs real Sirius scripts to the installed
+service, asserts all three verdicts and the exact `tcp.exchange` banner, then
+cleans up. Override `SCRIBE_URL` if needed. This verifies the HTTP execution
+boundary, not the full vGPT workflow or Sirius scanner/agent integration.
+
+The external acceptance module retains its local `replace` so `make check`
+tests this checkout and its CLI offline, including changes before a release.

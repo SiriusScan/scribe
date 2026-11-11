@@ -1,0 +1,20 @@
+[Unit]
+Description=Sirius Scribe HTTP execution service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=agi
+Group=agi
+WorkingDirectory=/home/agi/Projects/scribe
+ExecStart=/usr/local/bin/scribe serve --listen 192.168.123.22:18081
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

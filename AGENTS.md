@@ -41,3 +41,19 @@ JSONL execution status/verdict semantics across transports; HTTP 200 alone does
 not indicate successful execution or a vulnerability verdict. Keep request size,
 concurrency and transport timeouts bounded. Default to loopback; caller-selected
 scripts and targets require trusted access. Keep HTTP concerns out of the root API.
+
+## apps01 Scribe service
+
+The trusted Activepieces endpoint is `POST http://192.168.123.22:18081/run`.
+Deploy with `sudo env PATH="$PATH" make install-service`; the checked-in
+`deploy/scribe.service` runs as agi, starts at boot and restarts on failure.
+Reinstalling with `make install` restarts an active service. Check `ss -ltnp`
+before changing its port. Preserve LAN/Activepieces firewall restrictions.
+Requests are `{"args":["--dialect","sirius", ...]}` using CLI flags and
+server-local script paths. Responses are JSONL execution records, including
+status and verdict. Require a complete stream and completed execution; only
+explicit vulnerable/not_vulnerable verdicts establish positive/negative results.
+Unknown, errors, skips, and missing results are inconclusive regardless of HTTP
+200. Run `make smoke-http` from another shell for the three-verdict and TCP banner
+fixture checks; this does not establish full vGPT workflow acceptance. See README
+for the complete request/response and operational contract.
