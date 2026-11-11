@@ -52,3 +52,22 @@ func BenchmarkSelection(b *testing.B) {
 		})
 	}
 }
+
+func TestTargetStreamBackpressure(t *testing.T) {
+	idx, _ := NewIndex([]Script{{ID: "one", Dialect: Sirius, Source: []byte("return {}")}})
+	e, _ := New(Options{}, selectionRuntime{})
+	produced, received := 0, 0
+	err := e.RunTargetStream(context.Background(), idx, func(context.Context) (Target, bool, error) {
+		if produced != received {
+			t.Fatal("producer advanced before result")
+		}
+		if produced == 3 {
+			return Target{}, false, nil
+		}
+		produced++
+		return Target{Host: "localhost"}, true, nil
+	}, func(Result) error { received++; return nil })
+	if err != nil || received != 3 {
+		t.Fatalf("received=%d err=%v", received, err)
+	}
+}

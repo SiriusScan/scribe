@@ -3,6 +3,7 @@ package scribe
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -99,14 +100,56 @@ func (e *Engine) RunSelected(ctx context.Context, idx *Index, targets []Target, 
 	if idx == nil {
 		return fmt.Errorf("index is required")
 	}
-	var tasks []Task
 	for _, t := range targets {
 		if err := t.Validate(); err != nil {
 			return err
 		}
-		for _, s := range idx.Select(t) {
-			tasks = append(tasks, Task{Script: s, Target: t})
+	}
+	next := 0
+	return e.RunTargetStream(ctx, idx, func(context.Context) (Target, bool, error) {
+		if next == len(targets) {
+			return Target{}, false, nil
+		}
+		t := targets[next]
+		next++
+		return t, true, nil
+	}, sink)
+}
+
+// RunTargetStream consumes targets incrementally, retaining only one endpoint's
+// selected tasks. Each endpoint completes before the next is requested. The
+// producer must honor ctx; false signals EOF. Results retain Run's semantics.
+// Input errors can occur after earlier endpoints have emitted results.
+func (e *Engine) RunTargetStream(ctx context.Context, idx *Index, next func(context.Context) (Target, bool, error), sink func(Result) error) error {
+	if ctx == nil || idx == nil || next == nil || sink == nil {
+		return fmt.Errorf("context, index, target producer and sink are required")
+	}
+	var executionErrors []error
+	for {
+		if err := ctx.Err(); err != nil {
+			return errors.Join(append(executionErrors, err)...)
+		}
+		t, ok, err := next(ctx)
+		if err != nil {
+			return errors.Join(append(executionErrors, err)...)
+		}
+		if !ok {
+			return errors.Join(executionErrors...)
+		}
+		if err := t.Validate(); err != nil {
+			return errors.Join(append(executionErrors, err)...)
+		}
+		var tasks []Task
+		for _, script := range idx.Select(t) {
+			tasks = append(tasks, Task{Script: script, Target: t})
+		}
+		var sinkErr error
+		err = e.Run(ctx, tasks, func(r Result) error { sinkErr = sink(r); return sinkErr })
+		if sinkErr != nil {
+			return sinkErr
+		}
+		if err != nil {
+			executionErrors = append(executionErrors, err)
 		}
 	}
-	return e.Run(ctx, tasks, sink)
 }

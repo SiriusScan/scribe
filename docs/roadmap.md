@@ -157,3 +157,20 @@ Next ordered backlog (supersedes the phase ordering above):
 
 Phase 3 endpoint-agent work is paused: the SDK side has landed; remaining work
 belongs in app-agent.
+
+Backlog 3 partial preparation: `RunTargetStream` consumes a caller-owned target
+producer with endpoint backpressure and retains only one endpoint's selected
+matrix. `RunSelected` uses this path. A focused test checks producer backpressure.
+This serializes endpoints; it does not implement host-spray/script-spray, host
+rates/error budgets, connection reuse, compiler caches or VM caches. Those remain
+open, as does VM-free declarative matching (backlog 1).
+
+Local Go 1.24.13 linux/amd64 measurements, i9-13900H, existing
+`go test -run '^$' -bench BenchmarkSelection -benchmem -count=3 .`:
+selected scheduling before 4139–4461 ns/op, after 4422–4780 ns/op;
+both 2344 B/op and 15 allocations/op. Unselected before 86179–94771 ns/op,
+after 90419–123189 ns/op. This no-op runtime harness measures scheduling,
+not Lua throughput; the change claims bounded target retention, not a speedup.
+`GOTOOLCHAIN=go1.24.13 make check` passed (race suite, external SDK acceptance,
+Windows/Darwin builds, vet, CGO-disabled CLI). This is in-repository evidence,
+not scanner/agent integration acceptance.
