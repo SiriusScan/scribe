@@ -388,3 +388,13 @@ all importable first-party packages, including receiver signatures, struct field
 JSON tags and constant expressions. Platform source variants are included.
 `make check` passed on apps01 on 2026-11-11. Full documentation audit and expanded
 pinned fingerprint/false-clean corpus remain outstanding; v1.0.0 is not tagged.
+
+Release audit progress (2026-11-11): added missing declaration godoc across
+importable packages and corrected misplaced Limits, Verdict and Plan comments.
+Expanded original pinned HTTP identity fixtures for IIS, lighttpd, Tomcat, Jetty,
+Apache and nginx, plus unrecognized banner/header negatives. Signature golden
+refresh contains formatting changes only; public declarations are unchanged.
+`make check` passed (race suite, external SDK acceptance, Windows/Darwin builds,
+vet and CGO-disabled build). Field-level documentation/behavior review and further
+pinned Sirius false-clean execution cases remain open. v1.0.0 remains untagged;
+Phase 3 stays paused.

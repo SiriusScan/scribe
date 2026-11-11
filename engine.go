@@ -8,17 +8,19 @@ import (
 	"time"
 )
 
+// MaxSourceBytes bounds script source size to one MiB.
 const MaxSourceBytes = 1 << 20
 
 // Options controls orchestration, independently of each runtime's limits.
 type Options struct {
 	// OnEvent observes ordered per-module lifecycle records; see Event.
 	OnEvent func(Event) error
-	// SNMPCommunity enables v2c identification using exactly this community; empty disables it.
+	// Plan emits planning results without executing scripts or probing endpoints.
+	Plan           bool
+	ScriptTimeout  time.Duration
+	GlobalInterval time.Duration
+	// SNMPCommunity enables v2c identification with exactly this community; empty disables it.
 	// At most 255 bytes; it is never included in returned facts.
-	Plan                 bool
-	ScriptTimeout        time.Duration
-	GlobalInterval       time.Duration
 	SNMPCommunity        string
 	PlannerProbes        bool
 	StrictIdentification bool
@@ -46,6 +48,7 @@ type Engine struct {
 	runtimes map[Dialect]Runtime
 }
 
+// New validates options and registers one runtime per explicit dialect.
 func New(options Options, runtimes ...Runtime) (*Engine, error) {
 	if options.ScriptTimeout < 0 || options.GlobalInterval < 0 {
 		return nil, errors.New("timeout and global interval cannot be negative")

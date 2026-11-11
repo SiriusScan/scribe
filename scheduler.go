@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Strategy selects bounded task scheduling order.
 type Strategy string
 
 const (

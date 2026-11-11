@@ -41,3 +41,35 @@ func TestExpandedPinnedBanners(t *testing.T) {
 		}
 	}
 }
+
+// Original pinned header observations exercise every built-in HTTP family.
+func TestPinnedHTTPIdentities(t *testing.T) {
+	for _, tt := range []struct{ header, product, version string }{
+		{"Microsoft-IIS/10.0", "IIS", "10.0"},
+		{"lighttpd/1.4.76", "lighttpd", "1.4.76"},
+		{"Apache Tomcat/9.0.98", "Tomcat", "9.0.98"},
+		{"Jetty(9.4.56.v20240826)", "Jetty", "9.4.56.v20240826"},
+		{"Apache/2.4.62", "Apache", "2.4.62"},
+		{"nginx/1.26.2", "nginx", "1.26.2"},
+	} {
+		t.Run(tt.product, func(t *testing.T) {
+			got := Default().Match("", http.Header{"Server": {tt.header}})
+			if got != (Facts{Service: "http", Product: tt.product, Version: tt.version}) {
+				t.Fatal(got)
+			}
+		})
+	}
+}
+
+func TestPinnedUnknownIdentities(t *testing.T) {
+	for _, input := range []string{"", "unknown", "HTTP/1.1 200 OK", "SSH-2.0-unknown", "220 mail ready", "redis_version:", "Postfix", "Exim 4.97"} {
+		if got := Default().Match(input, nil); got != (Facts{}) {
+			t.Errorf("%q inferred %+v", input, got)
+		}
+	}
+	for _, header := range []string{"", "unknown", "OpenSSH_9.0", "application server"} {
+		if got := Default().Match("", http.Header{"Server": {header}}); got != (Facts{}) {
+			t.Errorf("%q inferred %+v", header, got)
+		}
+	}
+}

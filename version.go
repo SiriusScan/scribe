@@ -4,6 +4,8 @@ import "runtime/debug"
 
 // BuildVersion and BuildCommit may be set with -ldflags -X.
 var BuildVersion string
+
+// BuildCommit may be set to the Scribe revision with -ldflags -X.
 var BuildCommit string
 
 // VersionInfo describes the embedded module, with unknown fields left empty.

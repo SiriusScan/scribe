@@ -13,8 +13,10 @@ import (
 type Dialect string
 
 const (
+	// Sirius selects the native Sirius contract.
 	Sirius Dialect = "sirius"
-	NSE    Dialect = "nse"
+	// NSE selects the experimental NSE-shaped contract.
+	NSE Dialect = "nse"
 )
 
 // Target describes a known endpoint. Port zero represents a host-only task.
@@ -70,7 +72,7 @@ type Script struct {
 	Args    map[string]any `json:"args,omitempty"`
 }
 
-// Task is one script invocation against one known endpoint.
+// Limits bounds invocation work; zero values select runtime defaults.
 type Limits struct {
 	CPU     uint64        `json:"cpu,omitempty"`
 	Memory  uint64        `json:"memory,omitempty"`
@@ -80,10 +82,12 @@ type Limits struct {
 // CapabilityDeniedError identifies an attempted operation outside a job grant.
 type CapabilityDeniedError struct{ Capability string }
 
+// Error describes the denied capability without changing its typed identity.
 func (e *CapabilityDeniedError) Error() string {
 	return fmt.Sprintf("capability %q denied", e.Capability)
 }
 
+// Task is one script invocation against one known endpoint.
 type Task struct {
 	planSkip        string
 	plannerExcluded bool
@@ -105,23 +109,28 @@ type Finding struct {
 	Metadata   map[string]any `json:"metadata,omitempty"`
 }
 
-// Output preserves raw NSE output separately from normalized native findings.
+// Verdict is an explicit vulnerability assessment; missing verdicts remain unknown.
 type Verdict string
 
 const (
-	Unknown       Verdict = "unknown"
-	Vulnerable    Verdict = "vulnerable"
+	// Unknown indicates no explicit vulnerability conclusion.
+	Unknown Verdict = "unknown"
+	// Vulnerable is an explicit positive vulnerability verdict.
+	Vulnerable Verdict = "vulnerable"
+	// NotVulnerable is an explicit negative verdict subject to identification gates.
 	NotVulnerable Verdict = "not_vulnerable"
 )
 
+// Output preserves script data, findings, logs and skip evidence independently of execution status.
 type Output struct {
 	Logs          string    `json:"logs,omitempty"`
 	LogsTruncated bool      `json:"logs_truncated,omitempty"`
 	Verdict       Verdict   `json:"-"`
 	Data          any       `json:"data,omitempty"`
 	Findings      []Finding `json:"findings,omitempty"`
-	Skipped       bool      `json:"-"`
-	SkipReason    string    `json:"skip_reason,omitempty"`
+	// Skipped indicates execution was excluded or a rule did not match.
+	Skipped    bool   `json:"-"`
+	SkipReason string `json:"skip_reason,omitempty"`
 }
 
 // Runtime implements a dialect. Execute must support concurrent invocations,
@@ -136,13 +145,18 @@ type Runtime interface {
 // Registering a function grants trusted Go code the embedding process's authority.
 type Function func(ctx context.Context, target Target, args []any) (any, error)
 
+// Status describes execution completion independently of the vulnerability verdict.
 type Status string
 
 const (
+	// Cancelled indicates cancelled execution.
 	Cancelled Status = "cancelled"
+	// Completed indicates execution completed; it does not imply a verdict.
 	Completed Status = "completed"
-	Skipped   Status = "skipped"
-	Failed    Status = "error"
+	// Skipped indicates execution was excluded or a rule did not match.
+	Skipped Status = "skipped"
+	// Failed indicates execution failed.
+	Failed Status = "error"
 )
 
 // Result reports execution status independently of vulnerability status.

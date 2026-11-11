@@ -3,10 +3,13 @@ package report
 
 import "github.com/SiriusScan/scribe"
 
+// Source identifies the engine and script configuration that produced evidence.
 type Source struct {
 	Name   string            `json:"name"`
 	Config map[string]string `json:"config"`
 }
+
+// Envelope is the schema-v1 report with raw evidence and a conservative assessment.
 type Envelope struct {
 	SchemaVersion int            `json:"schema_version"`
 	Source        Source         `json:"source"`

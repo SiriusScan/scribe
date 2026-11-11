@@ -13,6 +13,7 @@ import (
 	"github.com/SiriusScan/scribe"
 )
 
+// SchemaVersion is the supported ping++ wire schema.
 const SchemaVersion = "pingpp.scan/v1"
 
 // Document contains the endpoint facts consumed from the versioned wire schema.
@@ -25,6 +26,8 @@ type Document struct {
 		Claims    []Claim    `json:"claims"`
 	} `json:"asset"`
 }
+
+// Endpoint records a discovery endpoint and its execution state.
 type Endpoint struct {
 	Address   string `json:"address"`
 	Port      uint16 `json:"port"`
@@ -32,6 +35,8 @@ type Endpoint struct {
 	State     string `json:"state"`
 	Execution string `json:"execution"`
 }
+
+// Claim carries an endpoint identity assertion and contradiction references.
 type Claim struct {
 	Subject          string   `json:"subject"`
 	Kind             string   `json:"kind"`
@@ -124,11 +129,14 @@ type Reader struct {
 	err     error
 }
 
+// NewReader creates a bounded JSONL reader over caller-owned input.
 func NewReader(r io.Reader) *Reader {
 	s := bufio.NewScanner(r)
 	s.Buffer(make([]byte, 4096), 4<<20)
 	return &Reader{scan: s}
 }
+
+// Next returns the next eligible endpoint, or false at end of input. The caller owns interruption of blocking reads.
 func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 	for {
 		if err := ctx.Err(); err != nil {

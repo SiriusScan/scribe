@@ -6,6 +6,7 @@ import (
 	"regexp"
 )
 
+// Facts contains inferred endpoint identity, never a vulnerability verdict.
 type Facts struct{ Service, Product, Version string }
 
 // Rule matches either a TCP banner (Header empty) or an HTTP header.
@@ -15,9 +16,14 @@ type Rule struct {
 	Pattern          *regexp.Regexp
 	Service, Product string
 }
+
+// Matcher applies an ordered snapshot of rules; the first match wins.
 type Matcher struct{ rules []Rule }
 
+// New copies the rule slice. Callers must not mutate the referenced patterns.
 func New(rules ...Rule) *Matcher { return &Matcher{append([]Rule(nil), rules...)} }
+
+// Default returns the built-in banner and HTTP Server header rules.
 func Default() *Matcher {
 	return New(
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Microsoft-IIS(?:/([0-9.]+))?`), Service: "http", Product: "IIS"},

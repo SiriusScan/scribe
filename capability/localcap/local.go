@@ -11,7 +11,10 @@ import (
 	"os"
 )
 
+// MaxBytes bounds each local file read to 64 KiB.
 const MaxBytes = 64 << 10
+
+// MaxEntries bounds local inventory enumeration.
 const MaxEntries = 1024
 
 // New registers exact capability names for the existing per-job grant mechanism.

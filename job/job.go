@@ -9,6 +9,7 @@ import (
 	"github.com/SiriusScan/scribe/report"
 )
 
+// Request is a schema-v1 invocation; absent capabilities deny all registered calls.
 type Request struct {
 	SchemaVersion int            `json:"schema_version"`
 	ID            string         `json:"id"`
@@ -20,11 +21,15 @@ type Request struct {
 	Limits        scribe.Limits  `json:"limits"`
 	Capabilities  []string       `json:"capabilities"`
 }
+
+// Result preserves job correlation and the conservative report envelope.
 type Result struct {
 	SchemaVersion int             `json:"schema_version"`
 	ID            string          `json:"id"`
 	Report        report.Envelope `json:"report"`
 }
+
+// Resolver loads caller-owned script source when inline source is absent.
 type Resolver func(context.Context, string, scribe.Dialect) ([]byte, error)
 
 // Run executes one job. Missing grants deny every capability. Limits can only

@@ -75,3 +75,7 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
 
 - Add JSONL module metadata inventory with `--list-modules`.
 - Add match metadata and inventory JSONL fuzz targets and a root exported-symbol golden.
+
+- Fill missing public declaration godoc and correct misplaced option/type comments.
+- Expand original pinned HTTP fingerprints and unknown-identity negative fixtures.
+- Preserve public API declarations; refresh signature-golden formatting only.

@@ -24,6 +24,7 @@ import (
 // honor context cancellation and bound their own resources.
 type Limits = scribe.Limits
 
+// Options configures finite VM limits, trusted capabilities and bounded immutable code caches.
 type Options struct {
 	Limits    Limits
 	Functions map[string]scribe.Function
@@ -80,6 +81,7 @@ func newRuntime(dialect scribe.Dialect, options Options) (*runtime, error) {
 	return &runtime{dialect: dialect, limits: limits, functions: functions, cache: programCache{entries: options.CacheEntries, ceiling: options.CacheBytes}}, nil
 }
 
+// Dialect reports the explicitly configured script profile.
 func (r *runtime) Dialect() scribe.Dialect { return r.dialect }
 
 // Execute owns a fresh VM. Cancellation of CPU-only code is bounded by VM
@@ -362,6 +364,7 @@ type logBuffer struct {
 	truncated bool
 }
 
+// Write appends bounded log data and records truncation.
 func (b *logBuffer) Write(p []byte) (int, error) {
 	n := len(p)
 	remaining := (64 << 10) - len(b.data)

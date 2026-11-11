@@ -30,8 +30,11 @@ import (
 type Status string
 
 const (
-	Pass        Status = "pass"
-	Fail        Status = "fail"
+	// Pass indicates a pinned fixture matched its expected output.
+	Pass Status = "pass"
+	// Fail indicates fixture validation or execution failed.
+	Fail Status = "fail"
+	// Unsupported indicates execution encountered an unsupported API.
 	Unsupported Status = "unsupported"
 )
 
