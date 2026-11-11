@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased — v1.1.0 preparation
+## v1.1.0 — 2026-11-11
 
+- Expand pinned HTTP/FTP/SMTP identities and real-service false-clean guards, including TLS-marked targets.
+- Reject embedded nginx mentions as product identities.
 - Add controlled loopback SSH fingerprint listener acceptance.
 - Audit local consumer source access and record the ping++ emitter/binary gap.
 
@@ -111,7 +113,7 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
 - Defer v1.0.0 pending the complete exported-field documentation/behavior audit.
   Phase 3 remains paused.
 
-## Unreleased — v1.1.0 preparation
+## v1.1.0 — 2026-11-11
 
 - Add make acceptance-local, reusing local protocol and external SDK checks.
 - Verify complete SDK ping++ fixture result persistence through a synced JSONL

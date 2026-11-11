@@ -568,3 +568,21 @@ v1.1.0 is not tagged by this increment. Phase 3 remains paused.
 Deployment of dd943b7: sudo noninteractive make install-service succeeded;
 make smoke-http passed all three explicit verdict cases and the TCP banner case.
 These are local service checks, not live consumer integration acceptance.
+
+## v1.1.0 release — 2026-11-11
+
+Expanded original pinned observations with Caddy/OpenResty HTTP headers and
+Pure-FTPd/Sendmail banners alongside existing SSH, FTP, SMTP and database fixtures.
+Anchored nginx recognition rejects proxy text containing a product mention.
+Eleven real-service products exercise matching, absent and conflicting identities
+with TLS-marked targets under normal and exhaustive clean-gate execution.
+Existing controlled TLS and SSH listeners remain part of acceptance-local.
+
+make check and make acceptance-local passed, including race, vet, external SDK,
+Windows/Darwin cross-build and CGO-disabled build evidence. These are local checks.
+The audited ping++ checkout lacks a scanner main/wire emitter; adding a new scanner
+lifecycle is deferred rather than introducing a second unvalidated discovery path.
+Follow-up: implement and pin an upstream pingpp.scan/v1 emitter, then exercise real
+scanner cancellation and persisted consumer reports. The existing Scribe adapter
+and CLI remain fixture-tested. Live Sirius/vGPT acceptance is outstanding and
+does not block this release. Phase 3 remains paused.

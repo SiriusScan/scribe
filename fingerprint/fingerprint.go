@@ -37,6 +37,10 @@ func New(rules ...Rule) *Matcher { return &Matcher{append([]Rule(nil), rules...)
 // Default returns the built-in banner and HTTP Server header rules.
 func Default() *Matcher {
 	return New(
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Caddy(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "Caddy"},
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^openresty(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "OpenResty"},
+		Rule{Pattern: regexp.MustCompile(`^220[^\r\n]*Pure-FTPd`), Service: "ftp", Product: "Pure-FTPd"},
+		Rule{Pattern: regexp.MustCompile(`^220[^\r\n]*Sendmail ([0-9.]+)`), Service: "smtp", Product: "Sendmail"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Microsoft-IIS(?:/([0-9.]+))?`), Service: "http", Product: "IIS"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^lighttpd(?:/([0-9.]+))?`), Service: "http", Product: "lighttpd"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^(?:Apache Tomcat|Tomcat)(?:/([0-9.]+))?`), Service: "http", Product: "Tomcat"},
@@ -51,7 +55,7 @@ func Default() *Matcher {
 		Rule{Header: "", Pattern: regexp.MustCompile(`^SSH-\S+-dropbear_([0-9.]+)`), Service: "ssh", Product: "Dropbear"},
 
 		Rule{Pattern: regexp.MustCompile(`^SSH-\S+-OpenSSH_([^\s]+)`), Service: "ssh", Product: "OpenSSH"},
-		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)nginx(?:/([^\s]+))?`), Service: "http", Product: "nginx"},
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^nginx(?:/([^\s]+))?(?:$|\s)`), Service: "http", Product: "nginx"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Apache(?:/([^\s]+))?`), Service: "http", Product: "Apache"},
 	)
 }

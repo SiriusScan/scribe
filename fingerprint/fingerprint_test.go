@@ -28,6 +28,8 @@ func TestMatch(t *testing.T) {
 func TestExpandedPinnedBanners(t *testing.T) {
 	for _, tt := range []struct{ banner, product string }{
 		{"220 mail ESMTP Postfix", "Postfix"},
+		{"220 Pure-FTPd ready", "Pure-FTPd"},
+		{"220 mail Sendmail 8.17.1 ready", "Sendmail"},
 		{"220 mail ESMTP Exim 4.97", "Exim"},
 		{"220 (vsFTPd 3.0.5)", "vsftpd"},
 		{"220 ProFTPD 1.3.8 Server", "ProFTPD"},
@@ -45,6 +47,8 @@ func TestExpandedPinnedBanners(t *testing.T) {
 // Original pinned header observations exercise every built-in HTTP family.
 func TestPinnedHTTPIdentities(t *testing.T) {
 	for _, tt := range []struct{ header, product, version string }{
+		{"Caddy/2.8.4", "Caddy", "2.8.4"},
+		{"openresty/1.25.3.2", "OpenResty", "1.25.3.2"},
 		{"Microsoft-IIS/10.0", "IIS", "10.0"},
 		{"lighttpd/1.4.76", "lighttpd", "1.4.76"},
 		{"Apache Tomcat/9.0.98", "Tomcat", "9.0.98"},
@@ -67,7 +71,7 @@ func TestPinnedUnknownIdentities(t *testing.T) {
 			t.Errorf("%q inferred %+v", input, got)
 		}
 	}
-	for _, header := range []string{"", "unknown", "OpenSSH_9.0", "application server"} {
+	for _, header := range []string{"", "unknown", "OpenSSH_9.0", "application server", "proxy nginx/1.26.2", "Caddyshack", "openrestyled"} {
 		if got := Default().Match("", http.Header{"Server": {header}}); got != (Facts{}) {
 			t.Errorf("%q inferred %+v", header, got)
 		}

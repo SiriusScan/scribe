@@ -58,3 +58,26 @@ func TestMatchCleanGate(t *testing.T) {
 		t.Fatalf("%+v", r)
 	}
 }
+
+// Identity hints for real service families never authorize a different product's clean result.
+func TestServiceCorpusFalseClean(t *testing.T) {
+	for _, product := range []string{"Caddy", "OpenResty", "OpenSSH", "Dropbear", "vsftpd", "Pure-FTPd", "Postfix", "Sendmail", "MySQL", "MariaDB", "Redis"} {
+		for _, exhaustive := range []bool{false, true} {
+			e, err := New(Options{StrictIdentification: true, Exhaustive: exhaustive}, cleanMatchRuntime{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			source := []byte(`-- scribe: {"match":{"products":["` + product + `"]}}`)
+			for _, supplied := range []string{"", "unrelated", product} {
+				r := e.execute(context.Background(), Task{Script: Script{ID: product, Dialect: Sirius, Source: source}, Target: Target{Host: "fixture.invalid", Product: supplied, TLS: true}})
+				if supplied == product {
+					if r.Verdict != NotVulnerable {
+						t.Fatalf("%s: %+v", product, r)
+					}
+				} else if r.Verdict != Unknown || r.Status != Skipped || r.Output.SkipReason == "" {
+					t.Fatalf("%s: %+v", product, r)
+				}
+			}
+		}
+	}
+}

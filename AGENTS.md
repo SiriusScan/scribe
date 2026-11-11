@@ -129,3 +129,9 @@ SSH listener acceptance is included in make acceptance-local and requires pinned
 OpenSSH service/product/version observations from a controlled loopback socket.
 The 2026-11-11 local consumer access audit is recorded in docs/roadmap.md;
 directory readability does not establish a usable pinned ping++ wire emitter.
+
+v1.1.0 expands original pinned Caddy/OpenResty/Pure-FTPd/Sendmail observations
+and product-specific false-clean guards across HTTP, SSH, FTP, SMTP and database
+families, including TLS-marked endpoints. TLS alone never identifies a product.
+The ping++ emitter remains a follow-up; use the pinned Scribe adapter fixtures.
+Phase 3 remains paused.
