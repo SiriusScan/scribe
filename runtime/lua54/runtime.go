@@ -217,6 +217,7 @@ func setFunction(vm *rt.Runtime, table *rt.Table, name string, fn rt.GoFunctionF
 
 var baseOnce sync.Once
 var baseValues map[string]rt.Value
+var tableValues map[string]rt.Value
 
 func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 	// Upstream base.Load mutates package-level GoFunction compliance flags.
@@ -225,6 +226,11 @@ func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 		prototype := rt.New(io.Discard)
 		defer prototype.Close(nil)
 		base.Load(prototype)
+		tableModule, _ := tablelib.LibLoader.Load(prototype)
+		tableValues = make(map[string]rt.Value)
+		for k, v, ok := tableModule.AsTable().Next(rt.NilValue); ok && !k.IsNil(); k, v, ok = tableModule.AsTable().Next(k) {
+			tableValues[k.AsString()] = v
+		}
 		baseValues = make(map[string]rt.Value)
 		for _, name := range []string{"assert", "error", "ipairs", "next", "pairs", "pcall", "rawequal", "rawget", "rawlen", "rawset", "select", "tonumber", "tostring", "type", "xpcall", "_VERSION"} {
 			baseValues[name] = prototype.GlobalEnv().Get(rt.StringValue(name))
@@ -234,8 +240,15 @@ func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 		vm.SetEnv(vm.GlobalEnv(), name, value)
 	}
 	vm.SetEnv(vm.GlobalEnv(), "_G", rt.TableValue(vm.GlobalEnv()))
-	modules := make(map[string]rt.Value)
-	for name, load := range map[string]func(*rt.Runtime) (rt.Value, func()){"string": stringlib.LibLoader.Load, "table": tablelib.LibLoader.Load, "math": mathlib.LibLoader.Load, "utf8": utf8lib.LibLoader.Load} {
+	// Table builtins are immutable Go functions with no invocation captures.
+	// Publish only values; every invocation still owns its mutable library table.
+	table := rt.NewTable()
+	for name, value := range tableValues {
+		vm.SetEnv(table, name, value)
+	}
+	modules := map[string]rt.Value{"table": rt.TableValue(table)}
+	vm.SetEnv(vm.GlobalEnv(), "table", modules["table"])
+	for name, load := range map[string]func(*rt.Runtime) (rt.Value, func()){"string": stringlib.LibLoader.Load, "math": mathlib.LibLoader.Load, "utf8": utf8lib.LibLoader.Load} {
 		value, _ := load(vm)
 		modules[name] = value
 		vm.SetEnv(vm.GlobalEnv(), name, value)

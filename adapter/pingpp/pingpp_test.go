@@ -56,3 +56,28 @@ func TestStreamErrors(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// Arbitrary mixed documents must terminate without inventing invalid endpoints.
+func FuzzReader(f *testing.F) {
+	data, err := os.ReadFile("testdata/scan.jsonl")
+	if err != nil {
+		f.Fatal(err)
+	}
+	f.Add(string(data))
+	f.Add(`{"schema_version":"pingpp.scan/v1","error":"failed"}`)
+	f.Fuzz(func(t *testing.T, data string) {
+		if len(data) > 65536 {
+			t.Skip()
+		}
+		r := NewReader(strings.NewReader(data))
+		for i := 0; i < 1024; i++ {
+			target, ok, err := r.Next(context.Background())
+			if err != nil || !ok {
+				return
+			}
+			if target.Host == "" || target.Port == 0 {
+				t.Fatalf("invalid endpoint: %+v", target)
+			}
+		}
+	})
+}

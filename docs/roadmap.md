@@ -480,3 +480,47 @@ Next unfinished work:
 Validation: make check passed, including go test -race ./..., external SDK
 acceptance, Windows/Darwin cross-builds, go vet ./... and CGO-disabled CLI build.
 Service installation and POST /run smoke results are reported with delivery.
+
+
+## v1.0.2 (2026-11-11)
+
+Allocation profile: BenchmarkPlannerExecution, alloc_space sampling attributed
+52.95% cumulative bytes to loadLibraries, 45.85% flat to hashTable.grow and
+10.27% flat to SetEnvGoFunc. Reuse the seven immutable table-library Go functions
+initialized once, following the existing base builtin pattern. Every invocation
+still creates and populates its own mutable table through accounted SetEnv;
+no live VM pooling, shared mutable library table, or public API change.
+Mutation/reexecution regression and race suite verify isolation.
+
+Isolated sequential before/after runs (no fuzz/load/check overlap): Go 1.26.10,
+linux/amd64, i9-13900H, four workers, existing verified 32 × 16 benchmark.
+Command: go test ./runtime/lua54 -run '^$' -bench BenchmarkPlannerExecution -benchmem -count=3.
+Before unfiltered: 11.412/12.849/12.761 ms, 44864/39848/40121 actions/s,
+16154108/16154460/16155104 B/op, 162168/162208/162167 allocations/op.
+After unfiltered: 11.852/10.569/12.574 ms, 43199/48444/40718 actions/s,
+15988490/15983111/15984071 B/op, 158662/158621/158622 allocations/op.
+Before selected: 1.438/1.583/1.913 ms, 44522/40432/33453 actions/s,
+2233917/2233931/2233957 B/op, 22309/22309/22311 allocations/op.
+After selected: 1.587/1.359/1.394 ms, 40337/47089/45897 actions/s,
+2212531/2212305/2212171 B/op, 21862/21860/21860 allocations/op.
+This supports a small allocation reduction; timing variation does not establish
+an end-to-end speedup. Earlier overlapping check samples were discarded.
+
+FuzzMixedFailures adds exact grant allow/deny, Lua errors and sink failure
+propagation; seeds run under race checks. A 30-second campaign passed 194930
+executions. Adapter FuzzReader passed 1007136 executions in a 15-second campaign.
+Longer scheduled campaigns remain future operational work; none is scheduled.
+
+The requested pingpp.scan/v1 Go adapter, docs and pinned tests already exist in
+adapter/pingpp and README; extended reader fuzz coverage rather than duplicating
+mapping. The schema remains pinned to ping++ PR #1 ff4085905039cbbc759a0a75fab897b49316ef1a.
+No Sirius/ping++ repository extension is needed for this slice. Real scanner,
+ping++ and vGPT cancellation/persistence acceptance remains outstanding.
+Phase 3 remains paused.
+
+Validation: make check passed race suite, external SDK acceptance, Windows/Darwin
+builds, vet and CGO-disabled build. Local service smoke evidence follows release;
+these checks do not establish scanner/agent integration acceptance.
+apps01 VERSION=v1.0.2 installation and make smoke-http passed completed
+vulnerable/not_vulnerable/unknown records plus TCP banner at POST :18081/run.
+The tagged commit is reinstalled after publication to pin installed build metadata.

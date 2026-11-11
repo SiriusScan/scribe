@@ -113,3 +113,10 @@ from runs overlapping fuzz/load work. Script-spray stops at its first eligible
 pending task; host-spray retains its fairness scan. FuzzParallelPlanner seeds run
 in the race suite; run explicit bounded fuzz campaigns for planner/engine changes.
 Phase 3 remains paused.
+
+v1.0.2: table-library builtin Go functions are immutable shared values; library
+ tables remain invocation-owned and populated through accounted SetEnv calls.
+Never share mutable library tables. FuzzMixedFailures covers exact grants, Lua
+errors and sink error propagation; adapter/pingpp FuzzReader covers mixed wire
+input. pingpp.scan/v1 already has a pinned adapter and CLI path: extend it rather
+than creating a second mapper. No ping++ schema/repository change is required.

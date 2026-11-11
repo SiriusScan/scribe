@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.2 — 2026-11-11
+
+- Reuse immutable table builtins while retaining fresh invocation library tables.
+- Add grant/error/sink and ping++ reader fuzz coverage and isolation regression.
+- Confirm the existing pinned pingpp.scan/v1 adapter; no upstream changes needed.
+
 ## v1.0.1 — 2026-11-11
 
 - Stop redundant script-spray scheduling scans after the first eligible task.
