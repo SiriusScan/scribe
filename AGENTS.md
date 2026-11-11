@@ -35,3 +35,9 @@ These assignments document intended access; they do not provision credentials or
 Sirius is the MVP superset direction. Extend native capabilities as needed;
 do not pursue NSE library coverage. Keep execution status separate from explicit
 verdicts; missing verdicts remain unknown.
+
+HTTP mode lives in cmd/scribe and delegates to the CLI run/result path. Preserve
+JSONL execution status/verdict semantics across transports; HTTP 200 alone does
+not indicate successful execution or a vulnerability verdict. Keep request size,
+concurrency and transport timeouts bounded. Default to loopback; caller-selected
+scripts and targets require trusted access. Keep HTTP concerns out of the root API.

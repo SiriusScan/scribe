@@ -128,3 +128,19 @@ Reports are JSONL with a nonzero exit on unsupported references or syntax errors
 `scribe --version` prints the module/build version and commit.
 `make install` builds with the current Git revision embedded and installs into
 `/usr/local/bin`; `PREFIX` and `DESTDIR` may override the destination.
+
+HTTP mode: run `scribe serve --listen 127.0.0.1:8080`, then send
+`POST /run` with `{"args":["--dialect","sirius","--script","examples/scripts/example.lua","--host","example.internal"]}`
+(replace the script path with an installed script). Arguments use the same flags,
+validation, defaults, and local script files as the CLI. Responses stream the same
+JSONL records with `Content-Type: application/x-ndjson`. Validation failures return
+400; execution failures remain structured result records under HTTP 200. Always
+inspect execution status and verdict, and handle interrupted streams as incomplete.
+Other routes return 404 and unsupported methods return 405.
+
+This is a trusted-caller service: it has no authentication and permits caller-selected
+local script paths and network targets. Keep it on loopback or behind an authenticated
+proxy. Request bodies are limited to 128 KiB, with four concurrent requests (excess
+requests return 503), and finite HTTP read/write timeouts. Client disconnects and
+server termination cancel execution through the existing context path. There is no
+queue or persistence. CLI help/version commands are not HTTP execution requests.

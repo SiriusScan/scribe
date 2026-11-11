@@ -63,6 +63,9 @@ func main() {
 }
 
 func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
+	if len(argv) > 0 && argv[0] == "serve" {
+		return serve(ctx, argv[1:], stderr)
+	}
 	flags := flag.NewFlagSet("scribe", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
