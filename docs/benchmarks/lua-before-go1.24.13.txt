@@ -1,0 +1,21 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkLuaThroughput/action-4         	   34180	     35874 ns/op	   50937 B/op	     708 allocs/op
+BenchmarkLuaThroughput/action-4         	   34993	     34842 ns/op	   50888 B/op	     708 allocs/op
+BenchmarkLuaThroughput/action-4         	   33573	     37831 ns/op	   50872 B/op	     708 allocs/op
+BenchmarkLuaThroughput/action-4         	   32538	     36014 ns/op	   50945 B/op	     708 allocs/op
+BenchmarkLuaThroughput/action-4         	   29329	     34593 ns/op	   50937 B/op	     708 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   34906	     32933 ns/op	   49044 B/op	     666 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   38418	     37402 ns/op	   49026 B/op	     666 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   37816	     32002 ns/op	   49043 B/op	     666 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   36073	     33085 ns/op	   49017 B/op	     666 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   37033	     31662 ns/op	   49021 B/op	     666 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	   32692	     36571 ns/op	   48997 B/op	     656 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	   38683	     32460 ns/op	   48994 B/op	     656 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	   38070	     33619 ns/op	   49001 B/op	     656 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	   36217	     32291 ns/op	   48969 B/op	     656 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	   31006	     32862 ns/op	   48997 B/op	     656 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	23.252s

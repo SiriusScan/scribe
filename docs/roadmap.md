@@ -149,16 +149,19 @@ Next ordered backlog (supersedes the phase ordering above):
 2. False-clean guard: `not_vulnerable` must cite product identification, enforced
    by `--check`. Add cheap cached fingerprint probes for unknown facts and an
    exhaustive mode that measures planner misses.
-3. Benchmark-driven engine work: streaming targets, per-host concurrency/rates,
-   host error budgets, host-spray/script-spray strategies, connection reuse, and
-   compile/VM caching. Skipped pairs currently cost 34–53 us because each builds
-   a VM; use the benchmark harness to guide changes.
+3. Benchmark-driven engine work: implemented in-repo with streaming targets,
+   per-host concurrency/pacing/error budgets, bounded host-spray/script-spray,
+   endpoint-partitioned HTTP reuse and bounded compiler/VM code-template caches.
+   Declarative hint exclusions emit skipped/unknown records before VM creation
+   and host admission. Dynamic Lua rules still require an isolated VM.
+   See [measurement and operational contract](engine-throughput.md), including
+   real Lua before/after results and remaining integration acceptance.
 4. Adapt ping++ `pingpp.scan/v1` output (ping++ PR #1 branch) to Scribe facts.
 
 Phase 3 endpoint-agent work is paused: the SDK side has landed; remaining work
 belongs in app-agent.
 
-Backlog 3 partial preparation: `RunTargetStream` consumes a caller-owned target
+Historical backlog 3 partial preparation (superseded by the completed slice below): `RunTargetStream` consumes a caller-owned target
 producer with endpoint backpressure and retains only one endpoint's selected
 matrix. `RunSelected` uses this path. A focused test checks producer backpressure.
 This serializes endpoints; it does not implement host-spray/script-spray, host
@@ -174,3 +177,22 @@ not Lua throughput; the change claims bounded target retention, not a speedup.
 `GOTOOLCHAIN=go1.24.13 make check` passed (race suite, external SDK acceptance,
 Windows/Darwin builds, vet, CGO-disabled CLI). This is in-repository evidence,
 not scanner/agent integration acceptance.
+
+
+Backlog 3 engine slice: `RunSelected` now shares the bounded streaming scheduler
+rather than serializing endpoints or materializing their Cartesian product.
+Per-run host limits span ports and retain budgets across windows. Known finite
+batches retain cancellation terminal records; open target streams stop accepting
+input and drain accepted pairs. Hint exclusions emit reasons without consuming
+host admission slots. The CLI exposes host controls, both spray strategies and
+bounded `--facts-jsonl` input. HTTP transports reuse connections only within the
+same logical authority/fixed-IP/TLS identity; raw unframed TCP exchanges remain
+isolated. The Lua runtime caches immutable compiler output and VM code templates
+with bounded retention, binding fresh state for each invocation. This deliberately
+preserves independent VM ownership rather than recycling live interpreter state.
+
+Real Lua benchmarks, raw samples, interpretation, cache/transport controls and
+verification evidence are recorded in [engine throughput](engine-throughput.md).
+Richer declarative matching and false-clean identification gates (backlog 1/2)
+remain open; this slice uses the existing selection hints. Scanner/agent workflow
+and installed-platform acceptance remain separate consumer work.

@@ -68,6 +68,11 @@ There is no ambient proxy, authentication, cookie jar, or automatic compression.
 The capability defaults to a 10-second request timeout, 1 MiB body limit, and
 64 KiB response-header limit. The CLI sets the HTTP timeout to the per-script
 timeout. Oversized responses return errors rather than truncated successes.
+Connections are reused only within the same logical authority, fixed connection
+IP and TLS identity. Each client retains at most 64 endpoint pools, two idle
+connections and 32 total connections per pool, with finite idle expiry. `Close`
+releases idle resources and prevents new calls; `DisableReuse` forces fresh
+connections. See [throughput controls](engine-throughput.md#connection-reuse).
 
 ## Output and findings
 

@@ -1,0 +1,56 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkLuaBatch-4          	     589	   1795192 ns/op	 4068579 B/op	   41390 allocs/op
+BenchmarkLuaBatch-4          	     730	   2431558 ns/op	 4068748 B/op	   41391 allocs/op
+BenchmarkLuaBatch-4          	     710	   1943216 ns/op	 4068537 B/op	   41389 allocs/op
+BenchmarkLuaBatch-4          	     555	   1884890 ns/op	 4068578 B/op	   41390 allocs/op
+BenchmarkLuaBatch-4          	     728	   2023707 ns/op	 4068594 B/op	   41389 allocs/op
+BenchmarkLuaThroughput/action-4         	   53223	     18993 ns/op	   30911 B/op	     328 allocs/op
+BenchmarkLuaThroughput/action-4         	   63955	     20726 ns/op	   30911 B/op	     328 allocs/op
+BenchmarkLuaThroughput/action-4         	   64591	     18636 ns/op	   30911 B/op	     328 allocs/op
+BenchmarkLuaThroughput/action-4         	   68295	     26117 ns/op	   30911 B/op	     328 allocs/op
+BenchmarkLuaThroughput/action-4         	   64489	     19486 ns/op	   30911 B/op	     328 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   71955	     18310 ns/op	   29377 B/op	     304 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   73340	     17102 ns/op	   29377 B/op	     304 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   66414	     18974 ns/op	   29377 B/op	     304 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   72796	     17119 ns/op	   29377 B/op	     304 allocs/op
+BenchmarkLuaThroughput/rule_skip-4      	   65200	     19079 ns/op	   29377 B/op	     304 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	 1989436	       575.3 ns/op	     272 B/op	       4 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	 2038370	       603.9 ns/op	     272 B/op	       4 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	 2032996	       599.0 ns/op	     272 B/op	       4 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	 1888808	       569.1 ns/op	     272 B/op	       4 allocs/op
+BenchmarkLuaThroughput/hint_skip-4      	 2091558	       618.3 ns/op	     272 B/op	       4 allocs/op
+BenchmarkLuaHTTPReuse/disabled=true-4   	    8164	    142579 ns/op	   51935 B/op	     511 allocs/op
+BenchmarkLuaHTTPReuse/disabled=true-4   	    7524	    146751 ns/op	   51950 B/op	     511 allocs/op
+BenchmarkLuaHTTPReuse/disabled=true-4   	    8901	    146085 ns/op	   51939 B/op	     511 allocs/op
+BenchmarkLuaHTTPReuse/disabled=true-4   	    8068	    141218 ns/op	   51966 B/op	     511 allocs/op
+BenchmarkLuaHTTPReuse/disabled=true-4   	    9098	    136001 ns/op	   51945 B/op	     511 allocs/op
+BenchmarkLuaHTTPReuse/disabled=false-4  	   19369	     63072 ns/op	   39070 B/op	     448 allocs/op
+BenchmarkLuaHTTPReuse/disabled=false-4  	   19095	     63900 ns/op	   39073 B/op	     448 allocs/op
+BenchmarkLuaHTTPReuse/disabled=false-4  	   18892	     67801 ns/op	   39069 B/op	     448 allocs/op
+BenchmarkLuaHTTPReuse/disabled=false-4  	   17552	     68844 ns/op	   39069 B/op	     448 allocs/op
+BenchmarkLuaHTTPReuse/disabled=false-4  	   17887	     65339 ns/op	   39073 B/op	     448 allocs/op
+BenchmarkLuaCacheModes/entries=-1-4     	   33528	     36168 ns/op	   49091 B/op	     670 allocs/op
+BenchmarkLuaCacheModes/entries=-1-4     	   29236	     35544 ns/op	   49091 B/op	     670 allocs/op
+BenchmarkLuaCacheModes/entries=-1-4     	   37531	     33519 ns/op	   49091 B/op	     670 allocs/op
+BenchmarkLuaCacheModes/entries=-1-4     	   33868	     37048 ns/op	   49091 B/op	     670 allocs/op
+BenchmarkLuaCacheModes/entries=-1-4     	   31668	     35385 ns/op	   49091 B/op	     670 allocs/op
+BenchmarkLuaCacheModes/entries=128-4    	   60835	     21626 ns/op	   30766 B/op	     325 allocs/op
+BenchmarkLuaCacheModes/entries=128-4    	   59437	     20130 ns/op	   30767 B/op	     325 allocs/op
+BenchmarkLuaCacheModes/entries=128-4    	   53084	     20775 ns/op	   30767 B/op	     325 allocs/op
+BenchmarkLuaCacheModes/entries=128-4    	   61431	     22952 ns/op	   30767 B/op	     325 allocs/op
+BenchmarkLuaCacheModes/entries=128-4    	   55791	     19961 ns/op	   30767 B/op	     325 allocs/op
+BenchmarkLuaEngineMatrix/script-spray-4 	     592	   1946406 ns/op	 4068781 B/op	   41393 allocs/op
+BenchmarkLuaEngineMatrix/script-spray-4 	     532	   2462625 ns/op	 4068997 B/op	   41396 allocs/op
+BenchmarkLuaEngineMatrix/script-spray-4 	     601	   1977647 ns/op	 4068829 B/op	   41394 allocs/op
+BenchmarkLuaEngineMatrix/script-spray-4 	     559	   2048419 ns/op	 4068902 B/op	   41395 allocs/op
+BenchmarkLuaEngineMatrix/script-spray-4 	     615	   2321843 ns/op	 4068955 B/op	   41395 allocs/op
+BenchmarkLuaEngineMatrix/host-spray-4   	     651	   2349460 ns/op	 4069091 B/op	   41398 allocs/op
+BenchmarkLuaEngineMatrix/host-spray-4   	     687	   1932009 ns/op	 4069036 B/op	   41397 allocs/op
+BenchmarkLuaEngineMatrix/host-spray-4   	     685	   2210117 ns/op	 4068974 B/op	   41396 allocs/op
+BenchmarkLuaEngineMatrix/host-spray-4   	     591	   2323296 ns/op	 4069187 B/op	   41400 allocs/op
+BenchmarkLuaEngineMatrix/host-spray-4   	     564	   1936680 ns/op	 4069055 B/op	   41398 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	83.720s

@@ -163,3 +163,34 @@ func TestHintSkipsDoNotConsumeHostPacing(t *testing.T) {
 		t.Fatalf("records=%d err=%v", records, err)
 	}
 }
+
+func TestHostLimitKeepsOtherHostsRunnable(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	started := make(chan string, 2)
+	e, _ := scribe.New(scribe.Options{Concurrency: 2, HostConcurrency: 1}, testRuntime{execute: func(ctx context.Context, task scribe.Task) (scribe.Output, error) {
+		started <- task.Target.Host
+		<-ctx.Done()
+		return scribe.Output{}, ctx.Err()
+	}})
+	ts := tasks(3)
+	ts[2].Target.Host = "other"
+	done := make(chan error, 1)
+	go func() { done <- e.Run(ctx, ts, func(scribe.Result) error { return nil }) }()
+	seen := map[string]bool{}
+	for range 2 {
+		select {
+		case host := <-started:
+			seen[host] = true
+		case <-time.After(5 * time.Second):
+			t.Fatal("host limit blocked another host")
+		}
+	}
+	if len(seen) != 2 {
+		t.Fatalf("concurrent hosts=%v", seen)
+	}
+	cancel()
+	if err := await(t, done); !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
+	}
+}

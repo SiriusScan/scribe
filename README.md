@@ -206,3 +206,16 @@ supply multiple known endpoints with service, product and version facts. Every
 selected script runs on every endpoint. See [script API](docs/script-api.md)
 for the input contract and the exported report.Map version 1 evidence envelope.
 This does not establish app-scanner integration acceptance.
+
+
+### Throughput controls
+
+The SDK and CLI use bounded target lookahead with per-run host controls:
+`--host-concurrency 2`, `--host-interval 100ms`, `--host-error-budget 3` and
+`--strategy host-spray` (default `script-spray`). `--facts-jsonl FILE` streams
+endpoint objects from a bounded server-local regular file. A hint exclusion or
+exhausted host budget produces a skipped/unknown JSONL record with a reason;
+it does not establish a negative vulnerability result. Lua code-template caching
+preserves fresh invocation state, and HTTP reuse is partitioned by logical
+hostname, fixed IP, port and TLS. See [engine throughput](docs/engine-throughput.md)
+for SDK options, cancellation/streaming behavior and measured before/after results.

@@ -1,0 +1,11 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkLuaBatch-4   	     312	   3604226 ns/op	 6345008 B/op	   84739 allocs/op
+BenchmarkLuaBatch-4   	     380	   3824704 ns/op	 6345054 B/op	   84740 allocs/op
+BenchmarkLuaBatch-4   	     361	   3275592 ns/op	 6344817 B/op	   84737 allocs/op
+BenchmarkLuaBatch-4   	     334	   3554941 ns/op	 6345025 B/op	   84740 allocs/op
+BenchmarkLuaBatch-4   	     315	   3286347 ns/op	 6344901 B/op	   84738 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	7.775s
