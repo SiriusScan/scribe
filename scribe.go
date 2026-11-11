@@ -25,6 +25,8 @@ type Target struct {
 	IP       string `json:"ip,omitempty"`
 	Port     uint16 `json:"port,omitempty"`
 	Protocol string `json:"protocol,omitempty"`
+	Product  string `json:"product,omitempty"`
+	Version  string `json:"version,omitempty"`
 	Service  string `json:"service,omitempty"`
 	State    string `json:"state,omitempty"`
 	TLS      bool   `json:"tls,omitempty"`
@@ -110,6 +112,7 @@ type Function func(ctx context.Context, target Target, args []any) (any, error)
 type Status string
 
 const (
+	Cancelled Status = "cancelled"
 	Completed Status = "completed"
 	Skipped   Status = "skipped"
 	Failed    Status = "error"

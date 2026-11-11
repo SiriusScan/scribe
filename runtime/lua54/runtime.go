@@ -251,7 +251,7 @@ func runNative(ctx context.Context, vm *rt.Runtime, task scribe.Task, value rt.V
 		return scribe.Output{}, errors.New("Sirius script api_version must be 1")
 	}
 	converter := newConversion(ctx, vm)
-	target, err := converter.toLua(map[string]any{"host": task.Target.Host, "ip": task.Target.IP, "port": int(task.Target.Port), "protocol": task.Target.Protocol, "service": task.Target.Service, "state": task.Target.State, "tls": task.Target.TLS}, 0)
+	target, err := converter.toLua(map[string]any{"host": task.Target.Host, "ip": task.Target.IP, "port": int(task.Target.Port), "protocol": task.Target.Protocol, "service": task.Target.Service, "product": task.Target.Product, "version": task.Target.Version, "state": task.Target.State, "tls": task.Target.TLS}, 0)
 	if err != nil {
 		return scribe.Output{}, err
 	}

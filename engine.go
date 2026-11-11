@@ -84,14 +84,18 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 		go func() {
 			defer workers.Done()
 			for task := range jobs {
-				if runCtx.Err() != nil {
-					continue
-				}
 				start := time.Now()
-				output, err := e.runtimes[task.Script.Dialect].Execute(runCtx, task)
+				var output Output
+				err := runCtx.Err()
+				if err == nil {
+					output, err = e.runtimes[task.Script.Dialect].Execute(runCtx, task)
+				}
 				result := Result{SchemaVersion: 1, ScriptID: task.Script.ID, ScriptSHA256: fmt.Sprintf("%x", sha256.Sum256(task.Script.Source)), Dialect: task.Script.Dialect, Target: task.Target, Output: output, Status: Completed, Verdict: Unknown, ElapsedMS: time.Since(start).Milliseconds()}
 				if err != nil {
 					result.Status, result.Error, result.Output = Failed, err.Error(), Output{Logs: output.Logs, LogsTruncated: output.LogsTruncated}
+					if errors.Is(err, context.Canceled) {
+						result.Status = Cancelled
+					}
 				} else if output.Skipped {
 					result.Status = Skipped
 					result.Output = Output{Skipped: true, Logs: output.Logs, LogsTruncated: output.LogsTruncated}
@@ -109,11 +113,7 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 	go func() {
 		defer close(jobs)
 		for _, task := range tasks {
-			select {
-			case jobs <- task:
-			case <-runCtx.Done():
-				return
-			}
+			jobs <- task
 		}
 	}()
 	go func() { workers.Wait(); close(results) }()

@@ -77,6 +77,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	}
 	flags := flag.NewFlagSet("scribe", flag.ContinueOnError)
 	flags.SetOutput(stderr)
+	factsPath := flags.String("facts", "", "JSON array of known endpoint facts (maximum 1024)")
 	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
 	showVersion := flags.Bool("version", false, "print module version and commit")
 	var paths scriptPaths
@@ -173,8 +174,23 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 		return 0
 	}
 	target := scribe.Target{Host: *host, IP: *ip, Port: uint16(*port), Protocol: *protocol, Service: *service, State: *state, TLS: *tls}
-	if err := target.Validate(); err != nil {
-		return fail(err)
+	targets := []scribe.Target{target}
+	if *factsPath != "" {
+		data, err := readSource(*factsPath)
+		if err != nil {
+			return fail(err)
+		}
+		if err := json.Unmarshal(data, &targets); err != nil {
+			return fail(err)
+		}
+	}
+	if len(targets) == 0 || len(targets) > 1024 {
+		return fail(errors.New("facts require 1-1024 targets"))
+	}
+	for _, target := range targets {
+		if err := target.Validate(); err != nil {
+			return fail(err)
+		}
 	}
 	if len(*argsJSON) > 64<<10 {
 		return fail(errors.New("--args must be at most 64 KiB"))
@@ -204,6 +220,14 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	}
 	for _, script := range inline {
 		tasks = append(tasks, scribe.Task{Script: scribe.Script{ID: script.ID, Dialect: scribe.Dialect(*dialect), Source: []byte(script.Source), Args: args}, Target: target})
+	}
+	original := tasks
+	tasks = nil
+	for _, target := range targets {
+		for _, task := range original {
+			task.Target = target
+			tasks = append(tasks, task)
+		}
 	}
 	httpClient, err := httpcap.New(httpcap.Options{Timeout: *timeout})
 	if err != nil {

@@ -93,3 +93,9 @@ its actual version. Cross-compilation alone is not installed-agent acceptance.
 Acceptance: agreed compatibility corpus, bounded stress/load tests, cross-platform
 endpoint validation, fault recovery, and measured performance. Retire Nmap only for
 jobs whose required semantics and operational behavior have passed these gates.
+
+Phase 2 preparation: supplied endpoint facts now include product/version through
+SDK, CLI and HTTP; batches cover the script/endpoint Cartesian product and retain
+cancelled queued records. Package report provides a version 1 source-attributed
+evidence envelope with conservative assessment mapping. Real app-scanner jobs,
+persistence mapping and independent job cancellation remain consumer acceptance.

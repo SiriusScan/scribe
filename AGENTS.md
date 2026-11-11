@@ -57,3 +57,8 @@ Unknown, errors, skips, and missing results are inconclusive regardless of HTTP
 200. Run `make smoke-http` from another shell for the three-verdict and TCP banner
 fixture checks; this does not establish full vGPT workflow acceptance. See README
 for the complete request/response and operational contract.
+
+Scanner adapter contract: keep product/version caller-supplied; facts arrays
+expand selected scripts across endpoints. Preserve report envelope v1 evidence
+and conservative assessments. Cancellation must emit terminal queued-task records
+while the result sink remains available; missing transport records are inconclusive.

@@ -162,3 +162,36 @@ curl --fail-with-body http://192.168.123.22:18081/run \
   -H 'Content-Type: application/json' \
   --data '{"args":["--dialect","sirius","--host","example.internal"],"scripts":[{"id":"check.lua","source":"return {api_version=1,action=function() return {verdict=\"unknown\"} end}"}]}'
 ```
+
+### Supplied endpoint facts
+
+SDK callers set Target.Product and Target.Version alongside Host, IP, Port,
+Protocol, State, Service and TLS. Sirius rule(target,args) and action(target,args)
+receive the same flat endpoint table, including product and version strings;
+missing strings remain empty. No service probing is implied.
+
+CLI: --facts endpoints.json replaces --host/--port with a JSON array of 1–1024
+Target objects (maximum 1 MiB). Each selected script runs against each endpoint.
+HTTP POST /run accepts the same array as facts (within the 128 KiB request limit).
+For example: {"args":["--dialect","sirius","--script","/path/check.lua"],
+"facts":[{"host":"localhost","port":80,"protocol":"tcp","state":"open",
+"service":"http","product":"example","version":"1.0"}]}.
+Facts are caller assertions, not independently verified observations.
+
+### Scanner report envelope v1
+
+The exported report.Map(Result) returns
+{schema_version:1,source:{name:"scribe",config:{script_id,script_sha256,dialect}},
+assessment,verdict,evidence:Result}. Evidence retains the complete execution
+record including raw output, findings, diagnostics, target and elapsed time.
+Only completed Sirius explicit verdicts become vulnerable or not_vulnerable
+assessments; all other outcomes remain inconclusive with unknown verdict.
+NSE output text is never interpreted as a verdict. This standalone envelope
+deliberately avoids the database-heavy go-api dependency; the scanner shim can
+place evidence in report metadata and populate source name/config.
+
+Engine.Run and CLI/HTTP batches emit one terminal record per task, including
+queued tasks on cancellation (status cancelled). A failing result callback
+prevents further delivery; transport loss therefore requires the caller to mark
+missing records inconclusive. Record order is completion order. Cancellation is
+request-wide; independently cancellable jobs should use separate Run contexts.

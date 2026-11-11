@@ -200,3 +200,9 @@ curl --fail-with-body http://192.168.123.22:18081/run \
   -H 'Content-Type: application/json' \
   --data '{"args":["--dialect","sirius","--host","example.internal"],"scripts":[{"id":"check.lua","source":"return {api_version=1,action=function() return {verdict=\"unknown\"} end}"}]}'
 ```
+
+Scanner adapter preparation: --facts endpoints.json and POST /run's facts array
+supply multiple known endpoints with service, product and version facts. Every
+selected script runs on every endpoint. See [script API](docs/script-api.md)
+for the input contract and the exported report.Map version 1 evidence envelope.
+This does not establish app-scanner integration acceptance.

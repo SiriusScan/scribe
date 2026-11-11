@@ -7,9 +7,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/SiriusScan/scribe"
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -27,8 +29,9 @@ func runHandler() http.Handler {
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, 128<<10)
 		var request struct {
-			Args    []string       `json:"args"`
-			Scripts []inlineScript `json:"scripts"`
+			Facts   []scribe.Target `json:"facts"`
+			Args    []string        `json:"args"`
+			Scripts []inlineScript  `json:"scripts"`
 		}
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
@@ -45,6 +48,21 @@ func runHandler() http.Handler {
 				http.Error(w, "expected execution arguments", http.StatusBadRequest)
 				return
 			}
+		}
+		if request.Facts != nil {
+			file, err := os.CreateTemp("", "scribe-facts-*.json")
+			if err != nil {
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			defer os.Remove(file.Name())
+			err = json.NewEncoder(file).Encode(request.Facts)
+			closeErr := file.Close()
+			if err != nil || closeErr != nil {
+				http.Error(w, "facts write failed", 500)
+				return
+			}
+			request.Args = append(request.Args, "--facts", file.Name())
 		}
 		// Buffer only enough to identify pre-execution failures; results stream as JSONL.
 		out := &resultWriter{w: w}
