@@ -87,3 +87,5 @@ declared matching products for clean verdicts. Exhaustive runs retain the clean
 gate and mark only completed explicit verdicts as planner misses. Passive probes
 are selected-run scoped, bounded and cache failures; never replace supplied facts.
 Probe coverage currently excludes TLS, UDP and HTTP headers.
+
+Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. UDP and arbitrary product inference remain unsupported.

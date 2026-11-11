@@ -36,13 +36,16 @@ func TestHTTPAndTLSProbeCache(t *testing.T) {
 		}
 		host, port, _ := net.SplitHostPort(server.Listener.Addr().String())
 		n, _ := strconv.Atoi(port)
-		target := Target{Host: host, Port: uint16(n), Protocol: "tcp", TLS: secure}
+		target := Target{Host: host, Port: uint16(n), Protocol: "tcp", TLS: false}
 		cache := make(probeCache)
 		got := cache.enrich(context.Background(), target, 1)
 		again := cache.enrich(context.Background(), target, 1)
 		server.Close()
 		if got.Product != "nginx" || again.Product != got.Product || calls != 1 {
 			t.Fatalf("%+v calls %d", got, calls)
+		}
+		if len(got.CPE) == 0 {
+			t.Fatal("missing CPE", got)
 		}
 		if secure && (got.TLSVersion == "" || got.CertSubject == "") {
 			t.Fatalf("missing TLS facts: %+v", got)
@@ -73,5 +76,23 @@ func TestDirectSDKProbeOption(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestManyTargetSelectionReduction(t *testing.T) {
+	var scripts []Script
+	for i := 1; i <= 100; i++ {
+		scripts = append(scripts, Script{ID: strconv.Itoa(i), Dialect: Sirius, Source: []byte("-- scribe: {\"ports\":[" + strconv.Itoa(i) + "]}")})
+	}
+	idx, err := NewIndex(scripts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	selected := 0
+	for i := 1; i <= 100; i++ {
+		selected += len(idx.Select(Target{Host: "localhost", Port: uint16(i)}))
+	}
+	if selected != 100 || selected >= len(scripts)*100 {
+		t.Fatalf("selected %d versus unfiltered %d", selected, len(scripts)*100)
 	}
 }

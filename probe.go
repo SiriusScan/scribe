@@ -1,19 +1,20 @@
 package scribe
 
 import (
-	"bufio"
 	"context"
 	"crypto/tls"
 	"fmt"
 	"github.com/SiriusScan/scribe/fingerprint"
-	"io"
+
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 )
 
 func mergeProbe(t, f Target) Target {
+	t.TLS = t.TLS || f.TLS
 	if t.Service == "" {
 		t.Service = f.Service
 	}
@@ -44,7 +45,7 @@ func mergeProbe(t, f Target) Target {
 	return t
 }
 
-// probe reads a bounded passive TCP banner. It never sends application data.
+// probe performs bounded banner, TLS and HTTP identification without trust validation.
 func probe(ctx context.Context, t Target) Target {
 	if t.Protocol != "tcp" || t.Port == 0 {
 		return Target{}
@@ -61,12 +62,13 @@ func probe(ctx context.Context, t Target) Target {
 	}
 	defer c.Close()
 	facts := Target{}
-	if t.TLS {
+	if t.TLS || t.Port == 443 || t.Port == 8443 || t.Port == 9443 {
 		tc := tls.Client(c, &tls.Config{ServerName: t.Host, InsecureSkipVerify: true, NextProtos: []string{"http/1.1"}})
 		if tc.HandshakeContext(ctx) != nil {
 			return facts
 		}
 		c = tc
+		facts.TLS = true
 		state := tc.ConnectionState()
 		facts.ALPN = state.NegotiatedProtocol
 		facts.TLSVersion = tls.VersionName(state.Version)
@@ -81,22 +83,45 @@ func probe(ctx context.Context, t Target) Target {
 	n, _ := c.Read(b)
 	c.SetDeadline(deadline)
 	if n == 0 {
-		if _, err := fmt.Fprintf(c, "HEAD / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", t.Host); err != nil {
+		if !t.TLS && !facts.TLS {
+			secure := t
+			secure.TLS = true
+			detected := probe(ctx, secure)
+			if detected.TLS {
+				return detected
+			}
+		}
+		scheme := "http"
+		if facts.TLS {
+			scheme = "https"
+		}
+		u := &url.URL{Scheme: scheme, Host: net.JoinHostPort(host, strconv.Itoa(int(t.Port))), Path: "/"}
+		transport := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, DisableKeepAlives: true, MaxResponseHeaderBytes: 8192}
+		defer transport.CloseIdleConnections()
+		client := &http.Client{Transport: transport, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 3 || req.URL.Host != u.Host {
+				return http.ErrUseLastResponse
+			}
+			return nil
+		}}
+		req, err := http.NewRequestWithContext(ctx, "HEAD", u.String(), nil)
+		if err != nil {
 			return facts
 		}
-		response, err := http.ReadResponse(bufio.NewReader(io.LimitReader(c, 8192)), nil)
+		response, err := client.Do(req)
 		if err == nil {
 			response.Body.Close()
 			f := fingerprint.Default().Match("", response.Header)
-			facts.Service = "http"
-			facts.Product = f.Product
-			facts.Version = f.Version
-			facts.Confidence = 0.8
+			facts.Service, facts.Product, facts.Version = "http", f.Product, f.Version
+			if f.Product != "" {
+				facts.Confidence = 0.8
+				facts.CPE = inferredCPE(f.Product, f.Version)
+			}
 		}
 		return facts
 	}
 	f := fingerprint.Default().Match(string(b[:n]), http.Header{})
-	return Target{Confidence: 0.8, Banner: string(b[:n]), Service: f.Service, Product: f.Product, Version: f.Version}
+	return Target{CPE: inferredCPE(f.Product, f.Version), Confidence: 0.8, Banner: string(b[:n]), Service: f.Service, Product: f.Product, Version: f.Version}
 }
 
 // probeCache is owned by one producer; failures are cached too.
@@ -113,4 +138,21 @@ func (p probeCache) enrich(ctx context.Context, t Target, limit int) Target {
 		p[key] = f
 	}
 	return mergeProbe(t, f)
+}
+
+// Only pinned fingerprint identities have CPE mappings.
+func inferredCPE(product, version string) []string {
+	prefix := map[string]string{"nginx": "nginx:nginx", "Apache": "apache:http_server", "OpenSSH": "openbsd:openssh"}[product]
+	if prefix == "" {
+		return nil
+	}
+	if version == "" {
+		version = "*"
+	}
+	for _, r := range version {
+		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '.' || r == '_' || r == '-' || r == '*') {
+			return nil
+		}
+	}
+	return []string{"cpe:/a:" + prefix + ":" + version}
 }

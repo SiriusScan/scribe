@@ -258,3 +258,5 @@ remain open. These checks establish repository evidence only.
 Implemented: declarative exact CPE alternatives and minimum identification confidence
 (0–1), HTTP HEAD header fingerprinting, TLS subject/ALPN/version facts, and opt-in
 direct SDK planner probes. UDP and CPE inference remain outside probe coverage.
+
+Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. UDP and arbitrary product inference remain unsupported.
