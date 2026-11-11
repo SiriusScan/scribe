@@ -27,7 +27,8 @@ func runHandler() http.Handler {
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, 128<<10)
 		var request struct {
-			Args []string `json:"args"`
+			Args    []string       `json:"args"`
+			Scripts []inlineScript `json:"scripts"`
 		}
 		dec := json.NewDecoder(r.Body)
 		dec.DisallowUnknownFields()
@@ -48,7 +49,7 @@ func runHandler() http.Handler {
 		// Buffer only enough to identify pre-execution failures; results stream as JSONL.
 		out := &resultWriter{w: w}
 		var diagnostics bytes.Buffer
-		code := run(r.Context(), request.Args, out, &diagnostics)
+		code := runScripts(r.Context(), request.Args, request.Scripts, out, &diagnostics)
 		if !out.started {
 			if code != 0 {
 				http.Error(w, diagnostics.String(), http.StatusBadRequest)

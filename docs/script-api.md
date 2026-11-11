@@ -146,3 +146,19 @@ a verified handshake (system trust, TLS 1.2 minimum). The tls result contains
 version, cipher_suite, subject, issuer, not_before and not_after for the leaf
 certificate. Verification failures are errors. There is no insecure TLS mode,
 persistent socket handle, or NSE socket emulation.
+
+
+HTTP callers may supply inline source with `scripts`. Each entry requires a
+nonempty `id` and `source`; `--script` is optional when inline scripts are
+present. File and inline scripts may be combined (64 total). The existing
+128 KiB JSON body cap applies, including JSON escaping; each source also obeys
+the same source size limit as files. Inline scripts use the selected dialect,
+arguments, validation, digest calculation, and JSONL result contract.
+Invalid Lua produces a structured execution error. Require a complete response
+and inspect execution status and explicit verdict; HTTP 200 is insufficient.
+
+```sh
+curl --fail-with-body http://192.168.123.22:18081/run \
+  -H 'Content-Type: application/json' \
+  --data '{"args":["--dialect","sirius","--host","example.internal"],"scripts":[{"id":"check.lua","source":"return {api_version=1,action=function() return {verdict=\"unknown\"} end}"}]}'
+```

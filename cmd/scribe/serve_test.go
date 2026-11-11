@@ -48,3 +48,46 @@ func TestHTTPRejectsBadRequests(t *testing.T) {
 		t.Fatal(rec.Code)
 	}
 }
+
+func TestHTTPInline(t *testing.T) {
+	for _, verdict := range []string{"vulnerable", "not_vulnerable", "unknown", "invalid"} {
+		t.Run(verdict, func(t *testing.T) {
+			source := "return {api_version=1,action=function() return {verdict='" + verdict + "'} end}"
+			if verdict == "invalid" {
+				source = "return {"
+			}
+			body, _ := json.Marshal(map[string]any{"args": []string{"--dialect", "sirius", "--host", "example.internal"}, "scripts": []inlineScript{{ID: "check.lua", Source: source}}})
+			rec := httptest.NewRecorder()
+			runHandler().ServeHTTP(rec, httptest.NewRequest("POST", "/run", bytes.NewReader(body)))
+			var result map[string]any
+			if err := json.Unmarshal(rec.Body.Bytes(), &result); err != nil {
+				t.Fatal(err, rec.Body.String())
+			}
+			if rec.Code != 200 || result["script_id"] != "check.lua" {
+				t.Fatal(rec.Body.String())
+			}
+			if verdict == "invalid" {
+				if result["error"] == nil {
+					t.Fatal(result)
+				}
+			} else if result["verdict"] != verdict {
+				t.Fatal(result)
+			}
+		})
+	}
+}
+
+func TestHTTPInlineMixedAndOversize(t *testing.T) {
+	source := "return {api_version=1,action=function() return {verdict='unknown'} end}"
+	body, _ := json.Marshal(map[string]any{"args": []string{"--dialect", "sirius", "--host", "example.internal", "--script", scriptFile(t, source)}, "scripts": []inlineScript{{ID: "inline.lua", Source: source}}})
+	rec := httptest.NewRecorder()
+	runHandler().ServeHTTP(rec, httptest.NewRequest("POST", "/run", bytes.NewReader(body)))
+	if rec.Code != 200 || bytes.Count(rec.Body.Bytes(), []byte("\n")) != 2 {
+		t.Fatal(rec.Body.String())
+	}
+	rec = httptest.NewRecorder()
+	runHandler().ServeHTTP(rec, httptest.NewRequest("POST", "/run", bytes.NewReader(bytes.Repeat([]byte(" "), 129<<10))))
+	if rec.Code != 400 {
+		t.Fatal(rec.Code)
+	}
+}

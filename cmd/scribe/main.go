@@ -62,7 +62,16 @@ func main() {
 	os.Exit(code)
 }
 
+type inlineScript struct {
+	ID     string `json:"id"`
+	Source string `json:"source"`
+}
+
 func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
+	return runScripts(ctx, argv, nil, stdout, stderr)
+}
+
+func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdout, stderr io.Writer) int {
 	if len(argv) > 0 && argv[0] == "serve" {
 		return serve(ctx, argv[1:], stderr)
 	}
@@ -105,8 +114,16 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	if *dialect != string(scribe.Sirius) && *dialect != string(scribe.NSE) {
 		return fail(errors.New("--dialect must explicitly select sirius or nse"))
 	}
-	if len(paths) == 0 {
+	if len(paths)+len(inline) == 0 {
 		return fail(errors.New("at least one --script file is required"))
+	}
+	if len(paths)+len(inline) > 64 {
+		return fail(errors.New("at most 64 scripts may be selected per invocation"))
+	}
+	for _, script := range inline {
+		if script.ID == "" || len(script.Source) == 0 || len(script.Source) > scribe.MaxSourceBytes {
+			return fail(fmt.Errorf("inline script requires an id and 1-%d source bytes", scribe.MaxSourceBytes))
+		}
 	}
 	if *port < 0 || *port > 65535 {
 		return fail(errors.New("--port must be between 0 and 65535"))
@@ -132,6 +149,18 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 			if err != nil {
 				report.Status = "error"
 				report.Error = err.Error()
+				failed = true
+			}
+			if err := json.NewEncoder(stdout).Encode(report); err != nil {
+				return fail(err)
+			}
+		}
+		for _, script := range inline {
+			err := lua54.Check(scribe.Script{ID: script.ID, Dialect: scribe.Dialect(*dialect), Source: []byte(script.Source)})
+			report := map[string]string{"script": script.ID, "status": "checked"}
+			if err != nil {
+				report["status"] = "error"
+				report["error"] = err.Error()
 				failed = true
 			}
 			if err := json.NewEncoder(stdout).Encode(report); err != nil {
@@ -172,6 +201,9 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 			Script: scribe.Script{ID: filepath.Base(path), Dialect: scribe.Dialect(*dialect), Source: source, Args: args},
 			Target: target,
 		})
+	}
+	for _, script := range inline {
+		tasks = append(tasks, scribe.Task{Script: scribe.Script{ID: script.ID, Dialect: scribe.Dialect(*dialect), Source: []byte(script.Source), Args: args}, Target: target})
 	}
 	httpClient, err := httpcap.New(httpcap.Options{Timeout: *timeout})
 	if err != nil {
