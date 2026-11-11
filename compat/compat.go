@@ -27,6 +27,7 @@ import (
 )
 
 // Status is the measured compatibility outcome for one case.
+// The empty zero value is unmeasured, never Pass.
 type Status string
 
 const (
@@ -42,12 +43,18 @@ const (
 // Nmap fields record the differential oracle once selected; until the
 // Phase 1 pin decision is made they stay empty and PinStatus says so.
 type Corpus struct {
-	Name                    string `json:"name"`
-	Revision                string `json:"revision,omitempty"`
-	ReferenceNmapVersion    string `json:"reference_nmap_version,omitempty"`
-	ReferenceNmapRevision   string `json:"reference_nmap_revision,omitempty"`
+	// Name names the pinned collection; empty supplies no corpus identity.
+	Name string `json:"name"`
+	// Revision identifies the collection revision; empty means unpinned.
+	Revision string `json:"revision,omitempty"`
+	// ReferenceNmapVersion records oracle version text; empty means no oracle selected.
+	ReferenceNmapVersion string `json:"reference_nmap_version,omitempty"`
+	// ReferenceNmapRevision records oracle source revision; empty means unavailable.
+	ReferenceNmapRevision string `json:"reference_nmap_revision,omitempty"`
+	// ReferenceCorpusRevision records upstream corpus revision; empty means unavailable.
 	ReferenceCorpusRevision string `json:"reference_corpus_revision,omitempty"`
-	PinStatus               string `json:"pin_status,omitempty"`
+	// PinStatus describes pin selection; empty supplies no pin status.
+	PinStatus string `json:"pin_status,omitempty"`
 }
 
 // Expect is one case's asserted outcome. Status is the expected scribe
@@ -55,63 +62,95 @@ type Corpus struct {
 // a script expected to hit an explicitly unsupported API. Data is the
 // exact expected action output as JSON and is required for "completed".
 type Expect struct {
-	Status        string          `json:"status"`
-	Data          json.RawMessage `json:"data,omitempty"`
-	ErrorContains string          `json:"error_contains,omitempty"`
+	// Status is required expected execution status or unsupported; empty is invalid.
+	Status string `json:"status"`
+	// Data is exact expected JSON output, required for completed; nil supplies no assertion.
+	Data json.RawMessage `json:"data,omitempty"`
+	// ErrorContains is the expected error substring; empty is rejected for error/unsupported expectations.
+	ErrorContains string `json:"error_contains,omitempty"`
 }
 
 // Case is one pinned script invocation against supplied target facts.
 type Case struct {
-	ID     string         `json:"id"`
-	Script string         `json:"script"`
-	SHA256 string         `json:"sha256"`
-	Target scribe.Target  `json:"target"`
-	Args   map[string]any `json:"args,omitempty"`
-	Expect Expect         `json:"expect"`
+	// ID is required case identity; empty is invalid.
+	ID string `json:"id"`
+	// Script is a source path relative to BaseDir; empty is invalid.
+	Script string `json:"script"`
+	// SHA256 is the required hexadecimal source digest; empty is invalid.
+	SHA256 string `json:"sha256"`
+	// Target supplies endpoint facts; zero fails execution validation.
+	Target scribe.Target `json:"target"`
+	// Args supplies script arguments; nil supplies none.
+	Args map[string]any `json:"args,omitempty"`
+	// Expect contains required outcome assertions; zero is invalid.
+	Expect Expect `json:"expect"`
 }
 
 // Manifest is the pinned input to a compatibility run.
 type Manifest struct {
-	SchemaVersion int    `json:"schema_version"`
-	Corpus        Corpus `json:"corpus"`
-	Cases         []Case `json:"cases"`
-	BaseDir       string `json:"-"`
+	// SchemaVersion must be 1; zero is invalid.
+	SchemaVersion int `json:"schema_version"`
+	// Corpus describes the selected corpus; zero establishes no upstream compatibility.
+	Corpus Corpus `json:"corpus"`
+	// Cases contains measured cases; empty is rejected by validation.
+	Cases []Case `json:"cases"`
+	// BaseDir resolves script paths; empty uses the current directory for relative paths.
+	BaseDir string `json:"-"`
 }
 
 // Entry is one case's measured outcome. Unexpected marks an unsupported
 // outcome the manifest did not predict (or predicted with a different
 // reason); it fails the run even though the status stays "unsupported".
 type Entry struct {
-	ID              string `json:"id"`
-	Script          string `json:"script"`
-	SHA256          string `json:"sha256,omitempty"`
-	ExpectedSHA256  string `json:"expected_sha256,omitempty"`
-	Status          Status `json:"status"`
-	Reason          string `json:"reason"`
+	// ID echoes case identity; empty supplies none.
+	ID string `json:"id"`
+	// Script echoes the case source path; empty supplies none.
+	Script string `json:"script"`
+	// SHA256 is measured source digest; empty means unavailable.
+	SHA256 string `json:"sha256,omitempty"`
+	// ExpectedSHA256 is the manifest pin; empty supplies no pin.
+	ExpectedSHA256 string `json:"expected_sha256,omitempty"`
+	// Status is pass, fail or unsupported; empty is uninitialized.
+	Status Status `json:"status"`
+	// Reason explains the measured outcome; empty supplies none.
+	Reason string `json:"reason"`
+	// ExecutionStatus is raw execution status; empty means unavailable.
 	ExecutionStatus string `json:"execution_status,omitempty"`
-	Error           string `json:"error,omitempty"`
-	Unexpected      bool   `json:"unexpected,omitempty"`
+	// Error contains execution error text; empty means none recorded.
+	Error string `json:"error,omitempty"`
+	// Unexpected marks an unpredicted unsupported outcome; false adds no such failure.
+	Unexpected bool `json:"unexpected,omitempty"`
 }
 
 // Summary counts outcomes. It conveys no compatibility percentage claim
 // beyond the manifest's own selected cases.
 type Summary struct {
-	Total       int `json:"total"`
-	Pass        int `json:"pass"`
-	Fail        int `json:"fail"`
+	// Total counts cases; zero means none.
+	Total int `json:"total"`
+	// Pass counts matching expectations; zero means none.
+	Pass int `json:"pass"`
+	// Fail counts failed cases; zero means none.
+	Fail int `json:"fail"`
+	// Unsupported counts unsupported outcomes including expected ones; zero means none.
 	Unsupported int `json:"unsupported"`
-	Unexpected  int `json:"unexpected"`
+	// Unexpected counts unpredicted unsupported outcomes; zero means none.
+	Unexpected int `json:"unexpected"`
 }
 
 // Report is the deterministic machine-readable result of a run. It holds
 // no timestamps or durations so identical inputs produce identical bytes.
 type Report struct {
-	SchemaVersion int     `json:"schema_version"`
-	Corpus        Corpus  `json:"corpus"`
-	Summary       Summary `json:"summary"`
-	Results       []Entry `json:"results"`
+	// SchemaVersion is 1 for generated reports; zero is uninitialized.
+	SchemaVersion int `json:"schema_version"`
+	// Corpus preserves manifest corpus identity; zero establishes no compatibility claim.
+	Corpus Corpus `json:"corpus"`
+	// Summary contains case counts; zero has no measured cases.
+	Summary Summary `json:"summary"`
+	// Results contains ordered case outcomes; nil contains none.
+	Results []Entry `json:"results"`
 }
 
+// A zero Report has no failures and OK returns true; it establishes no corpus coverage.
 // OK reports whether the run matched every manifest expectation: no
 // failures and no unexpected unsupported outcomes. Expected unsupported
 // cases are measured gaps, not run failures.

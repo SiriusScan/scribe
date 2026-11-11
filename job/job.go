@@ -11,22 +11,34 @@ import (
 
 // Request is a schema-v1 invocation; absent capabilities deny all registered calls.
 type Request struct {
-	SchemaVersion int            `json:"schema_version"`
-	ID            string         `json:"id"`
-	ScriptID      string         `json:"script_id"`
-	Source        string         `json:"source,omitempty"`
-	Dialect       scribe.Dialect `json:"dialect"`
-	Args          map[string]any `json:"args,omitempty"`
-	Target        scribe.Target  `json:"target"`
-	Limits        scribe.Limits  `json:"limits"`
-	Capabilities  []string       `json:"capabilities"`
+	// SchemaVersion must be 1; zero is invalid.
+	SchemaVersion int `json:"schema_version"`
+	// ID is required caller correlation text; empty is invalid.
+	ID string `json:"id"`
+	// ScriptID identifies resolved source and execution; empty fails engine validation.
+	ScriptID string `json:"script_id"`
+	// Source is inline Lua text; empty invokes Resolver.
+	Source string `json:"source,omitempty"`
+	// Dialect must explicitly select sirius or nse; empty is invalid.
+	Dialect scribe.Dialect `json:"dialect"`
+	// Args contains invocation arguments; nil supplies none.
+	Args map[string]any `json:"args,omitempty"`
+	// Target contains required endpoint facts; zero is invalid.
+	Target scribe.Target `json:"target"`
+	// Limits only tightens runtime ceilings; zero inherits, negative timeout is invalid.
+	Limits scribe.Limits `json:"limits"`
+	// Capabilities lists exact allowed function names; nil and empty both deny all.
+	Capabilities []string `json:"capabilities"`
 }
 
 // Result preserves job correlation and the conservative report envelope.
 type Result struct {
-	SchemaVersion int             `json:"schema_version"`
-	ID            string          `json:"id"`
-	Report        report.Envelope `json:"report"`
+	// SchemaVersion is 1 for Run results; zero is uninitialized.
+	SchemaVersion int `json:"schema_version"`
+	// ID echoes request correlation text; empty supplies none.
+	ID string `json:"id"`
+	// Report contains conservative execution evidence; zero is not a successful assessment.
+	Report report.Envelope `json:"report"`
 }
 
 // Resolver loads caller-owned script source when inline source is absent.

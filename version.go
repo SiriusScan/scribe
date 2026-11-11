@@ -10,9 +10,13 @@ var BuildCommit string
 
 // VersionInfo describes the embedded module, with unknown fields left empty.
 type VersionInfo struct {
-	Module   string
-	Version  string
-	Commit   string
+	// Module is the Scribe module path; empty is unknown in a manually constructed value.
+	Module string
+	// Version is injected or Go module version text; empty is unavailable.
+	Version string
+	// Commit is the Scribe revision; empty is unavailable, never the embedder revision.
+	Commit string
+	// Modified reports main-module VCS modifications; false also covers unavailable metadata.
 	Modified bool
 }
 

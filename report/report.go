@@ -5,17 +5,24 @@ import "github.com/SiriusScan/scribe"
 
 // Source identifies the engine and script configuration that produced evidence.
 type Source struct {
-	Name   string            `json:"name"`
+	// Name identifies the evidence producer; Map uses scribe, empty is unspecified.
+	Name string `json:"name"`
+	// Config contains script_id, script_sha256 and dialect from Map; nil supplies no provenance.
 	Config map[string]string `json:"config"`
 }
 
 // Envelope is the schema-v1 report with raw evidence and a conservative assessment.
 type Envelope struct {
-	SchemaVersion int            `json:"schema_version"`
-	Source        Source         `json:"source"`
-	Assessment    string         `json:"assessment"`
-	Verdict       scribe.Verdict `json:"verdict"`
-	Evidence      scribe.Result  `json:"evidence"`
+	// SchemaVersion is 1 for mapped reports; zero is uninitialized.
+	SchemaVersion int `json:"schema_version"`
+	// Source contains execution provenance; zero supplies none.
+	Source Source `json:"source"`
+	// Assessment is inconclusive unless completed native explicit evidence establishes a verdict; empty is uninitialized.
+	Assessment string `json:"assessment"`
+	// Verdict is unknown unless completed native evidence establishes an explicit verdict; empty is uninitialized.
+	Verdict scribe.Verdict `json:"verdict"`
+	// Evidence preserves the original result; zero establishes no execution or verdict.
+	Evidence scribe.Result `json:"evidence"`
 }
 
 // Map preserves original evidence. Only completed explicit native verdicts establish assessments.

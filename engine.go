@@ -14,32 +14,42 @@ const MaxSourceBytes = 1 << 20
 // Options controls orchestration, independently of each runtime's limits.
 type Options struct {
 	// OnEvent observes ordered per-module lifecycle records; see Event.
+	// OnEvent is optional; nil disables observations.
 	OnEvent func(Event) error
-	// Plan emits planning results without executing scripts or probing endpoints.
-	Plan           bool
-	ScriptTimeout  time.Duration
+	// Plan defaults false; true returns planning skips without actions or probes.
+	Plan bool
+	// ScriptTimeout caps each invocation in nanoseconds (time.Duration); zero adds no engine deadline, negative is invalid.
+	ScriptTimeout time.Duration
+	// GlobalInterval spaces starts across a run in nanoseconds; zero disables pacing, negative is invalid.
 	GlobalInterval time.Duration
 	// SNMPCommunity enables v2c identification with exactly this community; empty disables it.
 	// At most 255 bytes; it is never included in returned facts.
-	SNMPCommunity        string
-	PlannerProbes        bool
+	SNMPCommunity string
+	// PlannerProbes enables bounded passive identification; false disables general probes.
+	PlannerProbes bool
+	// StrictIdentification requires declared matching products for clean verdicts; false preserves legacy callers.
 	StrictIdentification bool
-	Exhaustive           bool
-	Concurrency          int
-	// HostConcurrency defaults to Concurrency. Limits are per run and span ports.
+	// Exhaustive executes excluded pairs while retaining clean gates; false skips them.
+	Exhaustive bool
+	// Concurrency is the worker count, 1–256; zero selects four, negative is invalid.
+	Concurrency int
+	// HostConcurrency counts active tasks per host across ports; zero uses Concurrency.
+	// Values must be 1 through Concurrency; negative is invalid.
 	HostConcurrency int
-	// HostInterval spaces invocation starts per host; zero disables pacing.
+	// HostInterval spaces starts per host in nanoseconds; zero disables pacing, negative is invalid.
 	HostInterval time.Duration
 	// HostErrorBudget stops new invocations after this many execution errors.
-	// Already running invocations finish; zero disables the budget.
+	// Already running invocations finish; zero disables the budget, negative is invalid.
 	HostErrorBudget int
-	Strategy        Strategy
-	// Window bounds pending plus active tasks and target lookahead; default 256.
+	// Strategy selects host-spray or script-spray; empty selects script-spray.
+	Strategy Strategy
+	// Window counts pending plus active work, 1–65536; zero selects 256, negative is invalid.
 	Window int
-	// MaxHosts bounds retained per-run host accounting; default 65536.
+	// MaxHosts limits retained hosts, 1–1000000; zero selects 65536, negative is invalid.
 	MaxHosts int
 }
 
+// The zero Engine is not usable; construct one with New.
 // Engine holds immutable runtime registrations. Callers may use Run concurrently
 // if their registered runtimes support it, and must not mutate submitted tasks.
 type Engine struct {

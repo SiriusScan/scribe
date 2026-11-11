@@ -23,6 +23,7 @@ type indexedScript struct {
 // Index caches script-declared metadata and owns a snapshot of source bytes.
 // Declare metadata on one line: -- scribe: {"services":["http"],"ports":[80]}
 // Scripts without hints and endpoints without identifying facts run conservatively.
+// The zero Index contains no scripts; use NewIndex before execution.
 type Index struct{ entries []indexedScript }
 
 // NewIndex validates metadata and snapshots scripts for bounded selection.
@@ -217,9 +218,13 @@ func CheckIdentification(s Script) error {
 
 // Module describes validated script selection metadata without executing Lua.
 type Module struct {
-	Script   string   `json:"script"`
-	Dialect  Dialect  `json:"dialect"`
-	Match    *Match   `json:"match"`
+	// Script is the caller script ID; empty supplies no identity.
+	Script string `json:"script"`
+	// Dialect is the validated explicit dialect; empty is uninitialized.
+	Dialect Dialect `json:"dialect"`
+	// Match is detached selection metadata; nil means no match block.
+	Match *Match `json:"match"`
+	// Warnings contains inventory diagnostics; nil or empty means none.
 	Warnings []string `json:"warnings"`
 }
 

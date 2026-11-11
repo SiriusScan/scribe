@@ -2,14 +2,21 @@ package scribe
 
 import "encoding/json"
 
+// The zero Summary is initialized by Add; use Summarize(nil) for an empty wire record.
 // Summary counts execution evidence without promoting failed or skipped verdicts.
 type Summary struct {
-	SchemaVersion int             `json:"schema_version"`
-	Type          string          `json:"type"`
-	Total         int             `json:"total"`
-	ByVerdict     map[Verdict]int `json:"by_verdict"`
-	ByStatus      map[Status]int  `json:"by_status"`
-	BySkipReason  map[string]int  `json:"by_skip_reason"`
+	// SchemaVersion is 1 in initialized summaries; zero is uninitialized.
+	SchemaVersion int `json:"schema_version"`
+	// Type is summary in initialized records; empty is uninitialized.
+	Type string `json:"type"`
+	// Total counts delivered records including duplicates; zero means none.
+	Total int `json:"total"`
+	// ByVerdict counts completed explicit verdicts, otherwise unknown; nil is uninitialized.
+	ByVerdict map[Verdict]int `json:"by_verdict"`
+	// ByStatus counts raw execution statuses including empty; nil is uninitialized.
+	ByStatus map[Status]int `json:"by_status"`
+	// BySkipReason counts reasons only for skipped records; nil is uninitialized.
+	BySkipReason map[string]int `json:"by_skip_reason"`
 }
 
 // Add includes every delivered record. Only completed explicit verdicts count.

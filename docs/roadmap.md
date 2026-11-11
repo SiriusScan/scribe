@@ -417,15 +417,19 @@ milliseconds/zero behavior. Added conservative summary coverage for uninitialize
 failed and cancelled records carrying explicit verdicts. The signature golden
 change is whitespace only; declarations and JSON tags are unchanged.
 
-Remaining release audit: Target, Script, Limits (numeric defaults and nonpositive
-behavior), CapabilityDeniedError, Task, Finding, Verdict/Status zero semantics,
-Output, Summary, Match, Options, Plan, Module, Event, VersionInfo, and exported
-fields in adapter/pingpp, capability/httpcap, capability/localcap,
-capability/tcpcap, compat, fingerprint, job, report and runtime/lua54. Each needs
-implementation and existing-test review for meaning, units, defaults and zero
-behavior, with focused tests for uncovered behavior. Types without exported
-fields still need zero-value/API documentation review. v1.0.0 remains untagged;
-service deployment is deferred until that gate is complete. Phase 3 stays paused.
-Validation for chunk 1: `make check` passed on apps01 (race suite, external SDK
-acceptance, Windows/Darwin cross-compilation, vet and CGO-disabled CLI build).
-This is build/local execution evidence, not scanner/agent integration acceptance.
+Remaining release audit: complete (2026-11-11). All listed root and
+subpackage exported fields now document meaning, units, defaults and zero
+behavior beside their declarations. See [the audit inventory](api-field-audit.md)
+for reviewed surfaces and behavioral evidence. Plan is Options.Plan, not a
+separate exported type. Added focused defaults, invalid option, confidence,
+inclusive version/advisory port, empty matcher and conservative report tests.
+Signature golden review confirms unchanged field names/order/types/tags and
+callable signatures; only documentation-driven formatting and grouped Facts
+field spelling changed. v1.0.0 release validation uses make check and the installed
+HTTP smoke fixtures. These checks establish local execution/build and service
+transport evidence, not scanner/agent or full vGPT workflow acceptance.
+Phase 3 stays paused.
+
+Validation: `make check` passed on apps01 on 2026-11-11, including the race
+suite, external SDK acceptance, Windows/Darwin cross-compilation, vet and
+CGO-disabled CLI build.

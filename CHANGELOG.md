@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## v1.0.0 — 2026-11-11
 
-- Begin field-level API audit with Result godoc and conservative handling tests for uninitialized and unsuccessful execution records. Full audit remains a v1.0.0 release gate.
+- Complete the exported-field audit across the SDK, adapters, capabilities, jobs, reports, compatibility tools and Lua runtime; document units, defaults and zero behavior.
+- Add focused validation for orchestration/runtime defaults, invalid options, confidence bounds, inclusive version matching, advisory ports and empty/conservative evidence.
+- Preserve existing API signatures and runtime behavior. Phase 3 remains paused; local build/service checks do not establish scanner/agent or full vGPT acceptance.
 
 ## v0.9.0
 

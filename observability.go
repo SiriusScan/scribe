@@ -6,9 +6,12 @@ package scribe
 // same callback concurrently. Callbacks must return promptly; an error cancels
 // delivery just like a result sink error. Missing events are inconclusive.
 type Event struct {
-	SchemaVersion int    `json:"schema_version"`
-	Type          string `json:"type"`
-	Result        Result `json:"result"`
+	// SchemaVersion is 1 for generated events; zero is uninitialized.
+	SchemaVersion int `json:"schema_version"`
+	// Type is planning, timing or verdict; empty is uninitialized.
+	Type string `json:"type"`
+	// Result preserves terminal evidence; zero supplies no completion or assessment.
+	Result Result `json:"result"`
 }
 
 // Events derives transport-independent observations from a terminal result.

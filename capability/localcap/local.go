@@ -18,6 +18,9 @@ const MaxBytes = 64 << 10
 const MaxEntries = 1024
 
 // New registers exact capability names for the existing per-job grant mechanism.
+// Returned file stat size is bytes and mode is Go file-mode text. Reads return
+// strings, including empty for empty files. Inventories contain at most 1024
+// entries; unsupported platforms return errors. There is no command execution.
 // The caller owns Close and must keep the root open until executions finish.
 func New(directory string) (map[string]scribe.Function, func() error, error) {
 	root, err := os.OpenRoot(directory)

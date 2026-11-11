@@ -7,17 +7,28 @@ import (
 )
 
 // Facts contains inferred endpoint identity, never a vulnerability verdict.
-type Facts struct{ Service, Product, Version string }
+type Facts struct {
+	// Service is inferred service text; empty means unknown.
+	Service string
+	// Product is inferred product text; empty means unknown.
+	Product string
+	// Version is capture group one; empty means unavailable.
+	Version string
+}
 
 // Rule matches either a TCP banner (Header empty) or an HTTP header.
 // Capture group one, when present, supplies the version. First match wins.
 type Rule struct {
-	Header           string
-	Pattern          *regexp.Regexp
+	// Header selects an HTTP header; empty selects the TCP banner.
+	Header string
+	// Pattern matches identity text; nil disables the rule.
+	Pattern *regexp.Regexp
+	// Service and Product are returned identity text; empty supplies no identity.
 	Service, Product string
 }
 
 // Matcher applies an ordered snapshot of rules; the first match wins.
+// A zero Matcher has no rules and returns unknown (empty) facts.
 type Matcher struct{ rules []Rule }
 
 // New copies the rule slice. Callers must not mutate the referenced patterns.

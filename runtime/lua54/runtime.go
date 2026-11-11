@@ -26,11 +26,13 @@ type Limits = scribe.Limits
 
 // Options configures finite VM limits, trusted capabilities and bounded immutable code caches.
 type Options struct {
-	Limits    Limits
+	// Limits sets runtime ceilings; zero uses 10 million CPU units, 32 MiB and five seconds.
+	Limits Limits
+	// Functions registers exact trusted capability names; nil registers none. Names and functions must be nonempty.
 	Functions map[string]scribe.Function
-	// CacheEntries defaults to 128; -1 disables the bounded code/template cache.
+	// CacheEntries counts cached templates; zero selects 128, -1 disables, values outside -1–4096 are invalid.
 	CacheEntries int
-	// CacheBytes defaults to 16 MiB and bounds retained template accounting.
+	// CacheBytes bounds retained template accounting bytes; zero selects 16 MiB.
 	CacheBytes uint64
 }
 

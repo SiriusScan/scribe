@@ -24,7 +24,9 @@ const (
 
 // Options bounds each request. Zero fields use finite defaults.
 type Options struct {
-	Timeout      time.Duration
+	// Timeout bounds the complete HTTP request; zero uses ten seconds, negative is invalid.
+	Timeout time.Duration
+	// MaxBodyBytes bounds response bytes; zero uses 1 MiB. Negative and MaxInt64 are invalid.
 	MaxBodyBytes int64
 	// DisableReuse forces a fresh connection for each request.
 	DisableReuse bool
@@ -32,6 +34,7 @@ type Options struct {
 
 // Client grants GET requests only to the endpoint supplied by the caller.
 // Reusable connections are partitioned by logical authority, fixed IP and TLS.
+// The zero Client is not usable; initialize it with New and close it after use.
 type Client struct {
 	client       *http.Client
 	transport    *http.Transport

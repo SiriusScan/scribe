@@ -8,20 +8,33 @@ import (
 )
 
 // Match combines fields with AND; alternatives within a field use OR.
+// The zero Match accepts every endpoint but supplies no product identification.
 // Ports are advisory and never exclude an endpoint.
 type Match struct {
-	CPE         []string `json:"cpe,omitempty"`
-	Confidence  float64  `json:"confidence,omitempty"`
-	OnUnknown   string   `json:"on_unknown,omitempty"`
-	Ports       []uint16 `json:"ports,omitempty"`
-	Services    []string `json:"services,omitempty"`
-	Products    []string `json:"products,omitempty"`
-	Protocols   []string `json:"protocols,omitempty"`
-	MinVersion  string   `json:"min_version,omitempty"`
-	MaxVersion  string   `json:"max_version,omitempty"`
-	BannerRegex string   `json:"banner_regex,omitempty"`
-	AnyOf       []Match  `json:"any_of,omitempty"`
-	AllOf       []Match  `json:"all_of,omitempty"`
+	// CPE contains accepted CPE alternatives; nil imposes no CPE constraint.
+	CPE []string `json:"cpe,omitempty"`
+	// Confidence is minimum identity confidence in [0,1]; zero imposes no threshold.
+	Confidence float64 `json:"confidence,omitempty"`
+	// OnUnknown selects run, skip or probe for missing facts; empty uses normal matching.
+	OnUnknown string `json:"on_unknown,omitempty"`
+	// Ports contains advisory port numbers; nil supplies no hints and ports never exclude.
+	Ports []uint16 `json:"ports,omitempty"`
+	// Services contains accepted service names; nil imposes no service constraint.
+	Services []string `json:"services,omitempty"`
+	// Products contains accepted product names; nil supplies no positive product identification.
+	Products []string `json:"products,omitempty"`
+	// Protocols contains accepted transports; nil imposes no transport constraint.
+	Protocols []string `json:"protocols,omitempty"`
+	// MinVersion is an inclusive semantic-version lower bound; empty is unbounded.
+	MinVersion string `json:"min_version,omitempty"`
+	// MaxVersion is an inclusive semantic-version upper bound; empty is unbounded.
+	MaxVersion string `json:"max_version,omitempty"`
+	// BannerRegex is a Go regular expression bounded to 4096 bytes; empty imposes no banner constraint.
+	BannerRegex string `json:"banner_regex,omitempty"`
+	// AnyOf contains alternative child matches; nil adds no condition.
+	AnyOf []Match `json:"any_of,omitempty"`
+	// AllOf contains required child matches; nil adds no condition.
+	AllOf []Match `json:"all_of,omitempty"`
 }
 
 func version(v string) string {

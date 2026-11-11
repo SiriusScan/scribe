@@ -14,6 +14,9 @@ import (
 
 // Function connects to the supplied endpoint, optionally sends one string, and
 // receives one chunk (at most 64 KiB). No arguments performs a banner grab.
+// The exchange has a five-second ceiling, tightened by the context deadline.
+// Returned data is text (empty on EOF); eof is a boolean. TLS version is a
+// numeric protocol identifier, certificate dates are RFC3339 strings.
 // Target.TLS enables a verified TLS handshake and certificate metadata.
 func Function(ctx context.Context, target scribe.Target, args []any) (any, error) {
 	if ctx == nil {

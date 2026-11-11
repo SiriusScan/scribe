@@ -19,31 +19,48 @@ const SchemaVersion = "pingpp.scan/v1"
 // Document contains the endpoint facts consumed from the versioned wire schema.
 // Unused upstream evidence is deliberately not interpreted as a verdict.
 type Document struct {
-	SchemaVersion string          `json:"schema_version"`
-	Error         json.RawMessage `json:"error"`
-	Asset         *struct {
+	// SchemaVersion must equal pingpp.scan/v1; empty is invalid.
+	SchemaVersion string `json:"schema_version"`
+	// Error is raw upstream error JSON; absent or null means no reported error.
+	Error json.RawMessage `json:"error"`
+	// Asset contains endpoint and identity evidence; nil is invalid.
+	Asset *struct {
+		// Endpoints contains discovered endpoints; nil selects none.
 		Endpoints []Endpoint `json:"endpoints"`
-		Claims    []Claim    `json:"claims"`
+		// Claims contains optional identity assertions; nil supplies no identity.
+		Claims []Claim `json:"claims"`
 	} `json:"asset"`
 }
 
 // Endpoint records a discovery endpoint and its execution state.
 type Endpoint struct {
-	Address   string `json:"address"`
-	Port      uint16 `json:"port"`
+	// Address must be an IP literal; empty is invalid.
+	Address string `json:"address"`
+	// Port is the transport port; zero is invalid.
+	Port uint16 `json:"port"`
+	// Transport must be tcp or udp; empty is invalid.
 	Transport string `json:"transport"`
-	State     string `json:"state"`
+	// State must be open for selection; empty is invalid.
+	State string `json:"state"`
+	// Execution must be attempted for selection; empty is ineligible.
 	Execution string `json:"execution"`
 }
 
 // Claim carries an endpoint identity assertion and contradiction references.
 type Claim struct {
-	Subject          string   `json:"subject"`
-	Kind             string   `json:"kind"`
-	Product          string   `json:"product"`
-	Value            string   `json:"value"`
-	Version          string   `json:"version"`
-	Confidence       string   `json:"confidence"`
+	// Subject identifies the endpoint claim subject; empty does not identify an endpoint.
+	Subject string `json:"subject"`
+	// Kind identifies protocol, service or product evidence; empty is ignored.
+	Kind string `json:"kind"`
+	// Product contains asserted product identity; empty provides none.
+	Product string `json:"product"`
+	// Value contains the asserted claim value; empty provides none.
+	Value string `json:"value"`
+	// Version contains asserted product version text; empty is unknown.
+	Version string `json:"version"`
+	// Confidence must be exact or strong to accept identity; empty supplies none.
+	Confidence string `json:"confidence"`
+	// ContradictionIDs references contradictory claims; nil supplies none.
 	ContradictionIDs []string `json:"contradiction_ids"`
 }
 
@@ -122,6 +139,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 
 // Reader reads bounded JSONL documents and exposes a RunTargetStream producer.
 // The caller owns the input and must arrange interruption of blocking reads.
+// The zero Reader is not usable; initialize it with NewReader.
 type Reader struct {
 	scan    *bufio.Scanner
 	pending []scribe.Target
