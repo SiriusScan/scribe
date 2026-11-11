@@ -259,7 +259,7 @@ Implemented: declarative exact CPE alternatives and minimum identification confi
 (0–1), HTTP HEAD header fingerprinting, TLS subject/ALPN/version facts, and opt-in
 direct SDK planner probes. UDP and CPE inference remain outside probe coverage.
 
-Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. UDP and arbitrary product inference remain unsupported.
+Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. SNMP and arbitrary product inference remain unsupported.
 
 Planner transport/load coverage slice (2026-11-11): local CLI JSONL and POST
 /run fixtures assert completed unknown execution, TLS certificate/version facts,
@@ -283,3 +283,12 @@ cross-builds, vet and CGO-disabled CLI build). apps01 service reinstalled with
 make install-service; make smoke-http passed all three verdicts and TCP banner.
 These are local transport/build checks, not full vGPT workflow acceptance.
 No production code changed, so no service-affecting release tag was created.
+
+v0.4.0 slice: bounded UDP DNS/NTP planner identification with correlated response
+fixtures; service facts only, no product or vulnerability inference. SNMP deferred
+until callers can supply an explicit community policy. README and executable
+godoc examples cover Run, Batch and selected Stream. Corpus metadata lint reports
+legacy missing match blocks without changing compatibility fixtures.
+Validation: make check passed (race, external SDK, cross-builds, vet, CGO-disabled
+CLI). apps01 make install-service and make smoke-http passed all three verdicts
+and TCP banner. This is local build/transport evidence, not vGPT acceptance.

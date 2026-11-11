@@ -47,7 +47,10 @@ func mergeProbe(t, f Target) Target {
 
 // probe performs bounded banner, TLS and HTTP identification without trust validation.
 func probe(ctx context.Context, t Target) Target {
-	if t.Protocol != "tcp" || t.Port == 0 {
+	if t.Protocol == "udp" && t.Port != 0 {
+ return udpProbe(ctx, t)
+ }
+ if t.Protocol != "tcp" || t.Port == 0 {
 		return Target{}
 	}
 	ctx, cancel := context.WithTimeout(ctx, 250*time.Millisecond)

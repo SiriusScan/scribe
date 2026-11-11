@@ -281,3 +281,24 @@ assessment, HTTP/2, redirects, and CPE inference remain unsupported. These check
 provide build/runtime evidence, not scanner or Activepieces integration acceptance.
 
 Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. UDP and arbitrary product inference remain unsupported.
+
+### Runnable Go SDK quickstart
+
+Import `github.com/SiriusScan/scribe` and `github.com/SiriusScan/scribe/runtime/lua54`.
+Construct a native runtime with `lua54.NewNative(lua54.Options{})`, then pass it
+to `scribe.New(scribe.Options{Concurrency: 2}, runtime)`. Handle both errors.
+Each task supplies a script with explicit `Dialect: scribe.Sirius` and target facts.
+
+The executable godoc examples in [sdk_example_test.go](sdk_example_test.go) show:
+
+- `Engine.Run(ctx, tasks, sink)` delivers each result to a caller-owned callback.
+- `Engine.Batch(ctx, tasks)` collects a finite task batch.
+- `Engine.Stream(ctx, index, nextTarget, sink)` applies selection to a bounded target stream.
+
+Run all three with `go test -v -run '^ExampleEngine_' .`. The Stream example
+builds an immutable `NewIndex` and demonstrates a service exclusion. Use declarative
+`-- scribe: {"match":{"services":["http"]}}` metadata for new scripts.
+See [examples/external](examples/external) for a runnable separate-module consumer.
+Always check execution status and explicit verdict separately: completed unknown,
+skips, errors and missing records are inconclusive. Caller facts take precedence
+when optional planner probes fill missing identification.
