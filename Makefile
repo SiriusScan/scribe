@@ -47,6 +47,6 @@ cross-compile:
 # Controlled local sockets and SDK fixtures; not a live consumer workflow gate.
 acceptance-local: acceptance
 	go test -race -count=1 -v . -run 'Test(PingppSelectionParallelHTTP|HTTPAndTLSProbeCache|DirectSDKProbeOption|SSHListenerAcceptance)$$'
-	go test -race -count=1 ./cmd/scribe -run 'TestPingppSelection$$'
+	go test -race -count=1 ./cmd/scribe -run 'Test(PingppSelection|RealEmitterExecution)$$'
 
 	go test -count=1 -v ./adapter/pingpp -run TestRealEmitter

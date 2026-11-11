@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"context"
+	"net"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -57,5 +59,37 @@ func TestPingppSelection(t *testing.T) {
 	args = append(args, "--facts-jsonl", "unused")
 	if code := run(context.Background(), args, &out, &diagnostics); code == 0 {
 		t.Fatal("mixed input accepted")
+	}
+}
+
+func TestRealEmitterExecution(t *testing.T) {
+	repo := os.Getenv("PINGPP_REPO")
+	if repo == "" {
+		repo = "/home/agi/Projects/sirius-workspace/minor-projects/ping++"
+	}
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	cmd := exec.Command("go", "run", "./cmd/pingpp-scan", listener.Addr().String())
+	cmd.Dir = repo
+	wire, err := cmd.Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	facts := filepath.Join(dir, "scan.jsonl")
+	script := filepath.Join(dir, "check.lua")
+	if err := os.WriteFile(facts, wire, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(script, []byte("return {api_version=1,action=function(t) return {verdict='vulnerable',data='emitter-executed'} end}"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	var out, diagnostics bytes.Buffer
+	code := run(context.Background(), []string{"--dialect", "sirius", "--script", script, "--pingpp-jsonl", facts}, &out, &diagnostics)
+	if code != 0 || strings.Count(out.String(), "\n") != 1 || !strings.Contains(out.String(), `"status":"completed"`) || !strings.Contains(out.String(), "emitter-executed") || !strings.Contains(out.String(), `"verdict":"vulnerable"`) {
+		t.Fatalf("%d %s %s", code, &out, &diagnostics)
 	}
 }

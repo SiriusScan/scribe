@@ -610,3 +610,26 @@ PASS
 ok  	github.com/SiriusScan/scribe/runtime/lua54	11.400s
 ```
 Previous v1.0.2 unfiltered 43199/48444/40718 actions/s and selected 40337/47089/45897 overlap these samples; no clear throughput regression established. Deployment started during benchmark completion, so repeat isolated samples before release performance conclusions.
+
+## v1.2.0 validation — 2026-11-11
+
+Emitter branch scribe-v1.2.0-emitter is pinned at 24ac3f2 (emitter implementation unchanged from 2c397a1). Behavioral tests cover open/refused sockets and rejected inputs. Required CLI acceptance consumes real emitter wire output and verifies one completed Lua action with explicit vulnerable fixture verdict. Expanded original observations and negative HTTP fixtures accompany four additional product clean gates. Phase 3 stays paused.
+
+make check and make acceptance-local passed before benchmark; fingerprint-only additions passed their focused suite. Repeat samples below ran without overlapping Scribe tests, builds, fuzz or deployment. Other projects have active processes on this shared host, so machine-wide isolation was unavailable; these samples do not satisfy a strict idle-host performance gate and establish no performance claim.
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/selected=false-4         	     100	  10768471 ns/op	     47546 actions/s	15983244 B/op	  158601 allocs/op
+BenchmarkPlannerExecution/selected=false-4         	     120	   9649158 ns/op	     53062 actions/s	15979113 B/op	  158546 allocs/op
+BenchmarkPlannerExecution/selected=false-4         	     127	  12144683 ns/op	     42159 actions/s	15980672 B/op	  158549 allocs/op
+BenchmarkPlannerExecution/selected=true-4          	     728	   2808380 ns/op	     22789 actions/s	 2212545 B/op	   21864 allocs/op
+BenchmarkPlannerExecution/selected=true-4          	     478	   2640414 ns/op	     24239 actions/s	 2212856 B/op	   21866 allocs/op
+BenchmarkPlannerExecution/selected=true-4          	     433	   3102774 ns/op	     20627 actions/s	 2212988 B/op	   21868 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	11.108s
+```
+
+Final make check and make acceptance-local passed after all fixture edits. Noninteractive service reinstall and smoke-http passed all three verdict cases and TCP banner. Release tag withheld pending the requested idle-host benchmark; v1.3.0 has not started.

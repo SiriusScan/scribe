@@ -28,6 +28,8 @@ func TestMatch(t *testing.T) {
 func TestExpandedPinnedBanners(t *testing.T) {
 	for _, tt := range []struct{ banner, product string }{
 		{"220 mail ESMTP Postfix", "Postfix"},
+		{"220 ProFTPD 1.3.9 Server (Debian)", "ProFTPD"},
+		{"SSH-2.0-dropbear_2025.88", "Dropbear"},
 		{"220 Pure-FTPd ready", "Pure-FTPd"},
 		{"220 mail Sendmail 8.17.1 ready", "Sendmail"},
 		{"220 mail ESMTP Exim 4.97", "Exim"},
@@ -71,7 +73,7 @@ func TestPinnedUnknownIdentities(t *testing.T) {
 			t.Errorf("%q inferred %+v", input, got)
 		}
 	}
-	for _, header := range []string{"", "unknown", "OpenSSH_9.0", "application server", "proxy nginx/1.26.2", "Caddyshack", "openrestyled"} {
+	for _, header := range []string{"", "unknown", "OpenSSH_9.0", "application server", "proxy nginx/1.26.2", "Caddyshack", "openrestyled", "proxy Apache/2.4.62", "proxy Microsoft-IIS/10.0", "proxy lighttpd/1.4.76", "proxy Jetty(9.4.56)"} {
 		if got := Default().Match("", http.Header{"Server": {header}}); got != (Facts{}) {
 			t.Errorf("%q inferred %+v", header, got)
 		}

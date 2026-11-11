@@ -4,7 +4,9 @@
 
 - Add optional real ping++ TCP emitter-to-adapter acceptance.
 - Extend product clean guards to PostgreSQL, MongoDB, Apache, IIS, Exim and Dovecot.
-- Full fingerprint corpus and emitter-to-execution acceptance remain release gates.
+- Execute real emitter output through the CLI and Lua, asserting complete terminal JSONL and explicit verdict.
+- Pin tested ping++ emitter 24ac3f2; expand ProFTPD/Dropbear observations and HTTP negative fixtures.
+- Extend false-clean guards to ProFTPD, lighttpd, Tomcat and Jetty.
 
 ## v1.1.0 — 2026-11-11
 
