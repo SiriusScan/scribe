@@ -349,3 +349,8 @@ Skip reasons are counted by the shared harness and included in failure diagnosti
 `make check` passed race tests, external SDK acceptance, Windows/Darwin builds,
 vet and the CGO-disabled CLI build. Phase 3 remains paused. Stable API/JSONL
 expansion and structured SDK observability remain subsequent priorities.
+
+Release evidence: v0.7.0 tagged and pushed after `make check`; apps01 service
+reinstalled with VERSION=v0.7.0. `make smoke-http` passed completed vulnerable,
+not_vulnerable and unknown records plus the TCP banner fixture. This is local
+service transport evidence only, not full vGPT/scanner/agent acceptance.
