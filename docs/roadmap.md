@@ -652,3 +652,6 @@ emitter-to-Lua execution. These establish repository/local transport evidence.
 Real Sirius/vGPT cancellation and persisted report acceptance remain unfinished;
 Phase 3 remains paused. Shared-host benchmark evidence and its v1.2.0 waiver
 remain recorded above; this change makes no throughput claim.
+
+v1.3.0 bounded planner fuzz campaign passed 11,505 executions in 10 seconds.
+v1.2.0 installed-service smoke passed all three verdicts and TCP banner.
