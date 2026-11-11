@@ -130,6 +130,11 @@ func New(options Options, runtimes ...Runtime) (*Engine, error) {
 // Run validates all tasks before execution and streams results serially. Host
 // controls apply within this run. Every submitted task gets a terminal record
 // after cancellation while the sink remains available.
+// The callback runs synchronously, serially within this run, in completion order
+// (not submission order). Slow callbacks apply backpressure. Return an error to
+// stop delivery and cancel/drain active executions; Run returns the sink error.
+// Callbacks must return promptly and must not wait for Run to finish. A nil Run
+// error describes delivery, not a vulnerability verdict; inspect each Result.
 func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) error) error {
 	if ctx == nil || onResult == nil {
 		return errors.New("context and result callback are required")

@@ -763,3 +763,23 @@ Local fake-store acceptance remains separate. Phase 3 stays paused.
 
 Release deployment: reinstall tagged v1.6.0 on apps01 and require make smoke-http
 for completed explicit three-verdict records and the TCP banner fixture.
+
+## v1.7.0 — Lua transport edges and streaming guidance (2026-11-11)
+
+Added controlled socket tests through the Lua tcp.exchange bridge for partial
+reads, read deadlines, in-flight cancellation and invalid TLS handshakes.
+Partial data completes with an explicit unknown verdict; transport failures
+require error/cancelled terminal status and cannot establish a clean result.
+Existing certificate verification fixtures reject untrusted TLS certificates.
+These original fixtures do not establish upstream NSE compatibility.
+
+Documented the existing Engine.Run callback contract: serialized completion-order
+delivery, backpressure, sink error cancellation/draining and conservative verdict
+handling. The runnable examples/embed JSONL callback reuses that API; existing
+engine tests cover serialization and sink failure. HTTP inline scripts already
+use runScripts with the same validation and JSONL path; existing POST tests cover
+inline verdicts and conflicting source modes, so no second implementation was added.
+
+make check, make acceptance-local and go run ./examples/embed passed. These are
+local SDK/transport/build checks, not live Sirius/vGPT persistence acceptance.
+Phase 3 remains paused. No performance claim.

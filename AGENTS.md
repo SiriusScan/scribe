@@ -155,3 +155,9 @@ action outputs; shared-host samples make no speedup claim. Planner and mixed
 failure fuzz campaigns run sequentially with race instrumentation and finite
 budgets. Live Sirius workflow persistence remains separate from pinned real
 ping++ emitter-to-Lua local acceptance. Phase 3 stays paused.
+
+v1.7.0 documents Engine.Run serialized completion-order callbacks and sink
+backpressure; retain cancellation/drain and sink error behavior. Lua TCP edge
+fixtures require unknown partial-read results and error/cancelled transport
+failures. POST inline scripts reuse runScripts; do not introduce a second runner.
+Phase 3 remains paused.
