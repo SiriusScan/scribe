@@ -122,3 +122,12 @@ available, with optional BuildVersion/BuildCommit linker values; consumer VCS
 metadata is deliberately excluded. Local job benchmarks and bounded concurrent
 execution/cancellation tests provide in-repo evidence only. Installed agent and
 real Sirius workflow acceptance remain outstanding.
+
+Smart-selection SDK slice: immutable source snapshots and cached JSON comment
+hints feed the existing bounded batch runner. Optional caller-side banner/header
+fingerprinting supplies conservative hints; ping++ remains the upstream fact
+source. Local no-op scheduling benchmark (100 scripts, one endpoint, four workers)
+measured 88.8 us/op without selection and 3.80 us/op with selection. These numbers
+are local scheduling evidence only; actual Lua throughput and ping++ integration
+acceptance remain consumer validation. `make check` and the CGO-disabled CLI build
+passed for this slice.

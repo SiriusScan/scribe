@@ -148,3 +148,32 @@ This bootstrap does not modify Sirius services, replace Nmap, publish a stable
 module tag, add a remote plugin protocol, or claim complete NSE support. It creates
 the executable/library foundation and makes the remaining acceptance work concrete.
 See the [roadmap](roadmap.md) and [integration plan](integration.md).
+
+Script selection is opt-in through `NewIndex` and `Engine.RunSelected`. Build an
+index once per script bundle and reuse it across batches. Scripts declare a
+single JSON comment line, for example:
+
+```lua
+-- scribe: {"services":["http"],"products":["nginx"],"ports":[80,443],"protocols":["tcp"]}
+```
+
+Service, product and port hints are alternatives; protocol is a constraint when
+known. Names match case-insensitively and exactly. Missing facts for any declared
+category retain the script conservatively. Scripts without hints always remain
+eligible. Version and banner do not exclude scripts: runtime rules still make the
+final applicability decision. Selection exclusions provide no execution record
+or negative verdict. The index caches metadata without evaluating Lua. Rebuild it
+when source changes. Caller-owned argument values must remain immutable.
+
+The optional `fingerprint` SDK package matches supplied TCP banners or HTTP
+headers with an ordered table of regular expressions. It performs no network I/O;
+inputs are bounded to 8 KiB each. `Default()` recognizes OpenSSH, nginx and Apache;
+`New(rules...)` accepts caller rules, with first match winning and capture one
+providing version. An unmatched input returns empty facts. ping++ is the expected
+upstream endpoint fact source; callers decide whether inferred hints should fill
+missing fields and should preserve authoritative supplied facts. No other
+repository or scanner integration is changed here.
+
+`go test -run '^$' -bench BenchmarkSelection -benchmem .` compares 100 scripts
+against one endpoint with and without selection using a no-op runtime. This
+measures scheduling overhead, not Lua throughput or scanner acceptance.
