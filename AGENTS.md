@@ -175,3 +175,8 @@ v1.10.0 extends nested all_of/any_of selection coverage and pins original TCP/TL
 marker scripts alongside HTTP in acceptance-local. Registered responses establish
 Lua bridge/verdict behavior, not socket interoperability. acceptance-local explicitly
 runs the cancellation fake-store EOF/completeness gate. Phase 3 stays paused.
+
+v1.11.0 pins exact nested matcher skip reasons under normal/exhaustive policy.
+The marker corpus now exercises real HTTP/TCP sockets and conservative untrusted
+TLS rejection in acceptance-local. Successful trusted TLS corpus execution remains
+follow-up work. Phase 3 stays paused.

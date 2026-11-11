@@ -843,3 +843,21 @@ build, cross-builds and pinned ping++ emitter checks. Remaining: more executable
 protocol checks over controlled sockets, exact nested skip-reason distinctions,
 and live Sirius/vGPT report persistence. Existing ping++ adapter remains the path;
 no NSE expansion. Phase 3 stays paused. No performance claim.
+
+## v1.11.0 — exact reasons and socket corpus (2026-11-11)
+
+Nested matcher exclusions now pin the exact generic declarative reason in normal
+runs and the clean identity gate in exhaustive runs. Original pinned HTTP/TCP
+marker scripts execute all three markers through real loopback transports.
+TLS corpus attempts use untrusted local certificates and require failed/unknown
+terminal records; successful trusted TLS corpus execution remains unfinished.
+The existing acceptance-local TestMarkerCorpus selector includes these sockets.
+
+make check and make acceptance-local passed. The next repository hardening item
+uses a sequential 30-second race-instrumented FuzzProbeIdentityAuthority campaign
+with four workers. Local evidence does not establish live Sirius/vGPT cancellation
+or persisted reports. Those consumer gates, trusted TLS corpus success and broader
+real-world corpus acquisition remain open. No NSE expansion or performance claim;
+Phase 3 stays paused.
+
+The bounded identity-authority fuzz campaign passed 18,577 executions.

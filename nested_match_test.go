@@ -25,12 +25,16 @@ func TestNestedMatcherSelection(t *testing.T) {
 			{"http", "1.0.0", "", "Other", false},
 			{"http", "1.0.0", "", "", false},
 		} {
+			reason := "declarative match: required identification facts missing or mismatched"
+			if exhaustive {
+				reason = "clean verdict requires a matching declared product identification"
+			}
 			r := e.execute(context.Background(), Task{Script: Script{ID: "nested", Dialect: Sirius, Source: source}, Target: Target{Host: "fixture", Service: tc.service, Version: tc.version, Banner: tc.banner, Product: tc.product}})
 			if tc.match {
 				if r.Status != Completed || r.Verdict != NotVulnerable {
 					t.Fatalf("%+v: %+v", tc, r)
 				}
-			} else if r.Verdict != Unknown || r.Status != Skipped || r.Output.SkipReason == "" {
+			} else if r.Verdict != Unknown || r.Status != Skipped || r.Output.SkipReason != reason {
 				t.Fatalf("%+v: %+v", tc, r)
 			}
 		}
