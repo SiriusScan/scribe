@@ -61,7 +61,7 @@ func TestMatchCleanGate(t *testing.T) {
 
 // Identity hints for real service families never authorize a different product's clean result.
 func TestServiceCorpusFalseClean(t *testing.T) {
-	for _, product := range []string{"Caddy", "OpenResty", "OpenSSH", "Dropbear", "vsftpd", "Pure-FTPd", "Postfix", "Sendmail", "MySQL", "MariaDB", "Redis"} {
+	for _, product := range []string{"Caddy", "OpenResty", "OpenSSH", "Dropbear", "vsftpd", "Pure-FTPd", "Postfix", "Sendmail", "MySQL", "MariaDB", "Redis", "PostgreSQL", "MongoDB", "Apache", "IIS", "Exim", "Dovecot"} {
 		for _, exhaustive := range []bool{false, true} {
 			e, err := New(Options{StrictIdentification: true, Exhaustive: exhaustive}, cleanMatchRuntime{})
 			if err != nil {
