@@ -260,3 +260,26 @@ Implemented: declarative exact CPE alternatives and minimum identification confi
 direct SDK planner probes. UDP and CPE inference remain outside probe coverage.
 
 Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. UDP and arbitrary product inference remain unsupported.
+
+Planner transport/load coverage slice (2026-11-11): local CLI JSONL and POST
+/run fixtures assert completed unknown execution, TLS certificate/version facts,
+HTTP nginx headers, same-endpoint redirects, OpenSSH TCP banners, inferred CPE
+and confidence, and explicit planner skip reasons. Each transport must emit one
+complete JSONL record. No runtime bugs were revealed by these fixtures.
+
+Executed-run benchmark: Go linux/amd64, i9-13900H, four workers,
+32 scripts × 16 endpoints, with 100 additions per Lua action. Unfiltered runs
+execute 512 actions; selected runs execute 64 actions and emit 448 skipped
+records. Every completed result must contain the calculated action output.
+Three samples from
+go test ./runtime/lua54 -run '^$' -bench BenchmarkPlannerExecution -benchmem -count=3:
+unfiltered 12.011/10.406/11.679 ms/op, about 16.15 MB/op and 162125–162153
+allocations/op; selected 1.492/1.565/1.397 ms/op, about 2.234 MB/op and
+22309–22310 allocations/op. This measures local Lua execution and scheduling
+with warm bounded caches, not network workload throughput or Sirius integration.
+
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build). apps01 service reinstalled with
+make install-service; make smoke-http passed all three verdicts and TCP banner.
+These are local transport/build checks, not full vGPT workflow acceptance.
+No production code changed, so no service-affecting release tag was created.
