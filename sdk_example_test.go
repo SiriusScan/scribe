@@ -70,3 +70,15 @@ func ExampleEngine_Stream() {
 	}
 	// Output: skipped unknown script hints exclude supplied endpoint facts
 }
+
+// ExampleEvents shows how transports derive observations without changing verdicts.
+func ExampleEvents() {
+	events := scribe.Events(scribe.Result{SchemaVersion: 1, Status: scribe.Skipped, Verdict: scribe.Unknown})
+	for _, event := range events {
+		fmt.Println(event.Type, event.Result.Verdict)
+	}
+	// Output:
+	// planning unknown
+	// timing unknown
+	// verdict unknown
+}

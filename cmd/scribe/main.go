@@ -81,6 +81,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	flags.SetOutput(stderr)
 	pingppPath := flags.String("pingpp-jsonl", "", "read pingpp.scan/v1 JSONL endpoint facts")
 	factsJSONL := flags.String("facts-jsonl", "", "stream known endpoint facts from a JSONL file; at most 65536 records of 64 KiB")
+	events := flags.Bool("events", false, "emit schema v1 SDK lifecycle events as JSONL")
 	factsPath := flags.String("facts", "", "JSON array of known endpoint facts (maximum 1024)")
 	community := flags.String("snmp-community", "", "explicit SNMP v2c planner community (empty disables)")
 	strict := flags.Bool("strict-identification", false, "require declared matching product for clean verdicts")
@@ -331,12 +332,21 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	if err != nil {
 		return fail(err)
 	}
-	engine, err := scribe.New(scribe.Options{Plan: *plan, ScriptTimeout: *timeout, GlobalInterval: *globalInterval, SNMPCommunity: *community, StrictIdentification: *strict, Exhaustive: *exhaustive, Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
+	encoder := json.NewEncoder(stdout)
+	var observer func(scribe.Event) error
+	if *events {
+		observer = func(event scribe.Event) error { return encoder.Encode(event) }
+	}
+	engine, err := scribe.New(scribe.Options{OnEvent: observer, Plan: *plan, ScriptTimeout: *timeout, GlobalInterval: *globalInterval, SNMPCommunity: *community, StrictIdentification: *strict, Exhaustive: *exhaustive, Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
 	if err != nil {
 		return fail(err)
 	}
-	encoder := json.NewEncoder(stdout)
-	sink := func(result scribe.Result) error { return encoder.Encode(result) }
+	sink := func(result scribe.Result) error {
+		if *events {
+			return nil
+		}
+		return encoder.Encode(result)
+	}
 	if targetStream != nil {
 		err = engine.RunTargetStream(ctx, idx, targetStream, sink)
 	} else {

@@ -45,3 +45,10 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
   script/target pairs, including failures, missing identities and explicit verdicts.
 - Assert complete unique terminal records, conservative verdicts and skip reasons;
   record selected and exhaustive benchmark samples in the roadmap.
+
+## v0.8.0
+
+- Add SDK Event/Options.OnEvent callbacks for terminal planning decisions, skip
+  reasons, module timing and verdicts.
+- Share opt-in --events JSONL across CLI and streaming POST /run.
+- Document schema v1, callback ownership and compatibility; pin a golden fixture.

@@ -12,6 +12,8 @@ const MaxSourceBytes = 1 << 20
 
 // Options controls orchestration, independently of each runtime's limits.
 type Options struct {
+	// OnEvent observes ordered per-module lifecycle records; see Event.
+	OnEvent func(Event) error
 	// SNMPCommunity enables v2c identification using exactly this community; empty disables it.
 	// At most 255 bytes; it is never included in returned facts.
 	Plan                 bool

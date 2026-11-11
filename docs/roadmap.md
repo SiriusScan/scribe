@@ -354,3 +354,12 @@ Release evidence: v0.7.0 tagged and pushed after `make check`; apps01 service
 reinstalled with VERSION=v0.7.0. `make smoke-http` passed completed vulnerable,
 not_vulnerable and unknown records plus the TCP banner fixture. This is local
 service transport evidence only, not full vGPT/scanner/agent acceptance.
+
+## v0.8.0
+
+Structured SDK OnEvent observations share terminal planning/skip evidence,
+per-module elapsed time and conservative verdicts with opt-in --events JSONL
+and POST /run. Planning events are retrospective at result delivery.
+The versioned wire contract is documented in jsonl-v1.md and pinned by a golden
+fixture. Phase 3 stays paused. Build and local service validation remain separate
+from scanner/agent workflow acceptance.

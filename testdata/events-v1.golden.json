@@ -1,0 +1,59 @@
+[
+  {
+    "schema_version": 1,
+    "type": "planning",
+    "result": {
+      "schema_version": 1,
+      "script_id": "fixture",
+      "script_sha256": "",
+      "dialect": "",
+      "target": {
+        "host": ""
+      },
+      "status": "skipped",
+      "verdict": "unknown",
+      "output": {
+        "skip_reason": "product mismatch"
+      },
+      "elapsed_ms": 0
+    }
+  },
+  {
+    "schema_version": 1,
+    "type": "timing",
+    "result": {
+      "schema_version": 1,
+      "script_id": "fixture",
+      "script_sha256": "",
+      "dialect": "",
+      "target": {
+        "host": ""
+      },
+      "status": "skipped",
+      "verdict": "unknown",
+      "output": {
+        "skip_reason": "product mismatch"
+      },
+      "elapsed_ms": 0
+    }
+  },
+  {
+    "schema_version": 1,
+    "type": "verdict",
+    "result": {
+      "schema_version": 1,
+      "script_id": "fixture",
+      "script_sha256": "",
+      "dialect": "",
+      "target": {
+        "host": ""
+      },
+      "status": "skipped",
+      "verdict": "unknown",
+      "output": {
+        "skip_reason": "product mismatch"
+      },
+      "elapsed_ms": 0
+    }
+  }
+]

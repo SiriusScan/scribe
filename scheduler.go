@@ -62,7 +62,16 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			failed++
 		}
 		if sinkErr == nil {
-			sinkErr = sink(r)
+			if e.options.OnEvent != nil {
+				for _, event := range Events(r) {
+					if sinkErr = e.options.OnEvent(event); sinkErr != nil {
+						break
+					}
+				}
+			}
+			if sinkErr == nil {
+				sinkErr = sink(r)
+			}
 			if sinkErr != nil {
 				cancel()
 			}
