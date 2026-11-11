@@ -124,3 +124,8 @@ than creating a second mapper. No ping++ schema/repository change is required.
 `make acceptance-local` composes controlled local HTTP/TLS, external SDK/CLI
 cancellation and pingpp.scan/v1 fixture checks. SDK JSONL disk round trips are
 local persistence evidence only; real Sirius/vGPT storage acceptance is separate.
+
+SSH listener acceptance is included in make acceptance-local and requires pinned
+OpenSSH service/product/version observations from a controlled loopback socket.
+The 2026-11-11 local consumer access audit is recorded in docs/roadmap.md;
+directory readability does not establish a usable pinned ping++ wire emitter.

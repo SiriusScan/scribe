@@ -96,3 +96,28 @@ func TestManyTargetSelectionReduction(t *testing.T) {
 		t.Fatalf("selected %d versus unfiltered %d", selected, len(scripts)*100)
 	}
 }
+
+// A real loopback listener exercises the bounded SSH identification path.
+func TestSSHListenerAcceptance(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		conn, err := listener.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		_, _ = conn.Write([]byte("SSH-2.0-OpenSSH_9.0\r\n"))
+	}()
+	addr := listener.Addr().(*net.TCPAddr)
+	got := make(probeCache).enrich(context.Background(), Target{Host: "127.0.0.1", Port: uint16(addr.Port), Protocol: "tcp"}, 1)
+	<-done
+	if got.Service != "ssh" || got.Product != "OpenSSH" || got.Version != "9.0" {
+		t.Fatalf("SSH facts: %+v", got)
+	}
+}

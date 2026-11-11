@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — v1.1.0 preparation
+
+- Add controlled loopback SSH fingerprint listener acceptance.
+- Audit local consumer source access and record the ping++ emitter/binary gap.
+
 ## v1.0.2 — 2026-11-11
 
 - Reuse immutable table builtins while retaining fresh invocation library tables.

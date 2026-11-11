@@ -544,3 +544,23 @@ submit a controlled correlated job through the actual vGPT workflow, cancel a
 second job, and read terminal state and persisted evidence from its report store.
 No live consumer acceptance or v1.1.0 release is claimed by this preparation.
 Phase 3 remains paused.
+
+### v1.1.0 local access audit and SSH acceptance — 2026-11-11
+
+Added a controlled loopback SSH listener acceptance test requiring OpenSSH 9.0
+service/product/version observations; included in acceptance-local. `make check`
+passed (race suite, external SDK acceptance, cross builds, vet, CGO-disabled build).
+
+Read-only access is available to /home/agi/Projects/vgpt (a540668) and
+/home/agi/Projects/sirius-workspace (d68ef60). The nested
+minor-projects/ping++ checkout is 9508a16c40a49746feb7cab4b8c1c358246169b0.
+It has a library example but no scanner main beyond examples/simple/main.go,
+and searching that checkout found no pingpp.scan/v1 emitter. No ping++/pingpp
+binary was found on PATH or in /usr/local/bin, ~/.local/bin, or the Projects
+tree through depth five. Thus an actual pinned scanner-to-Scribe run was not
+performed: the accessible checkout lacks the pinned wire emitter and an installed
+scanner binary was not found. This is a source/binary mismatch, not a directory
+permission denial. No consumer files or services were changed.
+
+Corpus expansion and real consumer workflow acceptance remain outstanding;
+v1.1.0 is not tagged by this increment. Phase 3 remains paused.
