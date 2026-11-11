@@ -38,3 +38,10 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
 - Add CLI/HTTP --plan and library Options.Plan without actions or planner probes.
 - Add per-run global start pacing and SDK per-script timeout; preserve existing
   concurrency and CLI/HTTP timeout controls.
+
+## v0.7.0
+
+- Add a shared mixed-corpus planner regression and executed benchmark across 512
+  script/target pairs, including failures, missing identities and explicit verdicts.
+- Assert complete unique terminal records, conservative verdicts and skip reasons;
+  record selected and exhaustive benchmark samples in the roadmap.

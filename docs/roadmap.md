@@ -328,3 +328,24 @@ Local build and service checks remain separate from scanner/agent acceptance.
 Validation: make check passed, including race tests, external SDK acceptance,
 Windows/Darwin builds, vet and CGO-disabled CLI build. apps01 installation with
 VERSION=v0.6.0 and make smoke-http passed all three verdicts and TCP banner.
+
+## v0.7.0
+
+Mixed-corpus planner regression and benchmark share a 32-module × 16-target
+harness. Original inline Sirius fixtures mix vulnerable, clean, unknown, nil
+output, action errors and rule skips across matching, missing and conflicting
+product identities. Selected and exhaustive paths require all 512 unique terminal
+records, unknown verdicts on failures/skips, and nonempty skip reasons. Runtime
+hint checks continue to exclude conflicting identities even in exhaustive mode.
+The expected batch error must accompany failed actions while siblings complete.
+
+Local Go 1.26.10 linux/amd64, i9-13900H, four workers, warm caches:
+`go test ./runtime/lua54 -run '^$' -bench BenchmarkMixedCorpusPlanner -benchmem -count=3`.
+Selected samples: 7.063/6.671/8.970 ms/op, 11.85 MB/op, 120826–120834 allocations.
+Exhaustive samples: 9.422/8.792/10.663 ms/op, 12.42 MB/op, 127086–127121 allocations.
+These include assertion overhead and measure local SDK/Lua/planner execution,
+not network throughput, upstream corpus compatibility or scanner integration.
+Skip reasons are counted by the shared harness and included in failure diagnostics.
+`make check` passed race tests, external SDK acceptance, Windows/Darwin builds,
+vet and the CGO-disabled CLI build. Phase 3 remains paused. Stable API/JSONL
+expansion and structured SDK observability remain subsequent priorities.
