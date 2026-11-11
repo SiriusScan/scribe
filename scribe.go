@@ -87,10 +87,12 @@ const (
 )
 
 type Output struct {
-	Verdict  Verdict   `json:"-"`
-	Data     any       `json:"data,omitempty"`
-	Findings []Finding `json:"findings,omitempty"`
-	Skipped  bool      `json:"-"`
+	Logs          string    `json:"logs,omitempty"`
+	LogsTruncated bool      `json:"logs_truncated,omitempty"`
+	Verdict       Verdict   `json:"-"`
+	Data          any       `json:"data,omitempty"`
+	Findings      []Finding `json:"findings,omitempty"`
+	Skipped       bool      `json:"-"`
 }
 
 // Runtime implements a dialect. Execute must support concurrent invocations,

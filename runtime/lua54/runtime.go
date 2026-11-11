@@ -92,7 +92,9 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 	}
 	ctx, cancel := context.WithTimeout(ctx, r.limits.Timeout)
 	defer cancel()
-	vm := rt.New(io.Discard)
+	logs := &logBuffer{}
+	defer func() { output.Logs = string(logs.data); output.LogsTruncated = logs.truncated }()
+	vm := rt.New(logs)
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			err = fmt.Errorf("Lua runtime panic: %v", recovered)
@@ -113,6 +115,8 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 	}
 	_, err = vm.MainThread().CallContext(rt.RuntimeContextDef{HardLimits: rt.RuntimeResources{Cpu: r.limits.CPU, Memory: r.limits.Memory, Millis: millis}}, func() error {
 		modules := loadLibraries(vm)
+		setFunction(vm, vm.GlobalEnv(), "print", func(t *rt.Thread, c *rt.GoCont) (rt.Cont, error) { return c.Next(), base.Print(t, c.Etc()) }, 0, true)
+		vm.SetEnv(vm.GlobalEnv(), "log", vm.GlobalEnv().Get(rt.StringValue("print")))
 		if r.dialect == scribe.Sirius {
 			module := rt.NewTable()
 			setFunction(vm, module, "call", r.capability(ctx, task.Target), 1, true)
@@ -297,4 +301,21 @@ func evaluateRule(ctx context.Context, vm *rt.Runtime, rule rt.Value, args ...rt
 		return false, errors.New("script rule must return a boolean")
 	}
 	return result, nil
+}
+
+// logBuffer bounds retained diagnostics independently of VM and output limits.
+type logBuffer struct {
+	data      []byte
+	truncated bool
+}
+
+func (b *logBuffer) Write(p []byte) (int, error) {
+	n := len(p)
+	remaining := (64 << 10) - len(b.data)
+	if len(p) > remaining {
+		p = p[:remaining]
+		b.truncated = true
+	}
+	b.data = append(b.data, p...)
+	return n, nil
 }

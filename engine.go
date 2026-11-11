@@ -91,10 +91,10 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 				output, err := e.runtimes[task.Script.Dialect].Execute(runCtx, task)
 				result := Result{SchemaVersion: 1, ScriptID: task.Script.ID, ScriptSHA256: fmt.Sprintf("%x", sha256.Sum256(task.Script.Source)), Dialect: task.Script.Dialect, Target: task.Target, Output: output, Status: Completed, Verdict: Unknown, ElapsedMS: time.Since(start).Milliseconds()}
 				if err != nil {
-					result.Status, result.Error, result.Output = Failed, err.Error(), Output{}
+					result.Status, result.Error, result.Output = Failed, err.Error(), Output{Logs: output.Logs, LogsTruncated: output.LogsTruncated}
 				} else if output.Skipped {
 					result.Status = Skipped
-					result.Output = Output{Skipped: true}
+					result.Output = Output{Skipped: true, Logs: output.Logs, LogsTruncated: output.LogsTruncated}
 				}
 				if result.Status == Completed && task.Script.Dialect == Sirius {
 					switch output.Verdict {

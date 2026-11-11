@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/base"
 	"math"
 	"net"
 	"strconv"
@@ -48,12 +49,9 @@ func loadNSE(ctx context.Context, vm *rt.Runtime, task scribe.Task, modules map[
 	setFunction(vm, stdnse, "tohex", stdnseTohex, 2, false)
 	setFunction(vm, stdnse, "fromhex", stdnseFromhex, 1, false)
 	setFunction(vm, stdnse, "parse_timespec", stdnseParseTimespec, 1, false)
-	// Scribe is a silent library with no verbosity channel. Diagnostic calls
-	// are accepted and discarded, matching an Nmap run at verbosity/debug 0
-	// for the default levels scripts pass; they never become output.
 	for _, name := range []string{"debug", "debug1", "debug2", "debug3", "verbose", "print_debug", "print_verbose"} {
 		setFunction(vm, stdnse, name, func(t *rt.Thread, c *rt.GoCont) (rt.Cont, error) {
-			return c.PushingNext(t.Runtime), nil
+			return c.Next(), base.Print(t, c.Etc())
 		}, 0, true)
 	}
 	strictModule(vm, "stdnse", stdnse)
