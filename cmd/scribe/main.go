@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -77,6 +78,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	}
 	flags := flag.NewFlagSet("scribe", flag.ContinueOnError)
 	flags.SetOutput(stderr)
+	factsJSONL := flags.String("facts-jsonl", "", "stream known endpoint facts from a JSONL file; at most 65536 records of 64 KiB")
 	factsPath := flags.String("facts", "", "JSON array of known endpoint facts (maximum 1024)")
 	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
 	showVersion := flags.Bool("version", false, "print module version and commit")
@@ -92,6 +94,10 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	tls := flags.Bool("tls", false, "known endpoint uses TLS")
 	argsJSON := flags.String("args", "{}", "script arguments as a JSON object (at most 64 KiB)")
 	concurrency := flags.Int("concurrency", 4, "maximum concurrent scripts, 1-256")
+	hostConcurrency := flags.Int("host-concurrency", 0, "maximum concurrent scripts per host; 0 uses concurrency")
+	hostInterval := flags.Duration("host-interval", 0, "minimum interval between script starts per host")
+	hostErrors := flags.Int("host-error-budget", 0, "execution errors before skipping remaining host work; 0 disables")
+	strategy := flags.String("strategy", string(scribe.ScriptSpray), "host-spray or script-spray")
 	timeout := flags.Duration("timeout", 5*time.Second, "per-script runtime and host-call deadline")
 	cpu := flags.Uint64("cpu", 10_000_000, "per-script Lua CPU accounting budget")
 	memory := flags.Uint64("memory", 32<<20, "per-script Lua memory accounting budget in bytes")
@@ -173,8 +179,56 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 		}
 		return 0
 	}
+	if *factsJSONL != "" && *factsPath != "" {
+		return fail(errors.New("choose --facts or --facts-jsonl"))
+	}
 	target := scribe.Target{Host: *host, IP: *ip, Port: uint16(*port), Protocol: *protocol, Service: *service, State: *state, TLS: *tls}
 	targets := []scribe.Target{target}
+	var targetStream func(context.Context) (scribe.Target, bool, error)
+	if *factsJSONL != "" {
+		file, err := os.Open(*factsJSONL)
+		if err != nil {
+			return fail(err)
+		}
+		defer file.Close()
+		info, err := file.Stat()
+		if err != nil {
+			return fail(err)
+		}
+		if !info.Mode().IsRegular() {
+			return fail(errors.New("--facts-jsonl requires a regular file"))
+		}
+		scan := bufio.NewScanner(file)
+		scan.Buffer(make([]byte, 4096), 64<<10)
+		count := 0
+		targetStream = func(ctx context.Context) (scribe.Target, bool, error) {
+			if err := ctx.Err(); err != nil {
+				return scribe.Target{}, false, err
+			}
+			if !scan.Scan() {
+				if err := scan.Err(); err != nil {
+					return scribe.Target{}, false, err
+				}
+				if count == 0 {
+					return scribe.Target{}, false, errors.New("facts require at least one target")
+				}
+				return scribe.Target{}, false, nil
+			}
+			count++
+			if count > 65536 {
+				return scribe.Target{}, false, errors.New("facts exceed 65536 targets")
+			}
+			var t scribe.Target
+			if err := json.Unmarshal(scan.Bytes(), &t); err != nil {
+				return t, false, fmt.Errorf("facts line %d: %w", count, err)
+			}
+			if err := t.Validate(); err != nil {
+				return t, false, fmt.Errorf("facts line %d: %w", count, err)
+			}
+			return t, true, nil
+		}
+		targets = nil
+	}
 	if *factsPath != "" {
 		data, err := readSource(*factsPath)
 		if err != nil {
@@ -184,7 +238,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 			return fail(err)
 		}
 	}
-	if len(targets) == 0 || len(targets) > 1024 {
+	if targetStream == nil && (len(targets) == 0 || len(targets) > 1024) {
 		return fail(errors.New("facts require 1-1024 targets"))
 	}
 	for _, target := range targets {
@@ -221,13 +275,13 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	for _, script := range inline {
 		tasks = append(tasks, scribe.Task{Script: scribe.Script{ID: script.ID, Dialect: scribe.Dialect(*dialect), Source: []byte(script.Source), Args: args}, Target: target})
 	}
-	original := tasks
-	tasks = nil
-	for _, target := range targets {
-		for _, task := range original {
-			task.Target = target
-			tasks = append(tasks, task)
-		}
+	scripts := make([]scribe.Script, len(tasks))
+	for i, t := range tasks {
+		scripts[i] = t.Script
+	}
+	idx, err := scribe.NewIndex(scripts)
+	if err != nil {
+		return fail(err)
 	}
 	httpClient, err := httpcap.New(httpcap.Options{Timeout: *timeout})
 	if err != nil {
@@ -247,12 +301,18 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	if err != nil {
 		return fail(err)
 	}
-	engine, err := scribe.New(scribe.Options{Concurrency: *concurrency}, runtime)
+	engine, err := scribe.New(scribe.Options{Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
 	if err != nil {
 		return fail(err)
 	}
 	encoder := json.NewEncoder(stdout)
-	if err := engine.Run(ctx, tasks, func(result scribe.Result) error { return encoder.Encode(result) }); err != nil {
+	sink := func(result scribe.Result) error { return encoder.Encode(result) }
+	if targetStream != nil {
+		err = engine.RunTargetStream(ctx, idx, targetStream, sink)
+	} else {
+		err = engine.RunSelected(ctx, idx, targets, sink)
+	}
+	if err != nil {
 		return fail(err)
 	}
 	return 0

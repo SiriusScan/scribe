@@ -3,7 +3,6 @@ package scribe
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -82,6 +81,17 @@ func (h Hints) matches(t Target) bool {
 	return len(h.Services) > 0 && t.Service == "" || len(h.Products) > 0 && t.Product == "" || len(h.Ports) > 0 && t.Port == 0
 }
 
+// Matches reports whether any indexed script matches supplied facts, without
+// copying source or constructing an interpreter.
+func (idx *Index) Matches(t Target) bool {
+	for _, e := range idx.entries {
+		if e.hints.matches(t) {
+			return true
+		}
+	}
+	return false
+}
+
 // Select returns owned source snapshots; selection does not establish a verdict.
 func (idx *Index) Select(t Target) []Script {
 	var out []Script
@@ -106,50 +116,51 @@ func (e *Engine) RunSelected(ctx context.Context, idx *Index, targets []Target, 
 		}
 	}
 	next := 0
-	return e.RunTargetStream(ctx, idx, func(context.Context) (Target, bool, error) {
+	return e.runTargets(ctx, idx, func(context.Context) (Target, bool, error) {
 		if next == len(targets) {
 			return Target{}, false, nil
 		}
 		t := targets[next]
 		next++
 		return t, true, nil
-	}, sink)
+	}, sink, true)
 }
 
-// RunTargetStream consumes targets incrementally, retaining only one endpoint's
-// selected tasks. Each endpoint completes before the next is requested. The
-// producer must honor ctx; false signals EOF. Results retain Run's semantics.
-// Input errors can occur after earlier endpoints have emitted results.
+// RunTargetStream consumes targets with bounded task lookahead. Every script /
+// endpoint pair emits a record, including hint exclusions with a skip reason.
+// The producer must honor ctx; false signals EOF. On cancellation only accepted
+// pairs emit terminal records; unread input has never been submitted.
 func (e *Engine) RunTargetStream(ctx context.Context, idx *Index, next func(context.Context) (Target, bool, error), sink func(Result) error) error {
+	return e.runTargets(ctx, idx, next, sink, false)
+}
+
+func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.Context) (Target, bool, error), sink func(Result) error, drain bool) error {
 	if ctx == nil || idx == nil || next == nil || sink == nil {
 		return fmt.Errorf("context, index, target producer and sink are required")
 	}
-	var executionErrors []error
-	for {
-		if err := ctx.Err(); err != nil {
-			return errors.Join(append(executionErrors, err)...)
+	var target Target
+	pos := len(idx.entries)
+	return e.run(ctx, func(ctx context.Context) (Task, bool, error) {
+		if pos == len(idx.entries) {
+			t, ok, err := next(ctx)
+			if err != nil || !ok {
+				return Task{}, ok, err
+			}
+			if err := t.Validate(); err != nil {
+				return Task{}, false, err
+			}
+			target = t
+			pos = 0
 		}
-		t, ok, err := next(ctx)
-		if err != nil {
-			return errors.Join(append(executionErrors, err)...)
+		if len(idx.entries) == 0 {
+			return Task{}, false, fmt.Errorf("index must contain scripts")
 		}
-		if !ok {
-			return errors.Join(executionErrors...)
+		entry := idx.entries[pos]
+		pos++
+		t := Task{Script: entry.script, Target: target}
+		if !entry.hints.matches(target) {
+			t.planSkip = "script hints exclude supplied endpoint facts"
 		}
-		if err := t.Validate(); err != nil {
-			return errors.Join(append(executionErrors, err)...)
-		}
-		var tasks []Task
-		for _, script := range idx.Select(t) {
-			tasks = append(tasks, Task{Script: script, Target: t})
-		}
-		var sinkErr error
-		err = e.Run(ctx, tasks, func(r Result) error { sinkErr = sink(r); return sinkErr })
-		if sinkErr != nil {
-			return sinkErr
-		}
-		if err != nil {
-			executionErrors = append(executionErrors, err)
-		}
-	}
+		return t, true, nil
+	}, sink, drain)
 }

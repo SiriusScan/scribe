@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -14,11 +13,24 @@ const MaxSourceBytes = 1 << 20
 // Options controls orchestration, independently of each runtime's limits.
 type Options struct {
 	Concurrency int
+	// HostConcurrency defaults to Concurrency. Limits are per run and span ports.
+	HostConcurrency int
+	// HostInterval spaces invocation starts per host; zero disables pacing.
+	HostInterval time.Duration
+	// HostErrorBudget stops new invocations after this many execution errors.
+	// Already running invocations finish; zero disables the budget.
+	HostErrorBudget int
+	Strategy        Strategy
+	// Window bounds pending tasks and target lookahead; default 256.
+	Window int
+	// MaxHosts bounds retained per-run host accounting; default 65536.
+	MaxHosts int
 }
 
 // Engine holds immutable runtime registrations. Callers may use Run concurrently
 // if their registered runtimes support it, and must not mutate submitted tasks.
 type Engine struct {
+	options  Options
 	workers  int
 	runtimes map[Dialect]Runtime
 }
@@ -30,7 +42,34 @@ func New(options Options, runtimes ...Runtime) (*Engine, error) {
 	if options.Concurrency < 1 || options.Concurrency > 256 {
 		return nil, errors.New("concurrency must be between 1 and 256")
 	}
-	engine := &Engine{workers: options.Concurrency, runtimes: make(map[Dialect]Runtime)}
+	if options.HostConcurrency == 0 {
+		options.HostConcurrency = options.Concurrency
+	}
+	if options.HostConcurrency < 1 || options.HostConcurrency > options.Concurrency {
+		return nil, errors.New("host concurrency must be between 1 and concurrency")
+	}
+	if options.HostInterval < 0 || options.HostErrorBudget < 0 {
+		return nil, errors.New("host interval and error budget cannot be negative")
+	}
+	if options.Strategy == "" {
+		options.Strategy = ScriptSpray
+	}
+	if options.Strategy != HostSpray && options.Strategy != ScriptSpray {
+		return nil, errors.New("strategy must be host-spray or script-spray")
+	}
+	if options.Window == 0 {
+		options.Window = 256
+	}
+	if options.Window < 1 || options.Window > 65536 {
+		return nil, errors.New("window must be between 1 and 65536")
+	}
+	if options.MaxHosts == 0 {
+		options.MaxHosts = 65536
+	}
+	if options.MaxHosts < 1 || options.MaxHosts > 1_000_000 {
+		return nil, errors.New("max hosts must be between 1 and 1000000")
+	}
+	engine := &Engine{options: options, workers: options.Concurrency, runtimes: make(map[Dialect]Runtime)}
 	for _, runtime := range runtimes {
 		if runtime == nil {
 			return nil, errors.New("nil runtime")
@@ -50,94 +89,64 @@ func New(options Options, runtimes ...Runtime) (*Engine, error) {
 	return engine, nil
 }
 
-// Run validates all tasks before execution and streams results as they finish.
-// The callback runs serially within this Run; returning an error cancels the run.
-// Script errors appear in Results and also cause a non-nil summary error.
-// Cancellation waits for active bounded runtimes to finish; it does not abandon
-// goroutines or claim instantaneous interruption of CPU-only Lua execution.
+// Run validates all tasks before execution and streams results serially. Host
+// controls apply within this run. Every submitted task gets a terminal record
+// after cancellation while the sink remains available.
 func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) error) error {
 	if ctx == nil || onResult == nil {
 		return errors.New("context and result callback are required")
 	}
 	for i, task := range tasks {
-		if _, exists := e.runtimes[task.Script.Dialect]; !exists {
-			return fmt.Errorf("task %d: no runtime for dialect %q", i, task.Script.Dialect)
-		}
-		if task.Script.ID == "" || len(task.Script.Source) == 0 || len(task.Script.Source) > MaxSourceBytes {
-			return fmt.Errorf("task %d: script ID and source (at most %d bytes) are required", i, MaxSourceBytes)
-		}
-		if err := task.Target.Validate(); err != nil {
+		if err := e.validate(task); err != nil {
 			return fmt.Errorf("task %d: %w", i, err)
 		}
 	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	runCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	jobs := make(chan Task)
-	results := make(chan Result, e.workers)
-	var workers sync.WaitGroup
-	workerCount := min(e.workers, len(tasks))
-	for range workerCount {
-		workers.Add(1)
-		go func() {
-			defer workers.Done()
-			for task := range jobs {
-				start := time.Now()
-				var output Output
-				err := runCtx.Err()
-				if err == nil {
-					output, err = e.runtimes[task.Script.Dialect].Execute(runCtx, task)
-				}
-				result := Result{SchemaVersion: 1, ScriptID: task.Script.ID, ScriptSHA256: fmt.Sprintf("%x", sha256.Sum256(task.Script.Source)), Dialect: task.Script.Dialect, Target: task.Target, Output: output, Status: Completed, Verdict: Unknown, ElapsedMS: time.Since(start).Milliseconds()}
-				if err != nil {
-					result.Status, result.Error, result.Output = Failed, err.Error(), Output{Logs: output.Logs, LogsTruncated: output.LogsTruncated}
-					if errors.Is(err, context.Canceled) {
-						result.Status = Cancelled
-					}
-				} else if output.Skipped {
-					result.Status = Skipped
-					result.Output = Output{Skipped: true, Logs: output.Logs, LogsTruncated: output.LogsTruncated}
-				}
-				if result.Status == Completed && task.Script.Dialect == Sirius {
-					switch output.Verdict {
-					case Vulnerable, NotVulnerable:
-						result.Verdict = output.Verdict
-					}
-				}
-				results <- result
-			}
-		}()
+	n := 0
+	return e.run(ctx, func(context.Context) (Task, bool, error) {
+		if n == len(tasks) {
+			return Task{}, false, nil
+		}
+		t := tasks[n]
+		n++
+		return t, true, nil
+	}, onResult, true)
+}
+func (e *Engine) validate(task Task) error {
+	if _, ok := e.runtimes[task.Script.Dialect]; !ok {
+		return fmt.Errorf("no runtime for dialect %q", task.Script.Dialect)
 	}
-	go func() {
-		defer close(jobs)
-		for _, task := range tasks {
-			jobs <- task
+	if task.Script.ID == "" || len(task.Script.Source) == 0 || len(task.Script.Source) > MaxSourceBytes {
+		return fmt.Errorf("script ID and source (at most %d bytes) are required", MaxSourceBytes)
+	}
+	return task.Target.Validate()
+}
+func (e *Engine) execute(ctx context.Context, task Task) Result {
+	start := time.Now()
+	var output Output
+	err := ctx.Err()
+	if err == nil && task.planSkip != "" {
+		output = Output{Skipped: true, SkipReason: task.planSkip}
+	} else if err == nil {
+		output, err = e.runtimes[task.Script.Dialect].Execute(ctx, task)
+	}
+	result := Result{SchemaVersion: 1, ScriptID: task.Script.ID, ScriptSHA256: fmt.Sprintf("%x", sha256.Sum256(task.Script.Source)), Dialect: task.Script.Dialect, Target: task.Target, Output: output, Status: Completed, Verdict: Unknown, ElapsedMS: time.Since(start).Milliseconds()}
+	if err != nil {
+		result.Status, result.Error, result.Output = Failed, err.Error(), Output{Logs: output.Logs, LogsTruncated: output.LogsTruncated}
+		if errors.Is(err, context.Canceled) {
+			result.Status = Cancelled
 		}
-	}()
-	go func() { workers.Wait(); close(results) }()
-	var callbackErr error
-	failures := 0
-	for result := range results {
-		if result.Status == Failed {
-			failures++
-		}
-		if callbackErr == nil {
-			callbackErr = onResult(result)
-			if callbackErr != nil {
-				cancel()
-			}
+	} else if output.Skipped {
+		result.Status = Skipped
+		result.Output = Output{Skipped: true, SkipReason: output.SkipReason, Logs: output.Logs, LogsTruncated: output.LogsTruncated}
+	}
+	if result.Status == Completed && task.Script.Dialect == Sirius {
+		switch output.Verdict {
+		case Vulnerable, NotVulnerable:
+			result.Verdict = output.Verdict
 		}
 	}
-	if callbackErr != nil {
-		return callbackErr
-	}
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-	if failures > 0 {
-		return fmt.Errorf("%d script execution(s) failed", failures)
-	}
-	return nil
+	return result
 }

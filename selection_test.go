@@ -55,7 +55,7 @@ func BenchmarkSelection(b *testing.B) {
 
 func TestTargetStreamBackpressure(t *testing.T) {
 	idx, _ := NewIndex([]Script{{ID: "one", Dialect: Sirius, Source: []byte("return {}")}})
-	e, _ := New(Options{}, selectionRuntime{})
+	e, _ := New(Options{Window: 1}, selectionRuntime{})
 	produced, received := 0, 0
 	err := e.RunTargetStream(context.Background(), idx, func(context.Context) (Target, bool, error) {
 		if produced != received {

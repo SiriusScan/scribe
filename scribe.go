@@ -78,6 +78,7 @@ func (e *CapabilityDeniedError) Error() string {
 }
 
 type Task struct {
+	planSkip string
 	// Nil preserves legacy SDK authority; a non-nil empty list denies all calls.
 	Capabilities []string `json:"capabilities,omitempty"`
 	Limits       Limits   `json:"limits,omitempty"`
@@ -112,6 +113,7 @@ type Output struct {
 	Data          any       `json:"data,omitempty"`
 	Findings      []Finding `json:"findings,omitempty"`
 	Skipped       bool      `json:"-"`
+	SkipReason    string    `json:"skip_reason,omitempty"`
 }
 
 // Runtime implements a dialect. Execute must support concurrent invocations,
