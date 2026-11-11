@@ -159,3 +159,26 @@ func TestCLIBoundsScriptSourceReads(t *testing.T) {
 		}
 	}
 }
+
+func TestVersionWithoutTarget(t *testing.T) {
+	var out, errs bytes.Buffer
+	if code := run(context.Background(), []string{"--version"}, &out, &errs); code != 0 || !strings.Contains(out.String(), "scribe ") {
+		t.Fatalf("version: %d %s %s", code, out.String(), errs.String())
+	}
+}
+
+func TestCheckWithoutTarget(t *testing.T) {
+	for _, tc := range []struct {
+		source string
+		want   int
+	}{
+		{`return {api_version=1,action=function() error("not executed") end}`, 0},
+		{`local x=require "unsupported"`, 1},
+	} {
+		path := scriptFile(t, tc.source)
+		var out, errs bytes.Buffer
+		if code := run(context.Background(), []string{"--check", "--dialect", "sirius", "--script", path}, &out, &errs); code != tc.want {
+			t.Fatalf("check: %d %s %s", code, out.String(), errs.String())
+		}
+	}
+}

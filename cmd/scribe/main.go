@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -20,6 +21,24 @@ import (
 	"github.com/SiriusScan/scribe/capability/tcpcap"
 	"github.com/SiriusScan/scribe/runtime/lua54"
 )
+
+var version = "dev"
+var commit = "unknown"
+
+func buildVersion() string {
+	v, c := version, commit
+	if info, ok := debug.ReadBuildInfo(); ok {
+		if v == "dev" && info.Main.Version != "" {
+			v = info.Main.Version
+		}
+		for _, s := range info.Settings {
+			if s.Key == "vcs.revision" && c == "unknown" {
+				c = s.Value
+			}
+		}
+	}
+	return fmt.Sprintf("scribe %s (%s)", v, c)
+}
 
 type scriptPaths []string
 
@@ -46,6 +65,8 @@ func main() {
 func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("scribe", flag.ContinueOnError)
 	flags.SetOutput(stderr)
+	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
+	showVersion := flags.Bool("version", false, "print module version and commit")
 	var paths scriptPaths
 	flags.Var(&paths, "script", "Lua script file (repeatable, at most 64)")
 	dialect := flags.String("dialect", "", "required script contract: sirius or nse (experimental subset)")
@@ -71,6 +92,10 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "scribe: %v\n", err)
 		return 1
 	}
+	if *showVersion {
+		fmt.Fprintln(stdout, buildVersion())
+		return 0
+	}
 	if flags.NArg() != 0 {
 		return fail(errors.New("unexpected positional arguments; use --script and --host"))
 	}
@@ -88,6 +113,32 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	}
 	if *concurrency < 1 || *concurrency > 256 {
 		return fail(errors.New("--concurrency must be between 1 and 256"))
+	}
+	if *check {
+		failed := false
+		for _, path := range paths {
+			source, err := readSource(path)
+			if err == nil {
+				err = lua54.Check(scribe.Script{ID: filepath.Base(path), Dialect: scribe.Dialect(*dialect), Source: source})
+			}
+			report := struct {
+				Script string `json:"script"`
+				Status string `json:"status"`
+				Error  string `json:"error,omitempty"`
+			}{Script: path, Status: "checked"}
+			if err != nil {
+				report.Status = "error"
+				report.Error = err.Error()
+				failed = true
+			}
+			if err := json.NewEncoder(stdout).Encode(report); err != nil {
+				return fail(err)
+			}
+		}
+		if failed {
+			return 1
+		}
+		return 0
 	}
 	target := scribe.Target{Host: *host, IP: *ip, Port: uint16(*port), Protocol: *protocol, Service: *service, State: *state, TLS: *tls}
 	if err := target.Validate(); err != nil {
