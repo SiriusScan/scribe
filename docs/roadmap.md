@@ -14,7 +14,11 @@ container, and an endpoint-agent job demonstrate different things.
 Acceptance: import the module from a separate Go program, execute the same script
 through SDK and CLI on a controlled local service, compare structured output,
 and test cancellation, rules, limits, and error propagation. A compiling in-repo
-example is useful but is not the whole external-import acceptance gate.
+example is useful but is not the whole external-import acceptance gate. That
+gate is the separate module in `examples/external` (a `replace` directive points
+at this repository until a tagged release exists); `make acceptance`, part of
+`make check` and CI, runs it. This is build/SDK evidence only, not Sirius
+scanner or endpoint-agent integration acceptance.
 
 ## 1. Measured NSE compatibility
 
