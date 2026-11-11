@@ -22,6 +22,7 @@ const (
 // Target describes a known endpoint. Port zero represents a host-only task.
 // IP, when set, is the connection address; Host remains the logical hostname.
 type Target struct {
+	Banner   string `json:"banner,omitempty"`
 	Host     string `json:"host"`
 	IP       string `json:"ip,omitempty"`
 	Port     uint16 `json:"port,omitempty"`

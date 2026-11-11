@@ -125,8 +125,18 @@ func (e *Engine) validate(task Task) error {
 }
 func (e *Engine) execute(ctx context.Context, task Task) Result {
 	start := time.Now()
+	idx, planErr := NewIndex([]Script{task.Script})
+	if planErr == nil && idx.entries[0].hints.Match != nil {
+		ok, _ := idx.entries[0].hints.Match.evaluate(task.Target)
+		if !ok {
+			task.planSkip = "declarative match: required identification facts missing or mismatched"
+		}
+	}
 	var output Output
 	err := ctx.Err()
+	if err == nil {
+		err = planErr
+	}
 	if err == nil && task.planSkip != "" {
 		output = Output{Skipped: true, SkipReason: task.planSkip}
 	} else if err == nil {
@@ -146,6 +156,14 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 		switch output.Verdict {
 		case Vulnerable, NotVulnerable:
 			result.Verdict = output.Verdict
+			if output.Verdict == NotVulnerable && idx.entries[0].hints.Match != nil {
+				_, identified := idx.entries[0].hints.Match.evaluate(task.Target)
+				if !identified {
+					result.Verdict = Unknown
+					result.Status = Skipped
+					result.Output = Output{Skipped: true, SkipReason: "clean verdict requires a matching declared product identification"}
+				}
+			}
 		}
 	}
 	return result

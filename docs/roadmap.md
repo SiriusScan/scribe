@@ -233,3 +233,11 @@ Next: extend native Sirius capabilities with pinned fixtures as scanner and agen
 needs arise. Do not pursue NSE library coverage. Release checks and service smoke
 tests establish build and local transport evidence only; full vGPT and endpoint
 agent workflow acceptance remains a separate gate.
+
+Backlog 1/2 initial declarative slice: optional `match` metadata combines service,
+product, protocol, inclusive semantic version bounds and banner regex with nested
+any_of/all_of. Ports in the new block are advisory. Required missing facts skip
+conservatively before VM construction; clean results for these blocks additionally
+require an exact declared product match. Legacy hints retain their existing
+semantics. CPE/confidence, on_unknown probe policy, cached probes, exhaustive
+measurement and universal legacy-script identification enforcement remain open.

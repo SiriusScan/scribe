@@ -249,3 +249,14 @@ adapters remain opt-in packages. Selection metadata is private implementation.
 The local [integration test](sdk_integration_test.go) feeds a pinned JSONL fixture
 through selection and parallel HTTP execution and checks unsupported coverage.
 This is SDK fixture evidence, not full Sirius scanner/agent acceptance.
+
+Declarative selection metadata may use a `match` block, for example:
+`-- scribe: {"match":{"products":["Acme"],"services":["http"],"min_version":"1.2.0","max_version":"2.0.0"}}`.
+Fields combine with AND; string arrays use case-insensitive OR. `any_of` and
+`all_of` contain nested match blocks (at most eight levels). Inclusive version
+bounds require semantic versions; missing or invalid target versions cannot match.
+`banner_regex` uses Go regular expressions against caller-supplied `Target.Banner`.
+Ports are advisory. Missing or mismatched required facts yield skipped/unknown.
+A clean verdict with a match block requires a matching product declaration;
+service, port and banner alone cannot establish product identity. Direct engine
+runs enforce the same gate. Legacy metadata keeps its previous behavior.

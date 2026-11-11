@@ -9,6 +9,7 @@ import (
 
 // selectionHints are optional selection alternatives. Protocol constrains all alternatives.
 type selectionHints struct {
+	Match     *Match   `json:"match,omitempty"`
 	Services  []string `json:"services"`
 	Products  []string `json:"products"`
 	Ports     []uint16 `json:"ports"`
@@ -46,6 +47,11 @@ func NewIndex(scripts []Script) (*Index, error) {
 				}
 			}
 		}
+		if h.Match != nil {
+			if err := h.Match.validate(0); err != nil {
+				return nil, fmt.Errorf("%s: %w", s.ID, err)
+			}
+		}
 		s.Source = append([]byte(nil), s.Source...)
 		idx.entries = append(idx.entries, indexedScript{s, h})
 	}
@@ -60,6 +66,10 @@ func contains(values []string, value string) bool {
 	return false
 }
 func (h selectionHints) matches(t Target) bool {
+	if h.Match != nil {
+		ok, _ := h.Match.evaluate(t)
+		return ok
+	}
 	if t.Protocol != "" && len(h.Protocols) > 0 && !contains(h.Protocols, t.Protocol) {
 		return false
 	}
