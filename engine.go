@@ -33,6 +33,8 @@ type Options struct {
 	Exhaustive bool
 	// Concurrency is the worker count, 1–256; zero selects four, negative is invalid.
 	Concurrency int
+	// ModuleConcurrency caps active invocations sharing a dialect and script ID per run; zero uses Concurrency.
+	ModuleConcurrency int
 	// HostConcurrency counts active tasks per host across ports; zero uses Concurrency.
 	// Values must be 1 through Concurrency; negative is invalid.
 	HostConcurrency int
@@ -71,6 +73,12 @@ func New(options Options, runtimes ...Runtime) (*Engine, error) {
 	}
 	if options.Concurrency < 1 || options.Concurrency > 256 {
 		return nil, errors.New("concurrency must be between 1 and 256")
+	}
+	if options.ModuleConcurrency == 0 {
+		options.ModuleConcurrency = options.Concurrency
+	}
+	if options.ModuleConcurrency < 1 || options.ModuleConcurrency > options.Concurrency {
+		return nil, errors.New("module concurrency must be between 1 and concurrency")
 	}
 	if options.HostConcurrency == 0 {
 		options.HostConcurrency = options.Concurrency

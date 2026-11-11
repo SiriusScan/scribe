@@ -676,3 +676,36 @@ No public API/schema changes, NSE expansion or Phase 3 endpoint-agent work.
 Release gates: make check and make acceptance-local passed, including the pinned
 real ping++ emitter and emitter-to-Lua fixtures. Further live consumer acceptance
 and longer fuzz campaigns remain follow-up work; no performance claim.
+
+## v1.5.0 — module admission and embedder guidance (2026-11-11)
+
+Added ModuleConcurrency, an additive SDK option capping active tasks by exact
+script ID and dialect across hosts in each run. Zero preserves global worker
+concurrency. Accounting retains only active module keys, bounded by workers;
+the scheduler retains host fairness, pacing, cancellation and isolated VMs.
+Focused cross-host regression verifies serialization. Existing host/global rate
+and cooperative invocation timeout controls are reused rather than duplicated.
+
+Combined declarative product/service/CPE/version fixture tests inclusive version
+boundaries and advisory ports under normal and exhaustive execution, retaining
+unknown verdicts and skip reasons for excluded versions. Existing matching
+language already covers these fields; no new syntax or NSE coverage was needed.
+examples/embed now compiles with host/module limits, rate and timeout options;
+its README explains per-run limits, context and conservative result handling.
+The public signature snapshot was reviewed for the additive option only.
+
+make check and make acceptance-local passed. The embed example executed.
+Sequential existing verified 32 × 16 executed-Lua benchmark on linux/amd64,
+i9-13900H, four workers (shared host, no performance claim):
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/selected=false-4         	     100	  12017794 ns/op	     42604 actions/s	15985868 B/op	  158670 allocs/op
+BenchmarkPlannerExecution/selected=true-4          	     988	   1376102 ns/op	     46508 actions/s	 2212305 B/op	   21860 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	2.700s
+
+Remaining: broader combined matcher matrices, module-limit throughput comparisons,
+longer bounded fuzz campaigns, and live Sirius/vGPT cancellation/persistence
+acceptance. Phase 3 remains paused. Local checks do not establish live integration.

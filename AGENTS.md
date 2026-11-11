@@ -143,3 +143,8 @@ store, requires all active/queued terminal records after cooperative cancellatio
 and reopens synced evidence to EOF. This is local persistence evidence only.
 Planner product skips distinguish missing and mismatched identification; retain
 conservative clean gates and caller identity authority. Phase 3 stays paused.
+
+v1.5.0 adds per-run ModuleConcurrency keyed by exact dialect and script ID;
+zero uses global concurrency. Retain bounded active-only module accounting and
+host/global pacing. examples/embed documents cooperative deadlines and limits.
+Phase 3 remains paused.

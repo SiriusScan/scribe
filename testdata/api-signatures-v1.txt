@@ -167,6 +167,8 @@
 
 	Concurrency int
 
+	ModuleConcurrency int
+
 	HostConcurrency int
 
 	HostInterval time.Duration

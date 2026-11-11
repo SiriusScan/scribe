@@ -194,3 +194,33 @@ func TestHostLimitKeepsOtherHostsRunnable(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestModuleConcurrency(t *testing.T) {
+	var mu sync.Mutex
+	active, peak := 0, 0
+	e, err := scribe.New(scribe.Options{Concurrency: 4, ModuleConcurrency: 1}, testRuntime{execute: func(ctx context.Context, task scribe.Task) (scribe.Output, error) {
+		mu.Lock()
+		active++
+		peak = max(peak, active)
+		mu.Unlock()
+		time.Sleep(time.Millisecond)
+		mu.Lock()
+		active--
+		mu.Unlock()
+		return scribe.Output{}, nil
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := tasks(12)
+	for i := range ts {
+		ts[i].Script.ID = "same"
+		ts[i].Target.Host = string(rune('a' + i))
+	}
+	if err = e.Run(context.Background(), ts, func(scribe.Result) error { return nil }); err != nil {
+		t.Fatal(err)
+	}
+	if peak != 1 {
+		t.Fatalf("peak %d", peak)
+	}
+}

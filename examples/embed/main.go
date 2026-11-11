@@ -41,7 +41,7 @@ func execute() error {
 	if err != nil {
 		return err
 	}
-	engine, err := scribe.New(scribe.Options{Concurrency: 1}, runtime)
+	engine, err := scribe.New(scribe.Options{Concurrency: 4, HostConcurrency: 2, ModuleConcurrency: 1, GlobalInterval: time.Millisecond, ScriptTimeout: 5 * time.Second}, runtime)
 	if err != nil {
 		return err
 	}

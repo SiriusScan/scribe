@@ -81,3 +81,21 @@ func TestServiceCorpusFalseClean(t *testing.T) {
 		}
 	}
 }
+
+func TestCombinedMatchBoundaries(t *testing.T) {
+	source := []byte(`-- scribe: {"match":{"ports":[80],"services":["http"],"products":["Acme"],"min_version":"1.2.0","max_version":"2.0.0","cpe":["cpe:/a:acme:server"]}}`)
+	for _, exhaustive := range []bool{false, true} {
+		e, _ := New(Options{Exhaustive: exhaustive}, cleanMatchRuntime{})
+		for _, v := range []string{"1.2.0", "2.0.0", "1.1.9", "2.0.1", ""} {
+			task := Task{Script: Script{ID: "combined", Dialect: Sirius, Source: source}, Target: Target{Host: "localhost", Port: 999, Service: "http", Product: "Acme", Version: v, CPE: []string{"cpe:/a:acme:server"}}}
+			r := e.execute(context.Background(), task)
+			valid := v == "1.2.0" || v == "2.0.0"
+			if valid && r.Verdict != NotVulnerable {
+				t.Fatalf("%+v", r)
+			}
+			if !valid && (r.Verdict != Unknown || (!exhaustive && r.Output.SkipReason == "")) {
+				t.Fatalf("%+v", r)
+			}
+		}
+	}
+}

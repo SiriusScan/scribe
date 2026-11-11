@@ -52,6 +52,12 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	hosts := map[string]*hostState{}
+	type moduleKey struct {
+		dialect Dialect
+		id      string
+	}
+	modules := map[moduleKey]int{}
+	keyFor := func(t Task) moduleKey { return moduleKey{t.Script.Dialect, t.Script.ID} }
 	pending := make([]scheduledTask, 0, e.options.Window)
 	done := make(chan completion, e.workers)
 	active, failed := 0, 0
@@ -137,6 +143,11 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 		collect := func(c completion) {
 			active--
 			c.host.active--
+			k := moduleKey{c.result.Dialect, c.result.ScriptID}
+			modules[k]--
+			if modules[k] == 0 {
+				delete(modules, k)
+			}
 			if c.result.Status == Failed {
 				c.host.failures++
 			}
@@ -175,6 +186,9 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 			chosen := -1
 			for i, p := range pending {
+				if modules[keyFor(p.task)] >= e.options.ModuleConcurrency {
+					continue
+				}
 				if p.host.active >= e.options.HostConcurrency {
 					continue
 				}
@@ -197,6 +211,7 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			p := pending[chosen]
 			pending = append(pending[:chosen], pending[chosen+1:]...)
 			globalNext = time.Now().Add(e.options.GlobalInterval)
+			modules[keyFor(p.task)]++
 			p.host.active++
 			p.host.starts++
 			p.host.next = time.Now().Add(e.options.HostInterval)
