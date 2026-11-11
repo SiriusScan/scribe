@@ -564,3 +564,7 @@ permission denial. No consumer files or services were changed.
 
 Corpus expansion and real consumer workflow acceptance remain outstanding;
 v1.1.0 is not tagged by this increment. Phase 3 remains paused.
+
+Deployment of dd943b7: sudo noninteractive make install-service succeeded;
+make smoke-http passed all three explicit verdict cases and the TCP banner case.
+These are local service checks, not live consumer integration acceptance.
