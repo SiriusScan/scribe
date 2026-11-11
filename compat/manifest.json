@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "corpus": {
+    "name": "scribe-original-mit-fixtures",
+    "revision": "compat/fixtures at repository HEAD; each case pins its script sha256",
+    "reference_nmap_version": "",
+    "reference_nmap_revision": "",
+    "reference_corpus_revision": "",
+    "pin_status": "open: no reference Nmap version or external corpus revision has been selected as the Phase 1 differential pin; see docs/compatibility.md"
+  },
+  "cases": [
+    {
+      "id": "stdnse-args-multiple",
+      "script": "fixtures/stdnse-args.nse",
+      "sha256": "2562c7c92feab025c630bb648def06e83694891e6d30a3024768dd1222995e53",
+      "target": {"host": "fixture.example", "ip": "192.0.2.10"},
+      "args": {"fixture.first": "alpha", "fixture.third": 42},
+      "expect": {
+        "status": "completed",
+        "data": {"first": "alpha", "missing_is_nil": true, "third": 42, "hostname": "fixture.example"}
+      }
+    },
+    {
+      "id": "stdnse-pure-helpers",
+      "script": "fixtures/stdnse-helpers.nse",
+      "sha256": "28b72e828e5d248ba649bc66094b4198b7ba8bd4eb9ae74c723086c6da49f52c",
+      "target": {"host": "192.0.2.10"},
+      "expect": {
+        "status": "completed",
+        "data": {
+          "hex": "53:63:72:69:62:65",
+          "decoded": "Scribe",
+          "bad_hex_is_nil": true,
+          "bad_hex_err_type": "string",
+          "timeout_seconds": 120,
+          "bad_time_is_nil": true,
+          "bad_time_err": "Can't parse time specification \"10z\" (bad unit \"z\")",
+          "blank": "<blank>"
+        }
+      }
+    },
+    {
+      "id": "shortport-http-service",
+      "script": "fixtures/shortport-http.nse",
+      "sha256": "c674c8113c53efa918a1d0b546679a8e2a8969f67b8fbd8b1c80c4049aec8213",
+      "target": {"host": "192.0.2.10", "port": 8080, "protocol": "tcp", "service": "http", "state": "open"},
+      "expect": {
+        "status": "completed",
+        "data": {"service": "http", "number": 8080, "state": "open"}
+      }
+    },
+    {
+      "id": "shortport-http-skip-closed",
+      "script": "fixtures/shortport-http.nse",
+      "sha256": "c674c8113c53efa918a1d0b546679a8e2a8969f67b8fbd8b1c80c4049aec8213",
+      "target": {"host": "192.0.2.10", "port": 8080, "protocol": "tcp", "service": "http", "state": "closed"},
+      "expect": {"status": "skipped"}
+    },
+    {
+      "id": "shortport-ssl-tunnel-fact",
+      "script": "fixtures/shortport-ssl-tunnel.nse",
+      "sha256": "c330b82fa89923e057334d6950360630efd486f481fe43de153804a521641ed3",
+      "target": {"host": "192.0.2.10", "port": 9443, "protocol": "tcp", "service": "custom", "state": "open", "tls": true},
+      "expect": {
+        "status": "completed",
+        "data": {"number": 9443, "tunnel": "ssl"}
+      }
+    },
+    {
+      "id": "shortport-ssl-skip-without-tunnel",
+      "script": "fixtures/shortport-ssl-tunnel.nse",
+      "sha256": "c330b82fa89923e057334d6950360630efd486f481fe43de153804a521641ed3",
+      "target": {"host": "192.0.2.10", "port": 9443, "protocol": "tcp", "service": "custom", "state": "open"},
+      "expect": {"status": "skipped"}
+    },
+    {
+      "id": "shortport-port-range-udp",
+      "script": "fixtures/shortport-range.nse",
+      "sha256": "732c26ef97d8817c9da8bb40f92a349f33ef2d00557943d15a20a95c94e80007",
+      "target": {"host": "192.0.2.10", "port": 53, "protocol": "udp", "service": "domain", "state": "open"},
+      "expect": {
+        "status": "completed",
+        "data": {"number": 53, "protocol": "udp", "likely_http_first": 80}
+      }
+    },
+    {
+      "id": "unsupported-http-module",
+      "script": "fixtures/unsupported-http-module.nse",
+      "sha256": "a8effd5e18b00fed9dc1cddda4389df7d94ab22dbc9700adb02352c26644f08c",
+      "target": {"host": "192.0.2.10"},
+      "expect": {"status": "unsupported", "error_contains": "unsupported Lua module \"http\""}
+    },
+    {
+      "id": "unsupported-stdnse-new-thread",
+      "script": "fixtures/unsupported-stdnse-thread.nse",
+      "sha256": "59e5aa5d06130db313a9e4d7ca09d9a56f28150c2cb607fd4b929e67d99915cf",
+      "target": {"host": "192.0.2.10"},
+      "expect": {"status": "unsupported", "error_contains": "unsupported NSE API stdnse.new_thread"}
+    },
+    {
+      "id": "action-error-stays-error",
+      "script": "fixtures/action-error.nse",
+      "sha256": "c6d76fdab49fd62ae36ed39b101e861cca0669f5f6e44695d8509647c9c3ff85",
+      "target": {"host": "192.0.2.10"},
+      "expect": {"status": "error", "error_contains": "fixture blew up on purpose"}
+    }
+  ]
+}
