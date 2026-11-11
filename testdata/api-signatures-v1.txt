@@ -96,8 +96,10 @@
 }
 
 .: type Limits struct {
-	CPU     uint64        `json:"cpu,omitempty"`
-	Memory  uint64        `json:"memory,omitempty"`
+	CPU uint64 `json:"cpu,omitempty"`
+
+	Memory uint64 `json:"memory,omitempty"`
+
 	Timeout time.Duration `json:"timeout,omitempty"`
 }
 

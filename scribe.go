@@ -74,8 +74,11 @@ type Script struct {
 
 // Limits bounds invocation work; zero values select runtime defaults.
 type Limits struct {
-	CPU     uint64        `json:"cpu,omitempty"`
-	Memory  uint64        `json:"memory,omitempty"`
+	// CPU bounds Lua VM instruction accounting; zero selects the runtime default.
+	CPU uint64 `json:"cpu,omitempty"`
+	// Memory bounds Lua allocation accounting in bytes, not process RSS.
+	Memory uint64 `json:"memory,omitempty"`
+	// Timeout bounds invocation duration; positive task limits only tighten runtime ceilings.
 	Timeout time.Duration `json:"timeout,omitempty"`
 }
 

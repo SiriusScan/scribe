@@ -79,3 +79,11 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
 - Fill missing public declaration godoc and correct misplaced option/type comments.
 - Expand original pinned HTTP fingerprints and unknown-identity negative fixtures.
 - Preserve public API declarations; refresh signature-golden formatting only.
+
+## v0.9.1
+
+- Pin false-clean behavior and exact skip reasons for unknown and mismatched
+  identities in selected and exhaustive Sirius execution.
+- Document Limits accounting units and task ceiling semantics.
+- Defer v1.0.0 pending the complete exported-field documentation/behavior audit.
+  Phase 3 remains paused.

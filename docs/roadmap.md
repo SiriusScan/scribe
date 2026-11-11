@@ -398,3 +398,15 @@ refresh contains formatting changes only; public declarations are unchanged.
 vet and CGO-disabled build). Field-level documentation/behavior review and further
 pinned Sirius false-clean execution cases remain open. v1.0.0 remains untagged;
 Phase 3 stays paused.
+
+## v0.9.1 release gate status (2026-11-11)
+
+Expanded pinned Sirius clean execution coverage asserts unknown verdicts and exact
+skip reasons for missing/mismatched products in selected and exhaustive runs.
+Limits now documents VM CPU accounting, allocation bytes and tightening timeouts.
+The complete field-level documentation and behavior audit of all exported types
+(including Result, Target and match blocks) remains incomplete; v1.0.0 therefore
+is not eligible. Release version is v0.9.1. Phase 3 stays paused.
+`make check` passed race tests, external SDK acceptance, Windows/Darwin CLI
+cross-compilation, vet and CGO-disabled CLI build on apps01. These checks are
+build/local execution evidence, not scanner/agent or vGPT integration acceptance.

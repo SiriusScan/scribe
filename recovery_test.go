@@ -152,3 +152,42 @@ func TestLuaActiveCancellation(t *testing.T) {
 		t.Fatalf("terminal records=%d want=%d", seen, len(batch))
 	}
 }
+
+// Pinned clean scripts must remain inconclusive without declared identity.
+func TestPinnedSiriusFalseClean(t *testing.T) {
+	source, err := os.ReadFile("testdata/sirius/not_vulnerable.lua")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, exhaustive := range []bool{false, true} {
+		for _, product := range []string{"", "Other fixture"} {
+			vm, err := lua54.NewNative(lua54.Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			engine, err := scribe.New(scribe.Options{StrictIdentification: true, Exhaustive: exhaustive}, vm)
+			if err != nil {
+				t.Fatal(err)
+			}
+			index, err := scribe.NewIndex([]scribe.Script{{ID: "pinned-clean", Dialect: scribe.Sirius, Source: source}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			count := 0
+			err = engine.RunSelected(context.Background(), index, []scribe.Target{{Host: "fixture.invalid", Product: product}}, func(r scribe.Result) error {
+				count++
+				reason := "clean verdict requires a matching declared product identification"
+				if product != "" {
+					reason = "script hints exclude supplied endpoint facts"
+				}
+				if r.Status != scribe.Skipped || r.Verdict != scribe.Unknown || r.Output.SkipReason != reason {
+					t.Errorf("exhaustive=%v product=%q: %+v", exhaustive, product, r)
+				}
+				return nil
+			})
+			if err != nil || count != 1 {
+				t.Fatalf("count=%d error=%v", count, err)
+			}
+		}
+	}
+}
