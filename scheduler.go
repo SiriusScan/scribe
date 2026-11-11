@@ -81,6 +81,10 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			eof = true
 		}
 		for !eof && len(pending)+active < e.options.Window {
+			if runCtx.Err() != nil && !drain {
+				eof = true
+				break
+			}
 			task, ok, err := next(runCtx)
 			if err != nil {
 				inputErr = err
@@ -98,6 +102,10 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 			if runCtx.Err() != nil {
 				emit(terminal(task, Cancelled, runCtx.Err().Error()))
+				continue
+			}
+			if task.planSkip != "" {
+				emit(terminal(task, Skipped, task.planSkip))
 				continue
 			}
 			key := hostKey(task.Target)

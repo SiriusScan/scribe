@@ -21,7 +21,7 @@ type Options struct {
 	// Already running invocations finish; zero disables the budget.
 	HostErrorBudget int
 	Strategy        Strategy
-	// Window bounds pending tasks and target lookahead; default 256.
+	// Window bounds pending plus active tasks and target lookahead; default 256.
 	Window int
 	// MaxHosts bounds retained per-run host accounting; default 65536.
 	MaxHosts int

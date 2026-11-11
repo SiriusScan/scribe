@@ -148,3 +148,18 @@ func TestSelectedCancellationDrainsKnownPairs(t *testing.T) {
 		t.Fatalf("count=%d err=%v", count, err)
 	}
 }
+
+func TestHintSkipsDoNotConsumeHostPacing(t *testing.T) {
+	idx, _ := scribe.NewIndex([]scribe.Script{
+		{ID: "skip", Dialect: scribe.Sirius, Source: []byte("-- scribe: {\"services\":[\"ssh\"]}")},
+		{ID: "run", Dialect: scribe.Sirius, Source: []byte("source")},
+	})
+	e, _ := scribe.New(scribe.Options{Concurrency: 1, HostInterval: time.Hour}, testRuntime{execute: func(context.Context, scribe.Task) (scribe.Output, error) { return scribe.Output{}, nil }})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	records := 0
+	err := e.RunSelected(ctx, idx, []scribe.Target{{Host: "host", Service: "http"}}, func(scribe.Result) error { records++; return nil })
+	if err != nil || records != 2 {
+		t.Fatalf("records=%d err=%v", records, err)
+	}
+}

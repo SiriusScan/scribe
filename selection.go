@@ -105,7 +105,8 @@ func (idx *Index) Select(t Target) []Script {
 	return out
 }
 
-// RunSelected expands matching scripts across supplied endpoints using Run's bounded pool.
+// RunSelected schedules indexed scripts across supplied endpoints. Hint exclusions
+// emit skipped records. Cancellation drains all pairs from this known target slice.
 func (e *Engine) RunSelected(ctx context.Context, idx *Index, targets []Target, sink func(Result) error) error {
 	if idx == nil {
 		return fmt.Errorf("index is required")
