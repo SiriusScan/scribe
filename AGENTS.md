@@ -81,3 +81,9 @@ Engine hardening checks: `make check` runs the race suite, including the origina
 Sirius verdict corpus in testdata/sirius and bounded batch load/recovery tests,
 plus Windows/Darwin amd64 CLI cross-compilation. Cross-compilation is build
  evidence only, not platform runtime or scanner integration acceptance.
+
+Planner policy: preserve opt-in StrictIdentification for legacy callers and enforce
+declared matching products for clean verdicts. Exhaustive runs retain the clean
+gate and mark only completed explicit verdicts as planner misses. Passive probes
+are selected-run scoped, bounded and cache failures; never replace supplied facts.
+Probe coverage currently excludes TLS, UDP and HTTP headers.

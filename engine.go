@@ -12,7 +12,9 @@ const MaxSourceBytes = 1 << 20
 
 // Options controls orchestration, independently of each runtime's limits.
 type Options struct {
-	Concurrency int
+	StrictIdentification bool
+	Exhaustive           bool
+	Concurrency          int
 	// HostConcurrency defaults to Concurrency. Limits are per run and span ports.
 	HostConcurrency int
 	// HostInterval spaces invocation starts per host; zero disables pacing.
@@ -128,7 +130,7 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 	idx, planErr := NewIndex([]Script{task.Script})
 	if planErr == nil && idx.entries[0].hints.Match != nil {
 		ok, _ := idx.entries[0].hints.Match.evaluate(task.Target)
-		if !ok {
+		if !ok && !e.options.Exhaustive {
 			task.planSkip = "declarative match: required identification facts missing or mismatched"
 		}
 	}
@@ -156,8 +158,12 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 		switch output.Verdict {
 		case Vulnerable, NotVulnerable:
 			result.Verdict = output.Verdict
-			if output.Verdict == NotVulnerable && idx.entries[0].hints.Match != nil {
-				_, identified := idx.entries[0].hints.Match.evaluate(task.Target)
+			if output.Verdict == NotVulnerable && (idx.entries[0].hints.Match != nil || e.options.StrictIdentification) {
+				h := idx.entries[0].hints
+				identified := task.Target.Product != "" && contains(h.Products, task.Target.Product)
+				if h.Match != nil {
+					_, identified = h.Match.evaluate(task.Target)
+				}
 				if !identified {
 					result.Verdict = Unknown
 					result.Status = Skipped
@@ -166,5 +172,6 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 			}
 		}
 	}
+	result.PlannerMiss = task.plannerExcluded && result.Status == Completed && result.Verdict != Unknown
 	return result
 }

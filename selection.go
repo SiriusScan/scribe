@@ -149,6 +149,7 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 	if ctx == nil || idx == nil || next == nil || sink == nil {
 		return fmt.Errorf("context, index, target producer and sink are required")
 	}
+	cache := make(map[string]Target)
 	var target Target
 	pos := len(idx.entries)
 	return e.run(ctx, func(ctx context.Context) (Task, bool, error) {
@@ -160,6 +161,19 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 			if err := t.Validate(); err != nil {
 				return Task{}, false, err
 			}
+			key := fmt.Sprintf("%s/%s/%d/%s/%t", t.Host, t.IP, t.Port, t.Protocol, t.TLS)
+			for _, entry := range idx.entries {
+				if m := entry.hints.Match; m != nil && m.OnUnknown == "probe" && m.missing(t) {
+					if f, ok := cache[key]; ok {
+						t = mergeProbe(t, f)
+					} else if len(cache) < e.options.MaxHosts {
+						f := probe(ctx, t)
+						cache[key] = f
+						t = mergeProbe(t, f)
+					}
+					break
+				}
+			}
 			target = t
 			pos = 0
 		}
@@ -170,8 +184,39 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 		pos++
 		t := Task{Script: entry.script, Target: target}
 		if !entry.hints.matches(target) {
-			t.planSkip = "script hints exclude supplied endpoint facts"
+			t.plannerExcluded = true
+			if !e.options.Exhaustive {
+				t.planSkip = "script hints exclude supplied endpoint facts"
+			}
 		}
 		return t, true, nil
 	}, sink, drain)
+}
+
+// CheckIdentification checks whether metadata declares a product identification.
+// Runtime facts must still match before a strict clean verdict is accepted.
+func CheckIdentification(s Script) error {
+	idx, err := NewIndex([]Script{s})
+	if err != nil {
+		return err
+	}
+	h := idx.entries[0].hints
+	var declared func(Match) bool
+	declared = func(m Match) bool {
+		if len(m.Products) > 0 {
+			return true
+		}
+		for _, g := range [][]Match{m.AnyOf, m.AllOf} {
+			for _, c := range g {
+				if declared(c) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	if len(h.Products) > 0 || h.Match != nil && declared(*h.Match) {
+		return nil
+	}
+	return fmt.Errorf("clean verdict requires declared product identification")
 }

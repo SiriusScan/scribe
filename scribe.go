@@ -79,7 +79,8 @@ func (e *CapabilityDeniedError) Error() string {
 }
 
 type Task struct {
-	planSkip string
+	planSkip        string
+	plannerExcluded bool
 	// Nil preserves legacy SDK authority; a non-nil empty list denies all calls.
 	Capabilities []string `json:"capabilities,omitempty"`
 	Limits       Limits   `json:"limits,omitempty"`
@@ -140,6 +141,7 @@ const (
 
 // Result reports execution status independently of vulnerability status.
 type Result struct {
+	PlannerMiss   bool    `json:"planner_miss,omitempty"`
 	SchemaVersion int     `json:"schema_version"`
 	ScriptID      string  `json:"script_id"`
 	ScriptSHA256  string  `json:"script_sha256"`

@@ -10,6 +10,7 @@ import (
 // Match combines fields with AND; alternatives within a field use OR.
 // Ports are advisory and never exclude an endpoint.
 type Match struct {
+	OnUnknown   string   `json:"on_unknown,omitempty"`
 	Ports       []uint16 `json:"ports,omitempty"`
 	Services    []string `json:"services,omitempty"`
 	Products    []string `json:"products,omitempty"`
@@ -28,6 +29,9 @@ func version(v string) string {
 	return v
 }
 func (m Match) validate(depth int) error {
+	if m.OnUnknown != "" && m.OnUnknown != "run" && m.OnUnknown != "skip" && m.OnUnknown != "probe" {
+		return fmt.Errorf("invalid on_unknown policy")
+	}
 	if depth > 8 {
 		return fmt.Errorf("match nesting exceeds 8")
 	}
@@ -60,6 +64,9 @@ func (m Match) validate(depth int) error {
 
 // evaluate returns applicability and positive product identification separately.
 func (m Match) evaluate(t Target) (bool, bool) {
+	if m.OnUnknown == "run" && m.missing(t) {
+		return true, false
+	}
 	identified := len(m.Products) > 0 && t.Product != "" && contains(m.Products, t.Product)
 	for _, pair := range []struct {
 		values []string
@@ -103,4 +110,18 @@ func (m Match) evaluate(t Target) (bool, bool) {
 		}
 	}
 	return true, identified
+}
+
+func (m Match) missing(t Target) bool {
+	if len(m.Services) > 0 && t.Service == "" || len(m.Products) > 0 && t.Product == "" || len(m.Protocols) > 0 && t.Protocol == "" || (m.MinVersion != "" || m.MaxVersion != "") && t.Version == "" || m.BannerRegex != "" && t.Banner == "" {
+		return true
+	}
+	for _, group := range [][]Match{m.AnyOf, m.AllOf} {
+		for _, c := range group {
+			if c.missing(t) {
+				return true
+			}
+		}
+	}
+	return false
 }

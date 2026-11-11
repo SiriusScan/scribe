@@ -82,6 +82,8 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	pingppPath := flags.String("pingpp-jsonl", "", "read pingpp.scan/v1 JSONL endpoint facts")
 	factsJSONL := flags.String("facts-jsonl", "", "stream known endpoint facts from a JSONL file; at most 65536 records of 64 KiB")
 	factsPath := flags.String("facts", "", "JSON array of known endpoint facts (maximum 1024)")
+	strict := flags.Bool("strict-identification", false, "require declared matching product for clean verdicts")
+	exhaustive := flags.Bool("exhaustive", false, "execute excluded scripts and report planner misses")
 	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
 	showVersion := flags.Bool("version", false, "print module version and commit")
 	var paths scriptPaths
@@ -149,6 +151,9 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 			source, err := readSource(path)
 			if err == nil {
 				err = lua54.Check(scribe.Script{ID: filepath.Base(path), Dialect: scribe.Dialect(*dialect), Source: source})
+				if err == nil && *strict {
+					err = scribe.CheckIdentification(scribe.Script{ID: filepath.Base(path), Dialect: scribe.Dialect(*dialect), Source: source})
+				}
 			}
 			report := struct {
 				Script string `json:"script"`
@@ -166,6 +171,9 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 		}
 		for _, script := range inline {
 			err := lua54.Check(scribe.Script{ID: script.ID, Dialect: scribe.Dialect(*dialect), Source: []byte(script.Source)})
+			if err == nil && *strict {
+				err = scribe.CheckIdentification(scribe.Script{ID: script.ID, Dialect: scribe.Dialect(*dialect), Source: []byte(script.Source)})
+			}
 			report := map[string]string{"script": script.ID, "status": "checked"}
 			if err != nil {
 				report["status"] = "error"
@@ -319,7 +327,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	if err != nil {
 		return fail(err)
 	}
-	engine, err := scribe.New(scribe.Options{Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
+	engine, err := scribe.New(scribe.Options{StrictIdentification: *strict, Exhaustive: *exhaustive, Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
 	if err != nil {
 		return fail(err)
 	}

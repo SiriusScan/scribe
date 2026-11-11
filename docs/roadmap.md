@@ -241,3 +241,16 @@ conservatively before VM construction; clean results for these blocks additional
 require an exact declared product match. Legacy hints retain their existing
 semantics. CPE/confidence, on_unknown probe policy, cached probes, exhaustive
 measurement and universal legacy-script identification enforcement remain open.
+
+Backlog 1/2 follow-up: opt-in SDK StrictIdentification and CLI
+--strict-identification extend the clean-verdict product gate to legacy metadata.
+Combined with --check this rejects missing product declarations; runtime matching
+remains necessary. Default legacy fixture behavior is preserved. --exhaustive
+executes planner exclusions and emits planner_miss for completed explicit verdicts;
+clean verdicts still require identification. Match on_unknown accepts run, skip,
+and probe. Probe performs one passive TCP banner read per endpoint per run,
+including cached failures (250 ms, 8 KiB, cache bounded by MaxHosts); it fills
+missing facts only. UDP, TLS and HTTP header probing remain unsupported and
+unresolved facts remain inconclusive. Probing applies to selected/stream runs;
+direct Run uses supplied facts. CPE/confidence and full integration acceptance
+remain open. These checks establish repository evidence only.
