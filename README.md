@@ -112,3 +112,19 @@ First-party code, documentation, and original examples are [MIT](LICENSE).
 Dependencies retain their own licenses. No Nmap code, scripts, or libraries are
 relicensed here; distributing a supported upstream corpus requires reviewing its
 actual licenses. See [licensing research](docs/research/nse-runtime.md#mit-licensing-boundary).
+
+Diagnostics are retained in JSONL `output.logs` (up to 64 KiB per invocation);
+`output.logs_truncated` marks discarded bytes. Capture includes `print`, `log`,
+and the experimental stdnse diagnostic helpers, including on errors and skips.
+Diagnostic text never supplies a verdict.
+
+Use `scribe --check --dialect sirius --script script.lua` without a target
+to compile and check literal requires and direct module member references.
+The same check supports the existing experimental NSE subset. It does not
+execute initialization, rules, actions, or network calls. A successful check
+does not certify dynamic accesses or runtime behavior; dynamic requires fail.
+Reports are JSONL with a nonzero exit on unsupported references or syntax errors.
+
+`scribe --version` prints the module/build version and commit.
+`make install` builds with the current Git revision embedded and installs into
+`/usr/local/bin`; `PREFIX` and `DESTDIR` may override the destination.
