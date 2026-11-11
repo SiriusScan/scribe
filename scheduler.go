@@ -54,6 +54,7 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 	pending := make([]scheduledTask, 0, e.options.Window)
 	done := make(chan completion, e.workers)
 	active, failed := 0, 0
+	var globalNext time.Time
 	eof := false
 	var inputErr, sinkErr error
 	emit := func(r Result) {
@@ -158,6 +159,10 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 		now := time.Now()
 		var wake time.Time
 		for active < e.workers && runCtx.Err() == nil {
+			if now.Before(globalNext) {
+				wake = globalNext
+				break
+			}
 			chosen := -1
 			for i, p := range pending {
 				if p.host.active >= e.options.HostConcurrency {
@@ -178,6 +183,7 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 			p := pending[chosen]
 			pending = append(pending[:chosen], pending[chosen+1:]...)
+			globalNext = time.Now().Add(e.options.GlobalInterval)
 			p.host.active++
 			p.host.starts++
 			p.host.next = time.Now().Add(e.options.HostInterval)

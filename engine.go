@@ -14,6 +14,9 @@ const MaxSourceBytes = 1 << 20
 type Options struct {
 	// SNMPCommunity enables v2c identification using exactly this community; empty disables it.
 	// At most 255 bytes; it is never included in returned facts.
+	Plan                 bool
+	ScriptTimeout        time.Duration
+	GlobalInterval       time.Duration
 	SNMPCommunity        string
 	PlannerProbes        bool
 	StrictIdentification bool
@@ -42,6 +45,9 @@ type Engine struct {
 }
 
 func New(options Options, runtimes ...Runtime) (*Engine, error) {
+	if options.ScriptTimeout < 0 || options.GlobalInterval < 0 {
+		return nil, errors.New("timeout and global interval cannot be negative")
+	}
 	if len(options.SNMPCommunity) > 255 {
 		return nil, fmt.Errorf("SNMP community exceeds 255 bytes")
 	}
@@ -120,7 +126,7 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 			return Task{}, false, nil
 		}
 		t := tasks[n]
-		if e.options.PlannerProbes {
+		if e.options.PlannerProbes && !e.options.Plan {
 			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts, e.options.SNMPCommunity)
 		}
 		n++
@@ -137,6 +143,11 @@ func (e *Engine) validate(task Task) error {
 	return task.Target.Validate()
 }
 func (e *Engine) execute(ctx context.Context, task Task) Result {
+	if e.options.ScriptTimeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, e.options.ScriptTimeout)
+		defer cancel()
+	}
 	start := time.Now()
 	idx, planErr := NewIndex([]Script{task.Script})
 	if planErr == nil && idx.entries[0].hints.Match != nil {
@@ -152,6 +163,8 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 	}
 	if err == nil && task.planSkip != "" {
 		output = Output{Skipped: true, SkipReason: task.planSkip}
+	} else if err == nil && e.options.Plan {
+		output = Output{Skipped: true, SkipReason: "plan: would run (dynamic Lua rules not evaluated)"}
 	} else if err == nil {
 		output, err = e.runtimes[task.Script.Dialect].Execute(ctx, task)
 	}

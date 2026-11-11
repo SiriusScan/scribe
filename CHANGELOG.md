@@ -30,3 +30,11 @@
 
 Build, fixture and local transport checks do not establish compatibility with
 an upstream NSE corpus or Sirius scanner/agent integration acceptance.
+
+## v0.6.0
+
+- Expand product fingerprint and CPE hints across HTTP, mail, FTP, database,
+  Redis and SSH identities; identification never supplies vulnerability verdicts.
+- Add CLI/HTTP --plan and library Options.Plan without actions or planner probes.
+- Add per-run global start pacing and SDK per-script timeout; preserve existing
+  concurrency and CLI/HTTP timeout controls.

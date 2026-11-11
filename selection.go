@@ -162,7 +162,7 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 				return Task{}, false, err
 			}
 			for _, entry := range idx.entries {
-				if m := entry.hints.Match; m != nil && m.OnUnknown == "probe" && m.missing(t) {
+				if m := entry.hints.Match; !e.options.Plan && m != nil && m.OnUnknown == "probe" && m.missing(t) {
 					t = cache.enrich(ctx, t, e.options.MaxHosts, e.options.SNMPCommunity)
 					break
 				}

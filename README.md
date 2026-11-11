@@ -310,3 +310,20 @@ credential guessing. It applies to planner probes on UDP port 161 or supplied
 `snmp` service endpoints and identifies only the service, never product or verdict.
 Communities are credentials; use trusted callers and avoid retaining request args.
 See package godoc for API versioning and CHANGELOG.md for release history.
+
+v0.6.0 planning and limits: `--plan` emits skipped/unknown JSONL records for
+all script/target pairs. `output.skip_reason` reports exclusions or `plan: would
+run`; dynamic Lua rules are not evaluated and no probes or actions execute.
+Library callers set `Options.Plan` with the existing Run/Batch/Stream methods.
+`--timeout` (default 5s) bounds each invocation; library callers can set
+`Options.ScriptTimeout` to tighten runtime deadlines. `--concurrency` (default 4,
+maximum 256) bounds active scripts. `--global-interval 100ms` spaces starts across
+hosts within each run (`Options.GlobalInterval`); these limits are per run, not
+shared across independent Engine calls or HTTP requests. POST /run accepts these
+same flags in its args array. Planning records never establish a verdict.
+
+Pinned fingerprint rules additionally recognize IIS, lighttpd, Tomcat, Jetty,
+Postfix, Exim, vsftpd, ProFTPD, MySQL/MariaDB version banners, Redis INFO version
+lines and Dropbear SSH banners. These produce identification/CPE hints only.
+Passive probes do not actively request database or Redis identification; callers
+can use package fingerprint on protocol payloads they already collected.

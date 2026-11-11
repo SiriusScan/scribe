@@ -317,3 +317,14 @@ Sirius scanner/agent and full vGPT workflow acceptance remain separate gates.
 apps01 service installation with VERSION=v0.5.0 and make smoke-http passed:
 completed vulnerable/not_vulnerable/unknown records and TCP banner output.
 This establishes local service transport evidence only.
+
+## v0.6.0
+
+Expanded pinned product identification and CPE hints; planning uses the existing
+selection path with unknown verdicts and explains would-run decisions without
+Lua rule/action execution or network probes. Engine options add per-invocation
+timeouts and per-run global start intervals alongside bounded concurrency.
+Local build and service checks remain separate from scanner/agent acceptance.
+Validation: make check passed, including race tests, external SDK acceptance,
+Windows/Darwin builds, vet and CGO-disabled CLI build. apps01 installation with
+VERSION=v0.6.0 and make smoke-http passed all three verdicts and TCP banner.

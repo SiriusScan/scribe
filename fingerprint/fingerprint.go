@@ -20,9 +20,22 @@ type Matcher struct{ rules []Rule }
 func New(rules ...Rule) *Matcher { return &Matcher{append([]Rule(nil), rules...)} }
 func Default() *Matcher {
 	return New(
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Microsoft-IIS(?:/([0-9.]+))?`), Service: "http", Product: "IIS"},
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^lighttpd(?:/([0-9.]+))?`), Service: "http", Product: "lighttpd"},
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^(?:Apache Tomcat|Tomcat)(?:/([0-9.]+))?`), Service: "http", Product: "Tomcat"},
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Jetty[/(]([0-9.v]+)`), Service: "http", Product: "Jetty"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`^220[^\r\n]*\bPostfix\b`), Service: "smtp", Product: "Postfix"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`^220[^\r\n]*\bExim ([0-9.]+)`), Service: "smtp", Product: "Exim"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`^220[^\r\n]*\bvsFTPd ([0-9.]+)`), Service: "ftp", Product: "vsftpd"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`^220[^\r\n]*\bProFTPD ([0-9.]+)`), Service: "ftp", Product: "ProFTPD"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`^\x0a([0-9.]+)-MariaDB`), Service: "mysql", Product: "MariaDB"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`^\x0a([0-9.]+)[^\r\n]*`), Service: "mysql", Product: "MySQL"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`(?m)^redis_version:([0-9.]+)\r?$`), Service: "redis", Product: "Redis"},
+		Rule{Header: "", Pattern: regexp.MustCompile(`^SSH-\S+-dropbear_([0-9.]+)`), Service: "ssh", Product: "Dropbear"},
+
 		Rule{Pattern: regexp.MustCompile(`^SSH-\S+-OpenSSH_([^\s]+)`), Service: "ssh", Product: "OpenSSH"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)nginx(?:/([^\s]+))?`), Service: "http", Product: "nginx"},
-		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)Apache(?:/([^\s]+))?`), Service: "http", Product: "Apache"},
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Apache(?:/([^\s]+))?`), Service: "http", Product: "Apache"},
 	)
 }
 
