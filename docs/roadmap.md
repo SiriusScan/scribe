@@ -43,6 +43,14 @@ The initial corpus dependency census prioritizes `stdnse`, `shortport`, `nmap`,
 records counts and their limits. Do not infer a percentage of compatible scripts
 from that census.
 
+Started: the machine-readable report harness (`compat` package,
+`cmd/scribe-compat`, `make compat`) measures original MIT fixtures with pinned
+digests and asserted outputs, and the first `stdnse`/`shortport` helper slice is
+implemented against documented semantics with first-party fixtures; see
+[compatibility](compatibility.md#measured-compatibility-harness). Selecting the
+exact Nmap version and external corpus revision above is still open and is
+recorded there as an explicit open item, so no upstream result exists yet.
+
 ## 2. Scanner orchestration adapter
 
 - Add a Scribe strategy beside Nmap in app-scanner.

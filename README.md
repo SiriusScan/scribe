@@ -97,12 +97,14 @@ patterns and their differences.
 ```sh
 make check
 make build
+make compat   # measured NSE-fixture report -> compat/report.json
 ```
 
 Tests use deterministic local services and original scripts. They cover execution,
 limits, scheduling, dialect isolation, and the target-bound HTTP capability.
-They do not establish compatibility with the 612-script Sirius NSE catalog or
-deployment into a running Sirius scanner or endpoint agent.
+`make compat` measures the original NSE-shaped fixtures in `compat/` with pinned
+digests and asserted outputs. Neither establishes compatibility with the 612-script
+Sirius NSE catalog or deployment into a running Sirius scanner or endpoint agent.
 
 ## License
 
