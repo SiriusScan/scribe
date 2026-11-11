@@ -1,5 +1,3 @@
-// Package scribe executes vulnerability scripts against caller-supplied targets.
-// It performs no host discovery, port discovery, queue consumption, or persistence.
 package scribe
 
 import (

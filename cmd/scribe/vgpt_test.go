@@ -51,7 +51,7 @@ func TestVGPTCorpus(t *testing.T) {
 							if err != nil {
 								t.Fatal(err)
 							}
-							args := []string{"--dialect", "sirius", "--host", host, "--port", port, "--service", "http"}
+							args := []string{"--dialect", "sirius", "--host", host, "--port", port, "--service", "http", "--product", "Apache"}
 							for _, transport := range []string{"cli", "http"} {
 								for _, check := range []bool{true, false} {
 									callArgs := append([]string{}, args...)

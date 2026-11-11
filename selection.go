@@ -163,7 +163,7 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 			}
 			for _, entry := range idx.entries {
 				if m := entry.hints.Match; m != nil && m.OnUnknown == "probe" && m.missing(t) {
-					t = cache.enrich(ctx, t, e.options.MaxHosts)
+					t = cache.enrich(ctx, t, e.options.MaxHosts, e.options.SNMPCommunity)
 					break
 				}
 			}

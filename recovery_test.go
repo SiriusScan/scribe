@@ -35,7 +35,7 @@ func TestSiriusCorpusLoad(t *testing.T) {
 			for endpoint := 0; endpoint < 16; endpoint++ {
 				id := fmt.Sprintf("%s-%d-%d", verdict, script, endpoint)
 				wants[id] = verdict
-				batch = append(batch, scribe.Task{Script: scribe.Script{ID: id, Dialect: scribe.Sirius, Source: source}, Target: scribe.Target{Host: fmt.Sprintf("endpoint-%d.invalid", endpoint)}})
+				batch = append(batch, scribe.Task{Script: scribe.Script{ID: id, Dialect: scribe.Sirius, Source: source}, Target: scribe.Target{Product: "Scribe fixture", Host: fmt.Sprintf("endpoint-%d.invalid", endpoint)}})
 			}
 		}
 	}

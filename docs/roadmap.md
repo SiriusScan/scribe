@@ -292,3 +292,28 @@ legacy missing match blocks without changing compatibility fixtures.
 Validation: make check passed (race, external SDK, cross-builds, vet, CGO-disabled
 CLI). apps01 make install-service and make smoke-http passed all three verdicts
 and TCP banner. This is local build/transport evidence, not vGPT acceptance.
+
+## v0.5.0
+
+Legacy vGPT scripts declare TCP/Apache matching; original Sirius verdict fixtures
+use an explicit synthetic Scribe fixture product. Fixture callers supply matching
+identities, preserving verdict expectations without bypassing the clean gate.
+Corpus metadata lint now fails missing match blocks by default, including new
+scripts. The CLI exposes caller-supplied product identity.
+
+Opt-in SNMP v2c identification uses exactly one caller-supplied community through
+Options.SNMPCommunity or --snmp-community. Empty policy disables requests.
+It queries sysDescr.0, correlates version/community/request ID/OID and successful
+response shape, and exposes service/confidence only. A 250 ms deadline and 8 KiB
+response ceiling bound each probe; fake UDP responders cover success and wrong
+request IDs. Existing selected-run caching retains failures. No community guessing,
+product inference or vulnerability verdict is provided.
+
+Package godoc documents pre-v1 versioning, independent schema versions and result
+semantics; CHANGELOG.md records v0.1.0 through v0.5.0. No runtime API types changed.
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+builds, vet and CGO-disabled CLI build). Service/HTTP evidence is recorded below;
+Sirius scanner/agent and full vGPT workflow acceptance remain separate gates.
+apps01 service installation with VERSION=v0.5.0 and make smoke-http passed:
+completed vulnerable/not_vulnerable/unknown records and TCP banner output.
+This establishes local service transport evidence only.

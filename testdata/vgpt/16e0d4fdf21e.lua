@@ -1,3 +1,4 @@
+-- scribe: {"match":{"products":["Apache"],"protocols":["tcp"],"on_unknown":"run"}}
 local function has_vulnerable_version(value)
   if type(value) ~= "string" then return false end
   for version in string.gmatch(string.lower(value), "apache/([%d%.]+)") do

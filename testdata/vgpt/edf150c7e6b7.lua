@@ -1,3 +1,4 @@
+-- scribe: {"match":{"products":["Apache"],"protocols":["tcp"],"on_unknown":"run"}}
 return {
   api_version = 1,
   rule = function(target, args)

@@ -8,8 +8,7 @@ import (
 	"testing"
 )
 
-// Legacy fixtures intentionally exercise compatibility. Report them without
-// changing their semantics; malformed metadata is always a failure.
+// Every corpus script requires declarative selection metadata.
 func TestCorpusMetadataLint(t *testing.T) {
 	err := filepath.WalkDir("testdata", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -27,8 +26,9 @@ func TestCorpusMetadataLint(t *testing.T) {
 			t.Error(err)
 			return nil
 		}
+
 		if index.entries[0].hints.Match == nil {
-			t.Logf("legacy script lacks match block: %s", path)
+			t.Errorf("script lacks required match block: %s", path)
 		}
 		return nil
 	})

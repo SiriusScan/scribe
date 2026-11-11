@@ -302,3 +302,11 @@ See [examples/external](examples/external) for a runnable separate-module consum
 Always check execution status and explicit verdict separately: completed unknown,
 skips, errors and missing records are inconclusive. Caller facts take precedence
 when optional planner probes fill missing identification.
+
+SNMP planner identification is disabled by default. SDK callers may set
+`Options.SNMPCommunity`; CLI and HTTP callers may pass `--snmp-community VALUE`.
+The policy uses exactly one supplied v2c community (maximum 255 bytes), with no
+credential guessing. It applies to planner probes on UDP port 161 or supplied
+`snmp` service endpoints and identifies only the service, never product or verdict.
+Communities are credentials; use trusted callers and avoid retaining request args.
+See package godoc for API versioning and CHANGELOG.md for release history.

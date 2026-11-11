@@ -1,3 +1,4 @@
+-- scribe: {"match":{"products":["Apache"],"protocols":["tcp"],"on_unknown":"run"}}
 local function has_version(value)
   if type(value) ~= "string" then return false end
   return (value .. " "):match("Apache/2%.4%.49[^%w%._%-]") ~= nil

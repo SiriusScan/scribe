@@ -88,7 +88,7 @@ gate and mark only completed explicit verdicts as planner misses. Passive probes
 are selected-run scoped, bounded and cache failures; never replace supplied facts.
 Probe coverage includes TCP, TLS, HTTP headers and bounded DNS/NTP UDP identification.
 
-Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. SNMP and arbitrary product inference remain unsupported.
+Planner probes use a 250 ms endpoint budget, an 8 KiB response header/banner limit, TLS detection on common HTTPS ports and a handshake attempt on silent TCP endpoints. Certificate subjects, TLS version and ALPN are observations without certificate trust validation. HTTP HEAD redirects allow at most three requests on the same host and port. Pinned nginx, Apache and OpenSSH fingerprints infer CPE hints; these are not vulnerability verdicts. CLI JSONL and POST /run expose facts and confidence under `target`, and planner skip reasons under `output.skip_reason`. Missing verdicts remain unknown. Arbitrary product inference remains unsupported.
 
 Planner transport regression fixtures live in cmd/scribe/planner_transport_test.go;
 keep CLI and POST /run assertions shared and require complete JSONL streams.
@@ -100,6 +100,5 @@ counts alone do not establish execution throughput.
 UDP planner probes support correlated DNS root NS queries and NTP client queries
 on standard ports or explicitly supplied dns/ntp services. They share the 250 ms
 budget and 8 KiB response ceiling, infer service only, and never infer a product
-or verdict. SNMP is deferred because no community credential policy exists.
-Corpus metadata lint reports legacy missing match blocks with go test -v; invalid
-metadata fails. Preserve intentional legacy fixture behavior.
+or verdict. SNMP v2c identification requires explicit Options.SNMPCommunity / --snmp-community; empty disables it. Never guess communities or promote sysDescr to a product/verdict.
+Corpus metadata lint fails missing match blocks under the default strict test; invalid metadata fails. Preserve fixture verdicts with declared matching caller facts.

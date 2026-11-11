@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// udpProbe identifies only correlated DNS and NTP responses. SNMP is omitted:
-// guessing community credentials is outside planner identification.
+// udpProbe identifies correlated DNS and NTP responses without credentials.
+// SNMP uses the separately supplied caller community policy.
 func udpProbe(ctx context.Context, t Target) Target {
 	var request []byte
 	service := ""

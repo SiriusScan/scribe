@@ -48,9 +48,9 @@ func mergeProbe(t, f Target) Target {
 // probe performs bounded banner, TLS and HTTP identification without trust validation.
 func probe(ctx context.Context, t Target) Target {
 	if t.Protocol == "udp" && t.Port != 0 {
- return udpProbe(ctx, t)
- }
- if t.Protocol != "tcp" || t.Port == 0 {
+		return udpProbe(ctx, t)
+	}
+	if t.Protocol != "tcp" || t.Port == 0 {
 		return Target{}
 	}
 	ctx, cancel := context.WithTimeout(ctx, 250*time.Millisecond)
@@ -130,14 +130,18 @@ func probe(ctx context.Context, t Target) Target {
 // probeCache is owned by one producer; failures are cached too.
 type probeCache map[string]Target
 
-func (p probeCache) enrich(ctx context.Context, t Target, limit int) Target {
+func (p probeCache) enrich(ctx context.Context, t Target, limit int, community ...string) Target {
 	key := fmt.Sprintf("%s/%s/%d/%s/%t", t.Host, t.IP, t.Port, t.Protocol, t.TLS)
 	f, ok := p[key]
 	if !ok {
 		if len(p) >= limit {
 			return t
 		}
-		f = probe(ctx, t)
+		if t.Protocol == "udp" && (t.Port == 161 || t.Service == "snmp") && len(community) > 0 && community[0] != "" {
+			f = snmpProbe(ctx, t, community[0])
+		} else {
+			f = probe(ctx, t)
+		}
 		p[key] = f
 	}
 	return mergeProbe(t, f)

@@ -12,6 +12,9 @@ const MaxSourceBytes = 1 << 20
 
 // Options controls orchestration, independently of each runtime's limits.
 type Options struct {
+	// SNMPCommunity enables v2c identification using exactly this community; empty disables it.
+	// At most 255 bytes; it is never included in returned facts.
+	SNMPCommunity        string
 	PlannerProbes        bool
 	StrictIdentification bool
 	Exhaustive           bool
@@ -39,6 +42,9 @@ type Engine struct {
 }
 
 func New(options Options, runtimes ...Runtime) (*Engine, error) {
+	if len(options.SNMPCommunity) > 255 {
+		return nil, fmt.Errorf("SNMP community exceeds 255 bytes")
+	}
 	if options.Concurrency == 0 {
 		options.Concurrency = 4
 	}
@@ -115,7 +121,7 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 		}
 		t := tasks[n]
 		if e.options.PlannerProbes {
-			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts)
+			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts, e.options.SNMPCommunity)
 		}
 		n++
 		return t, true, nil

@@ -82,6 +82,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	pingppPath := flags.String("pingpp-jsonl", "", "read pingpp.scan/v1 JSONL endpoint facts")
 	factsJSONL := flags.String("facts-jsonl", "", "stream known endpoint facts from a JSONL file; at most 65536 records of 64 KiB")
 	factsPath := flags.String("facts", "", "JSON array of known endpoint facts (maximum 1024)")
+	community := flags.String("snmp-community", "", "explicit SNMP v2c planner community (empty disables)")
 	strict := flags.Bool("strict-identification", false, "require declared matching product for clean verdicts")
 	exhaustive := flags.Bool("exhaustive", false, "execute excluded scripts and report planner misses")
 	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
@@ -93,6 +94,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	ip := flags.String("ip", "", "optional fixed connection IP, preserving logical host")
 	port := flags.Int("port", 0, "known port, 1-65535; 0 for a host-only task")
 	protocol := flags.String("protocol", "tcp", "known transport: tcp or udp")
+	product := flags.String("product", "", "caller-supplied product identity")
 	service := flags.String("service", "", "caller-supplied service name")
 	state := flags.String("state", "", "caller-supplied port state, for example open; empty means unknown")
 	tls := flags.Bool("tls", false, "known endpoint uses TLS")
@@ -192,7 +194,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	if (*factsJSONL != "" && *factsPath != "") || (*pingppPath != "" && (*factsPath != "" || *factsJSONL != "")) {
 		return fail(errors.New("choose --facts, --facts-jsonl or --pingpp-jsonl"))
 	}
-	target := scribe.Target{Host: *host, IP: *ip, Port: uint16(*port), Protocol: *protocol, Service: *service, State: *state, TLS: *tls}
+	target := scribe.Target{Host: *host, IP: *ip, Port: uint16(*port), Protocol: *protocol, Product: *product, Service: *service, State: *state, TLS: *tls}
 	targets := []scribe.Target{target}
 	var targetStream func(context.Context) (scribe.Target, bool, error)
 	if *pingppPath != "" {
@@ -327,7 +329,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	if err != nil {
 		return fail(err)
 	}
-	engine, err := scribe.New(scribe.Options{StrictIdentification: *strict, Exhaustive: *exhaustive, Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
+	engine, err := scribe.New(scribe.Options{SNMPCommunity: *community, StrictIdentification: *strict, Exhaustive: *exhaustive, Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
 	if err != nil {
 		return fail(err)
 	}
