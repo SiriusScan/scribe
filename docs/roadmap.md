@@ -196,3 +196,27 @@ verification evidence are recorded in [engine throughput](engine-throughput.md).
 Richer declarative matching and false-clean identification gates (backlog 1/2)
 remain open; this slice uses the existing selection hints. Scanner/agent workflow
 and installed-platform acceptance remain separate consumer work.
+
+Backlog 4 implemented in-repo: importable `adapter/pingpp` reads bounded
+`pingpp.scan/v1` JSONL and exposes `Reader.Next` directly to `RunTargetStream`.
+The CLI accepts `--pingpp-jsonl FILE` through the existing smart selection and
+batch path (mutually exclusive with other facts inputs). Schema reviewed with
+`gh` against SiriusScan/pingpp PR #1 at
+`ff4085905039cbbc759a0a75fab897b49316ef1a`, specifically
+`pkg/output/document.go` and `pkg/model/{asset,endpoint,claim,confidence}.go`.
+The original fixture pins that wire shape; no upstream code is vendored.
+Only attempted, confirmed-open endpoints are scheduled. Responsive, unknown,
+closed, filtered and incomplete endpoints do not establish open facts. Endpoint
+addresses supply connection identity; arbitrary asset hostnames are not assumed
+to be TLS authorities. Strong/exact endpoint protocol/service and product claims
+supply facts; conflicts remain unknown and product/version stay paired. Raw
+observations, host claims, CPE and confidence are not representable in current
+Scribe Target facts and are not promoted to verdicts. Target errors and malformed
+or unsupported documents fail the stream; an empty stream is an error. A valid
+scan with no eligible endpoints produces no execution records and is inconclusive.
+Limits: 4 MiB per document and 65536 documents; caller owns reader interruption.
+No ping++ schema change is required for these facts. Future confidence/CPE-aware
+planning needs richer Scribe facts, rather than additional ping++ discovery.
+Fixtures and CLI tests cover mapping, conservative omissions, errors, cancellation
+and hint-based skips. `make check` provides in-repository build/test evidence;
+real ping++ to Sirius workflow acceptance remains outstanding.

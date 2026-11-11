@@ -219,3 +219,11 @@ it does not establish a negative vulnerability result. Lua code-template caching
 preserves fresh invocation state, and HTTP reuse is partitioned by logical
 hostname, fixed IP, port and TLS. See [engine throughput](docs/engine-throughput.md)
 for SDK options, cancellation/streaming behavior and measured before/after results.
+
+Consume ping++ PR #1 `pingpp.scan/v1` JSONL with
+`scribe --dialect sirius --script check.lua --pingpp-jsonl scan.jsonl`.
+The importable `adapter/pingpp.NewReader(r).Next` feeds `RunTargetStream` and
+existing selection. Only attempted confirmed-open endpoints are scheduled;
+strong/exact endpoint claims supply unambiguous service/product/version facts.
+No eligible endpoints means no results, never a clean assessment. Upstream target
+errors fail the stream. Input is bounded to 4 MiB/document and 65536 documents.

@@ -43,3 +43,19 @@ func TestStreamingFactsAndHintRecords(t *testing.T) {
 		t.Fatal("invalid input succeeded")
 	}
 }
+
+func TestPingppSelection(t *testing.T) {
+	script := filepath.Join(t.TempDir(), "fixture.lua")
+	if err := os.WriteFile(script, []byte("-- scribe: {\"services\":[\"ssh\"]}\nreturn {api_version=1,action=function() return {data='ok'} end}"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	var out, diagnostics bytes.Buffer
+	args := []string{"--dialect", "sirius", "--script", script, "--pingpp-jsonl", "../../adapter/pingpp/testdata/scan.jsonl"}
+	if code := run(context.Background(), args, &out, &diagnostics); code != 0 || strings.Count(out.String(), "\n") != 1 || !strings.Contains(out.String(), `"skip_reason"`) {
+		t.Fatalf("%d %s %s", code, &out, &diagnostics)
+	}
+	args = append(args, "--facts-jsonl", "unused")
+	if code := run(context.Background(), args, &out, &diagnostics); code == 0 {
+		t.Fatal("mixed input accepted")
+	}
+}

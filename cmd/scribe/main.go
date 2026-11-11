@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/SiriusScan/scribe"
+	"github.com/SiriusScan/scribe/adapter/pingpp"
 	"github.com/SiriusScan/scribe/capability/httpcap"
 	"github.com/SiriusScan/scribe/capability/tcpcap"
 	"github.com/SiriusScan/scribe/runtime/lua54"
@@ -78,6 +79,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	}
 	flags := flag.NewFlagSet("scribe", flag.ContinueOnError)
 	flags.SetOutput(stderr)
+	pingppPath := flags.String("pingpp-jsonl", "", "read pingpp.scan/v1 JSONL endpoint facts")
 	factsJSONL := flags.String("facts-jsonl", "", "stream known endpoint facts from a JSONL file; at most 65536 records of 64 KiB")
 	factsPath := flags.String("facts", "", "JSON array of known endpoint facts (maximum 1024)")
 	check := flags.Bool("check", false, "compile and check literal module/API references without execution; dynamic access is not certified")
@@ -179,12 +181,28 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 		}
 		return 0
 	}
-	if *factsJSONL != "" && *factsPath != "" {
-		return fail(errors.New("choose --facts or --facts-jsonl"))
+	if (*factsJSONL != "" && *factsPath != "") || (*pingppPath != "" && (*factsPath != "" || *factsJSONL != "")) {
+		return fail(errors.New("choose --facts, --facts-jsonl or --pingpp-jsonl"))
 	}
 	target := scribe.Target{Host: *host, IP: *ip, Port: uint16(*port), Protocol: *protocol, Service: *service, State: *state, TLS: *tls}
 	targets := []scribe.Target{target}
 	var targetStream func(context.Context) (scribe.Target, bool, error)
+	if *pingppPath != "" {
+		file, err := os.Open(*pingppPath)
+		if err != nil {
+			return fail(err)
+		}
+		defer file.Close()
+		info, err := file.Stat()
+		if err != nil {
+			return fail(err)
+		}
+		if !info.Mode().IsRegular() {
+			return fail(errors.New("--pingpp-jsonl requires a regular file"))
+		}
+		targetStream = pingpp.NewReader(file).Next
+		targets = nil
+	}
 	if *factsJSONL != "" {
 		file, err := os.Open(*factsJSONL)
 		if err != nil {
