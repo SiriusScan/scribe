@@ -120,3 +120,7 @@ Never share mutable library tables. FuzzMixedFailures covers exact grants, Lua
 errors and sink error propagation; adapter/pingpp FuzzReader covers mixed wire
 input. pingpp.scan/v1 already has a pinned adapter and CLI path: extend it rather
 than creating a second mapper. No ping++ schema/repository change is required.
+
+`make acceptance-local` composes controlled local HTTP/TLS, external SDK/CLI
+cancellation and pingpp.scan/v1 fixture checks. SDK JSONL disk round trips are
+local persistence evidence only; real Sirius/vGPT storage acceptance is separate.

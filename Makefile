@@ -42,3 +42,9 @@ cross-compile:
 		CGO_ENABLED=0 GOOS=$$platform GOARCH=amd64 go build -o "$$tmp/scribe-$$platform" ./cmd/scribe; \
 	done
 
+
+.PHONY: acceptance-local
+# Controlled local sockets and SDK fixtures; not a live consumer workflow gate.
+acceptance-local: acceptance
+	go test -race -count=1 -v . -run 'Test(PingppSelectionParallelHTTP|HTTPAndTLSProbeCache|DirectSDKProbeOption)$$'
+	go test -race -count=1 ./cmd/scribe -run 'TestPingppSelection$$'

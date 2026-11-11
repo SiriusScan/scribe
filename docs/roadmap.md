@@ -524,3 +524,23 @@ these checks do not establish scanner/agent integration acceptance.
 apps01 VERSION=v1.0.2 installation and make smoke-http passed completed
 vulnerable/not_vulnerable/unknown records plus TCP banner at POST :18081/run.
 The tagged commit is reinstalled after publication to pin installed build metadata.
+
+## v1.1.0 acceptance preparation (unreleased)
+
+`make acceptance-local` composes the existing external SDK/CLI HTTP and
+cancellation acceptance with HTTP/TLS fingerprint listeners, pingpp.scan/v1
+fixture-to-SDK execution and CLI fixture selection. The SDK fixture now persists
+all terminal records to a caller-owned JSONL file, syncs it, reopens it and
+requires complete evidence-preserving records, including errors and skips.
+This demonstrates local file persistence only, not Sirius report storage.
+
+Validation on apps01: make acceptance-local and make check passed. The corpus
+expansion, SSH listener acceptance and any harness-driven planner changes remain
+unfinished. Real ping++ execution and vGPT/Sirius workflow cancellation and
+persistence have not been exercised. Local vgpt and sirius-workspace directories
+exist; access has not yet been audited, so lack of access is not established.
+Still needed: identify the live scanner invocation and pinned ping++ binary,
+submit a controlled correlated job through the actual vGPT workflow, cancel a
+second job, and read terminal state and persisted evidence from its report store.
+No live consumer acceptance or v1.1.0 release is claimed by this preparation.
+Phase 3 remains paused.

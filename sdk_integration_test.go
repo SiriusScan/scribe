@@ -2,10 +2,14 @@ package scribe_test
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -72,7 +76,14 @@ return {api_version=1,action=function() return {verdict="not_vulnerable"} end}`)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	records := map[string]scribe.Result{}
-	err = engine.Stream(ctx, index, pingpp.NewReader(strings.NewReader(input)).Next, func(r scribe.Result) error { records[r.ScriptID] = r; return nil })
+	journalPath := filepath.Join(t.TempDir(), "results.jsonl")
+	journal, err := os.Create(journalPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer journal.Close()
+	encoder := json.NewEncoder(journal)
+	err = engine.Stream(ctx, index, pingpp.NewReader(strings.NewReader(input)).Next, func(r scribe.Result) error { records[r.ScriptID] = r; return encoder.Encode(r) })
 	if err == nil {
 		t.Fatal("expected aggregate execution error for unsupported API")
 	}
@@ -89,5 +100,48 @@ return {api_version=1,action=function() return {verdict="not_vulnerable"} end}`)
 	}
 	if r := records["excluded"]; r.Status != scribe.Skipped || r.Verdict != scribe.Unknown || r.Output.SkipReason == "" {
 		t.Fatalf("skip became conclusive: %+v", r)
+	}
+	if err := journal.Sync(); err != nil {
+		t.Fatal(err)
+	}
+	persistenceRoundTrip(t, journalPath, records)
+}
+
+// persistenceRoundTrip requires complete records, including inconclusive results.
+func persistenceRoundTrip(t *testing.T, path string, expected map[string]scribe.Result) {
+	t.Helper()
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	decoder := json.NewDecoder(f)
+	count := 0
+	for {
+		var r scribe.Result
+		err := decoder.Decode(&r)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		original, ok := expected[r.ScriptID]
+		a, marshalErr := json.Marshal(original)
+		if marshalErr != nil {
+			t.Fatal(marshalErr)
+		}
+		var normalized scribe.Result
+		if err := json.Unmarshal(a, &normalized); err != nil {
+			t.Fatal(err)
+		}
+		if !ok || !reflect.DeepEqual(r, normalized) {
+			t.Fatalf("persisted record differs: %+v", r)
+		}
+		delete(expected, r.ScriptID)
+		count++
+	}
+	if len(expected) != 0 || count == 0 {
+		t.Fatalf("incomplete journal: %d missing", len(expected))
 	}
 }

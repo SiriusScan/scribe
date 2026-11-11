@@ -105,3 +105,10 @@ an upstream NSE corpus or Sirius scanner/agent integration acceptance.
 - Document Limits accounting units and task ceiling semantics.
 - Defer v1.0.0 pending the complete exported-field documentation/behavior audit.
   Phase 3 remains paused.
+
+## Unreleased — v1.1.0 preparation
+
+- Add make acceptance-local, reusing local protocol and external SDK checks.
+- Verify complete SDK ping++ fixture result persistence through a synced JSONL
+  journal, including failed and skipped records.
+- Live consumer acceptance and expanded vulnerability corpus remain outstanding.
