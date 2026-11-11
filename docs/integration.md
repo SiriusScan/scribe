@@ -84,3 +84,22 @@ capabilities they enable.
 Primary source:
 [Sirius build pins and endpoint build](https://github.com/SiriusScan/Sirius/blob/823a80f663e585db775da4ce58b27ac0e5dcfbd2/sirius-engine/Dockerfile#L163-L220),
 [transactional report shape](https://github.com/SiriusScan/go-api/blob/4ef20d34a5d98244869caaca3461233d0ecba556/sirius/host/report.go).
+
+### Version 1 embedded jobs
+
+`job.Run` accepts a `job.Request` with schema_version 1, a correlation ID,
+script ID, explicit dialect, inline source (or a caller-owned resolver), args,
+SDK Target facts, SDK Limits, and capability grants. Source is a JSON string;
+timeout uses Go duration nanoseconds. Results carry the same correlation ID and
+existing version 1 Sirius report envelope. Check both the returned error and
+execution evidence; absent evidence is inconclusive.
+
+Grants are exact registered function names (for example `tcp`); omitted or empty
+job grants deny all capability calls. Register protocol functions with separate
+names to grant them separately. Denial returns `scribe.CapabilityDeniedError`
+from the runtime, fails execution even if Lua catches it, and never establishes a
+verdict. Engine results retain its diagnostic text. Legacy Task calls with nil
+grants preserve their existing authority; explicit empty Task grants deny all.
+Per-job CPU, memory, and timeout limits only tighten runtime ceilings; zero uses
+those finite ceilings. Trusted Go functions must honor cancellation and bound
+I/O themselves. This is an embedding contract, not endpoint-agent acceptance.

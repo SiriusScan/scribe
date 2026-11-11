@@ -318,8 +318,8 @@ func TestCancellation(t *testing.T) {
 			if !errors.Is(out.err, context.Canceled) {
 				t.Fatalf("err = %v, want context.Canceled", out.err)
 			}
-			if len(out.results) != 1 || out.results[0].Status != scribe.Failed || len(out.results[0].Output.Findings) != 0 {
-				t.Fatalf("cancelled run must yield one failed, finding-free result: %+v", out.results)
+			if len(out.results) != 1 || out.results[0].Status != scribe.Cancelled || len(out.results[0].Output.Findings) != 0 {
+				t.Fatalf("cancelled run must yield one cancelled, finding-free result: %+v", out.results)
 			}
 		case <-time.After(5 * time.Second):
 			t.Fatal("cancelled run did not return")

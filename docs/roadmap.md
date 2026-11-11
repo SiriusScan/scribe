@@ -99,3 +99,10 @@ SDK, CLI and HTTP; batches cover the script/endpoint Cartesian product and retai
 cancelled queued records. Package report provides a version 1 source-attributed
 evidence envelope with conservative assessment mapping. Real app-scanner jobs,
 persistence mapping and independent job cancellation remain consumer acceptance.
+
+Phase 3 preparation: this repository now provides package job request/result
+schema v1, caller-owned script resolution, existing Target facts and report
+mapping, exact-name per-job capability grants, and tightening VM limits. Focused
+fixtures cover grants, typed denial, cancellation, and limits. Agent registration,
+coordinated merger/UI changes, pinned releases, and installed-agent acceptance
+remain consumer work; no endpoint-agent repository is changed by this slice.

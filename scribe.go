@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -63,9 +64,25 @@ type Script struct {
 }
 
 // Task is one script invocation against one known endpoint.
+type Limits struct {
+	CPU     uint64        `json:"cpu,omitempty"`
+	Memory  uint64        `json:"memory,omitempty"`
+	Timeout time.Duration `json:"timeout,omitempty"`
+}
+
+// CapabilityDeniedError identifies an attempted operation outside a job grant.
+type CapabilityDeniedError struct{ Capability string }
+
+func (e *CapabilityDeniedError) Error() string {
+	return fmt.Sprintf("capability %q denied", e.Capability)
+}
+
 type Task struct {
-	Script Script `json:"script"`
-	Target Target `json:"target"`
+	// Nil preserves legacy SDK authority; a non-nil empty list denies all calls.
+	Capabilities []string `json:"capabilities,omitempty"`
+	Limits       Limits   `json:"limits,omitempty"`
+	Script       Script   `json:"script"`
+	Target       Target   `json:"target"`
 }
 
 // Finding is an affirmative script observation with supporting evidence.

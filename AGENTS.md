@@ -62,3 +62,9 @@ Scanner adapter contract: keep product/version caller-supplied; facts arrays
 expand selected scripts across endpoints. Preserve report envelope v1 evidence
 and conservative assessments. Cancellation must emit terminal queued-task records
 while the result sink remains available; missing transport records are inconclusive.
+
+Embedded jobs use package job schema v1 and the existing report envelope. Missing
+job grants deny all registered capability calls; grants match exact function
+names. Keep typed runtime denial errors and conservative report semantics. Job
+limits may tighten, never enlarge, configured runtime ceilings. Legacy nil Task
+grants retain SDK compatibility; do not use that convention in job envelopes.

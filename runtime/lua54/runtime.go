@@ -22,11 +22,7 @@ import (
 // Limits accounts for Lua VM work; Memory is allocation accounting, not RSS.
 // Zero values select finite defaults. Trusted Go capabilities must separately
 // honor context cancellation and bound their own resources.
-type Limits struct {
-	CPU     uint64
-	Memory  uint64
-	Timeout time.Duration
-}
+type Limits = scribe.Limits
 
 type Options struct {
 	Limits    Limits
@@ -90,7 +86,27 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 	if err := ctx.Err(); err != nil {
 		return output, err
 	}
-	ctx, cancel := context.WithTimeout(ctx, r.limits.Timeout)
+	limits := r.limits
+	if task.Limits.Timeout < 0 {
+		return output, errors.New("negative job timeout")
+	}
+	if task.Limits.CPU > 0 {
+		limits.CPU = min(limits.CPU, task.Limits.CPU)
+	}
+	if task.Limits.Memory > 0 {
+		limits.Memory = min(limits.Memory, task.Limits.Memory)
+	}
+	if task.Limits.Timeout > 0 {
+		limits.Timeout = min(limits.Timeout, task.Limits.Timeout)
+	}
+	var denied *scribe.CapabilityDeniedError
+	defer func() {
+		if denied != nil {
+			err = denied
+			output = scribe.Output{}
+		}
+	}()
+	ctx, cancel := context.WithTimeout(ctx, limits.Timeout)
 	defer cancel()
 	logs := &logBuffer{}
 	defer func() { output.Logs = string(logs.data); output.LogsTruncated = logs.truncated }()
@@ -102,7 +118,7 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 		}
 	}()
 	defer vm.Close(nil)
-	duration := r.limits.Timeout
+	duration := limits.Timeout
 	if deadline, ok := ctx.Deadline(); ok {
 		duration = min(duration, time.Until(deadline))
 	}
@@ -113,13 +129,13 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 	if duration%time.Millisecond != 0 {
 		millis++
 	}
-	_, err = vm.MainThread().CallContext(rt.RuntimeContextDef{HardLimits: rt.RuntimeResources{Cpu: r.limits.CPU, Memory: r.limits.Memory, Millis: millis}}, func() error {
+	_, err = vm.MainThread().CallContext(rt.RuntimeContextDef{HardLimits: rt.RuntimeResources{Cpu: limits.CPU, Memory: limits.Memory, Millis: millis}}, func() error {
 		modules := loadLibraries(vm)
 		setFunction(vm, vm.GlobalEnv(), "print", func(t *rt.Thread, c *rt.GoCont) (rt.Cont, error) { return c.Next(), base.Print(t, c.Etc()) }, 0, true)
 		vm.SetEnv(vm.GlobalEnv(), "log", vm.GlobalEnv().Get(rt.StringValue("print")))
 		if r.dialect == scribe.Sirius {
 			module := rt.NewTable()
-			setFunction(vm, module, "call", r.capability(ctx, task.Target), 1, true)
+			setFunction(vm, module, "call", r.capability(ctx, task, &denied), 1, true)
 			modules["sirius"] = rt.TableValue(module)
 			vm.SetEnv(vm.GlobalEnv(), "sirius", modules["sirius"])
 		} else if err := loadNSE(ctx, vm, task, modules); err != nil {
@@ -202,7 +218,7 @@ func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 	return modules
 }
 
-func (r *runtime) capability(ctx context.Context, target scribe.Target) rt.GoFunctionFunc {
+func (r *runtime) capability(ctx context.Context, task scribe.Task, denied **scribe.CapabilityDeniedError) rt.GoFunctionFunc {
 	return func(t *rt.Thread, c *rt.GoCont) (rt.Cont, error) {
 		if err := ctx.Err(); err != nil {
 			return nil, err
@@ -210,6 +226,18 @@ func (r *runtime) capability(ctx context.Context, target scribe.Target) rt.GoFun
 		name, err := c.StringArg(0)
 		if err != nil {
 			return nil, err
+		}
+		if task.Capabilities != nil {
+			granted := false
+			for _, grant := range task.Capabilities {
+				if grant == name {
+					granted = true
+				}
+			}
+			if !granted {
+				*denied = &scribe.CapabilityDeniedError{Capability: name}
+				return nil, *denied
+			}
 		}
 		function, ok := r.functions[name]
 		if !ok {
@@ -226,7 +254,7 @@ func (r *runtime) capability(ctx context.Context, target scribe.Target) rt.GoFun
 				return nil, fmt.Errorf("capability arguments: %w", err)
 			}
 		}
-		value, err := function(ctx, target, arguments)
+		value, err := function(ctx, task.Target, arguments)
 		if err != nil {
 			return nil, fmt.Errorf("capability %q: %w", name, err)
 		}
