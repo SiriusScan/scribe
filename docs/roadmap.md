@@ -1894,3 +1894,18 @@ Validation: make check logged in /tmp/scribe153-check.log. Bounded race planner
 fuzz passed with 298/796 baseline seeds covered in six seconds; mutations did
 not begin (/tmp/scribe153-fuzz.log). Service reinstall and complete POST /run
 smoke provide operational evidence only, separate from live workflow acceptance.
+
+## v1.54.0 — H2O planner identity (2026-11-12)
+
+Continues the unfinished expanded fingerprint capability backlog. Original pinned
+H2O HTTP Server observations supply product/version and CPE hints through the
+existing mapper and planner selection path. Versionless headers retain unknown
+versions; boundary fixtures reject misleading prefixes and malformed versions.
+Shared policy fixtures preserve caller authority, exact product skip reasons and
+the CPE-only false-clean gate. No public API change or throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check logged in /tmp/scribe154-check.log. Bounded race planner
+fuzz passed with 216/796 baseline seeds covered in six seconds; mutations did
+not begin (/tmp/scribe154-fuzz.log). Service reinstall and complete POST /run
+smoke provide operational evidence only, separate from live workflow acceptance.

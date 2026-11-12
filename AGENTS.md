@@ -342,3 +342,9 @@ existing fingerprint/planner paths. Preserve strict identity boundaries, unknown
 missing versions, caller authority, exact product skip reasons and CPE-only
 false-clean guards. No throughput claim; live consumer persistence remains
 separate and Phase 3 stays paused.
+
+v1.54.0 adds original pinned H2O HTTP Server identity and CPE hints through the
+existing fingerprint/planner mapper. Preserve strict identity boundaries, unknown
+missing versions, caller authority, exact product skip reasons and CPE-only
+false-clean guards. No throughput claim; live consumer persistence remains
+separate and Phase 3 stays paused.

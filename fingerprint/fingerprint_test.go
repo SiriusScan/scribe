@@ -241,3 +241,30 @@ func TestTraefikIdentity(t *testing.T) {
 		}
 	}
 }
+
+// Original observations pin H2O identity boundaries, not upstream compatibility.
+func TestH2OIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"H2O/3.0.5", "3.0.5", true},
+		{"h2o/2.9.12", "2.9.12", true},
+		{"H2O", "", true},
+		{"H2O/3.0.5 proxy", "3.0.5", true},
+		{"H2Oish", "", false},
+		{"proxy H2O/3.0.5", "", false},
+		{"H2O/3.0.5evil", "", false},
+		{"H2O/", "", false},
+		{"H2O/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "H2O", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}
