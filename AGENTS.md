@@ -319,3 +319,8 @@ strong is 0.8 and exact is 1, using the strongest accepted agreeing product
 claim. Conflicting products retain zero confidence; service/TLS claims do not
 establish product confidence. This is adapter policy, not calibrated probability.
 Version conflicts remain unknown. Phase 3 stays paused.
+
+v1.50.0 reuses immutable compiled default fingerprint rules across planner probes.
+Keep custom matcher rule slices independent and default rules read-only; preserve
+identity boundaries and conservative clean gates. Constructor microbenchmarks do
+not establish executed-Lua throughput. Phase 3 stays paused.

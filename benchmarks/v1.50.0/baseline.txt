@@ -1,0 +1,9 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/fingerprint
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkBaselineDefaultMatch-4   	   27586	     46220 ns/op	   88465 B/op	     721 allocs/op
+BenchmarkBaselineDefaultMatch-4   	   20395	     50590 ns/op	   88512 B/op	     721 allocs/op
+BenchmarkBaselineDefaultMatch-4   	   20738	     60516 ns/op	   88471 B/op	     721 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/fingerprint	5.192s

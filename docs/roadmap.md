@@ -1827,3 +1827,23 @@ throughput claim. Live consumer persistence remains separate; Phase 3 stays paus
 
 Validation: make check (/tmp/scribe149-check.log). Service reinstall and complete
 POST /run smoke are operational evidence only, not live workflow acceptance.
+
+## v1.50.0 — reuse compiled planner fingerprints (2026-11-12)
+
+Default fingerprint construction now reuses an immutable compiled rule snapshot.
+Planner probes avoid compiling the complete regex corpus for each observation;
+custom matchers still copy their supplied rule slices. Parallel isolation tests
+pin unchanged OpenSSH identity and independent custom matcher behavior.
+
+Local Go 1.26.10 linux/amd64, i9-13900H, GOMAXPROCS=4 microbenchmark
+(Default plus verified OpenSSH Match), three samples: baseline 46220/50590/60516
+ns/op, 88465/88512/88471 B/op, 721 allocs/op; shared snapshot
+1353/1290/1313 ns/op, 32 B/op, 1 alloc/op. Baseline samples are retained under
+benchmarks/v1.50.0; the baseline used the previous constructor verbatim.
+These shared-host samples overlapped checks and establish eliminated repeated
+compilation allocations, not executed-Lua or end-to-end throughput speedup.
+Phase 3 stays paused; live consumer persistence remains separate.
+
+Validation: make check passed (race suite, external SDK checks, Windows/Darwin
+cross-builds, vet and static CLI build). Build evidence remains separate from
+Sirius integration acceptance.

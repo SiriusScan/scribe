@@ -1,6 +1,7 @@
 package fingerprint
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"testing"
@@ -130,6 +131,32 @@ func TestEnvoyIdentity(t *testing.T) {
 		}
 		if got != want {
 			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}
+
+// Default rules are shared read-only; custom matchers retain their own rule slice.
+func TestDefaultParallelIsolation(t *testing.T) {
+	for i := 0; i < 32; i++ {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			t.Parallel()
+			custom := New(Rule{Service: "custom"})
+			if got := custom.Match("", nil); got != (Facts{}) {
+				t.Fatal(got)
+			}
+			got := Default().Match("SSH-2.0-OpenSSH_9.9", nil)
+			if got.Product != "OpenSSH" || got.Version != "9.9" {
+				t.Fatal(got)
+			}
+		})
+	}
+}
+
+func BenchmarkDefaultMatch(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		if got := Default().Match("SSH-2.0-OpenSSH_9.9", nil); got.Product != "OpenSSH" {
+			b.Fatal(got)
 		}
 	}
 }

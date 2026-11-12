@@ -1,0 +1,4 @@
+Go 1.26.10 linux/amd64; i9-13900H; BenchmarkDefaultMatch-4
+801048 1353 ns/op 32 B/op 1 allocs/op
+949741 1290 ns/op 32 B/op 1 allocs/op
+826190 1313 ns/op 32 B/op 1 allocs/op
