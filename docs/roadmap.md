@@ -2287,3 +2287,19 @@ remains separate and Phase 3 stays paused.
 Validation: make check log /tmp/scribe180-check.log; focused race regressions
 and bounded planner race fuzz (234/796 baseline seeds, no mutation campaign).
 Service reinstall and POST /run smoke are operational evidence only.
+
+
+v1.81.0 moves direct SDK batch declarative exclusions ahead of scheduler host
+admission, reusing prepared metadata and the existing skip-record path. Excluded
+endpoints no longer exhaust MaxHosts or occupy pending worker capacity. Probes
+still precede final matching; exhaustive execution retains host bounds and clean
+gates. Regression coverage runs twenty endpoints with one host slot, requiring
+complete skipped/unknown records and the one eligible action. No public API
+change or measured throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, platform cross-builds,
+vet and static CLI build), /tmp/scribe181-check.log. Focused admission race
+regression passed. Bounded planner race fuzz passed with 152/796 baseline seeds;
+mutations did not begin (/tmp/scribe181-fuzz.log). Deployment smoke is
+operational evidence only, separate from live consumer workflow acceptance.

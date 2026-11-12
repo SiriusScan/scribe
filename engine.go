@@ -173,6 +173,11 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 		if e.options.PlannerProbes && !e.options.Plan && (t.preparedHints == nil || t.preparedHints.Match == nil || t.preparedHints.Match.missing(t.Target)) {
 			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts, e.options.SNMPCommunity)
 		}
+		if !e.options.Exhaustive && t.preparedHints != nil && t.preparedHints.Match != nil {
+			if ok, _ := t.preparedHints.Match.evaluate(t.Target); !ok {
+				t.planSkip = t.preparedHints.Match.skipReason(t.Target)
+			}
+		}
 		n++
 		return t, true, nil
 	}, onResult, true)

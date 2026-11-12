@@ -542,3 +542,13 @@ Unrecognized banners no longer establish product confidence. Regression tests
 cover agreeing, absent and conflicting versions/products and caller evidence
 authority. No public API change or throughput claim; live consumer persistence
 remains separate and Phase 3 stays paused.
+
+
+v1.81.0 moves direct SDK batch declarative exclusions ahead of scheduler host
+admission, reusing prepared metadata and the existing skip-record path. Excluded
+endpoints no longer exhaust MaxHosts or occupy pending worker capacity. Probes
+still precede final matching; exhaustive execution retains host bounds and clean
+gates. Regression coverage runs twenty endpoints with one host slot, requiring
+complete skipped/unknown records and the one eligible action. No public API
+change or measured throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
