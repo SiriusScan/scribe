@@ -17,6 +17,7 @@ import (
 // Function connects to the supplied endpoint, optionally sends one string, and
 // receives one chunk (at most 64 KiB). An optional second integer argument
 // requests exactly that many bytes (1..65536); premature EOF is an error.
+// A -1 byte count reads to EOF within 64 KiB; overflow is an error.
 // A zero byte count sends only, returning empty data and eof=false.
 // A string second argument reads through a 1..256-byte delimiter, inclusive,
 // within 64 KiB; missing delimiters are errors.
@@ -133,8 +134,8 @@ func exchange(stream io.ReadWriter, args []any) (any, error) {
 	if len(args) == 2 {
 		switch v := args[1].(type) {
 		case int64:
-			if v < 0 || v > 65536 {
-				return nil, fmt.Errorf("read byte count must be an integer from 0 to 65536")
+			if v < -1 || v > 65536 {
+				return nil, fmt.Errorf("read byte count must be an integer from -1 to 65536")
 			}
 			readBytes = int(v)
 			writeOnly = v == 0
@@ -186,6 +187,15 @@ func exchange(stream io.ReadWriter, args []any) (any, error) {
 		if err == nil && !bytes.HasSuffix(buffer[:n], []byte(delimiter)) {
 			err = fmt.Errorf("reply delimiter absent within 64 KiB")
 		}
+	} else if readBytes == -1 {
+		data, e := io.ReadAll(io.LimitReader(stream, 65537))
+		if e != nil {
+			return nil, e
+		}
+		if len(data) > 65536 {
+			return nil, fmt.Errorf("reply exceeds 64 KiB")
+		}
+		return map[string]any{"data": string(data), "eof": true}, nil
 	} else if readBytes > 0 {
 		n, err = io.ReadFull(stream, buffer[:readBytes])
 	} else {

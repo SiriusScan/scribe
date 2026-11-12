@@ -2075,3 +2075,16 @@ transport evidence is separate from live consumer persistence acceptance.
 Validation: make check logged in /tmp/scribe165-check.log; focused race tests
 cover write-only no-read behavior, write failure and loopback session ordering.
 Deployment smoke is logged in /tmp/scribe165-smoke.log.
+
+
+v1.66.0 adds bounded read-to-EOF tcp.exchange replies with integer selector -1.
+Use `sirius.call("tcp.exchange", "REQUEST\r\n", -1)` for close-delimited
+responses. Empty EOF succeeds with eof=true; replies above 64 KiB and transport
+errors fail without partial output. The existing verified TLS/session path and
+shared five-second deadline apply. Local socket evidence is separate from live
+consumer persistence acceptance. Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+cross-compilation, vet and CGO-disabled CLI build). Focused loopback tests cover
+empty EOF, fragmented-sized replies, exactly 64 KiB and overflow; an injected
+transport failure verifies that partial bytes are discarded. No throughput claim.

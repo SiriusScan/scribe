@@ -43,7 +43,7 @@ func TestExactRead(t *testing.T) {
 				t.Fatalf("partial reply accepted: %v %v", v, err)
 			}
 			<-done
-			for _, n := range []any{int64(-1), int64(65537), 2.5, true} {
+			for _, n := range []any{int64(-2), int64(65537), 2.5, true} {
 				if _, err := Function(context.Background(), target, []any{"", n}); err == nil {
 					t.Fatalf("accepted %v", n)
 				}

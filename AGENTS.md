@@ -418,3 +418,11 @@ commands without replies within existing bounded TCP/verified TLS sessions.
 Write failures still discard session output; all steps validate before dialing.
 Existing deadlines, grants and reply limits apply. Phase 3 stays paused; local
 transport evidence is separate from live consumer persistence acceptance.
+
+
+v1.66.0 adds bounded read-to-EOF tcp.exchange replies with integer selector -1.
+Use `sirius.call("tcp.exchange", "REQUEST\r\n", -1)` for close-delimited
+responses. Empty EOF succeeds with eof=true; replies above 64 KiB and transport
+errors fail without partial output. The existing verified TLS/session path and
+shared five-second deadline apply. Local socket evidence is separate from live
+consumer persistence acceptance. Phase 3 stays paused.

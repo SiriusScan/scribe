@@ -65,7 +65,7 @@ func TestSession(t *testing.T) {
 
 func TestSessionValidation(t *testing.T) {
 	target := scribe.Target{Host: "127.0.0.1", Port: 1, Protocol: "tcp"}
-	for _, steps := range [][]any{nil, make([]any, 17), {true}, {[]any{"", int64(-1)}}, {[]any{"ok"}, []any{false}}} {
+	for _, steps := range [][]any{nil, make([]any, 17), {true}, {[]any{"", int64(-2)}}, {[]any{"ok"}, []any{false}}} {
 		if v, e := Function(context.Background(), target, []any{steps}); e == nil || v != nil {
 			t.Fatalf("accepted invalid session: %v %v", v, e)
 		}
