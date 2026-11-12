@@ -463,3 +463,11 @@ the entire session. Any failed exchange discards all results. Single-string call
 retain their existing result shape. Scripts remain responsible for correlation;
 no retries or discovery are added. Local socket evidence is separate from live
 consumer persistence acceptance. Phase 3 stays paused.
+
+
+v1.69.0 rejects duplicate endpoint subjects within a pingpp.scan/v1 document
+before returning any targets, including conflicting states and equivalent IPv6
+spellings. Distinct ports and transports remain independent; separate documents
+remain independent. This prevents duplicate script scheduling from ambiguous
+enumeration input. No throughput claim; live consumer persistence remains
+separate and Phase 3 stays paused.

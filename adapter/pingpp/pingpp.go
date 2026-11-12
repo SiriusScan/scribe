@@ -85,10 +85,17 @@ func Targets(d Document) ([]scribe.Target, error) {
 		claims[c.Subject] = append(claims[c.Subject], c)
 	}
 	var out []scribe.Target
+	seen := make(map[string]bool, len(d.Asset.Endpoints))
 	for _, e := range d.Asset.Endpoints {
-		if net.ParseIP(e.Address) == nil || e.Port == 0 || (e.Transport != "tcp" && e.Transport != "udp") {
+		ip := net.ParseIP(e.Address)
+		if ip == nil || e.Port == 0 || (e.Transport != "tcp" && e.Transport != "udp") {
 			return nil, fmt.Errorf("invalid ping++ endpoint address=%q port=%d transport=%q", boundedDiagnostic(e.Address), e.Port, boundedDiagnostic(e.Transport))
 		}
+		key := fmt.Sprintf("%s/%s/%d", ip.String(), e.Transport, e.Port)
+		if seen[key] {
+			return nil, fmt.Errorf("duplicate ping++ endpoint %q", key)
+		}
+		seen[key] = true
 		switch e.State {
 		case "open", "closed", "filtered", "responsive", "unknown":
 		default:
@@ -98,7 +105,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 			continue
 		}
 		t := scribe.Target{Host: e.Address, IP: e.Address, Port: e.Port, Protocol: e.Transport, State: "open"}
-		key := fmt.Sprintf("%s/%s/%d", e.Address, e.Transport, e.Port)
+		key = fmt.Sprintf("%s/%s/%d", e.Address, e.Transport, e.Port)
 		services := map[string]bool{}
 		products := map[string]string{}
 		conflict := false
