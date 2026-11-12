@@ -2619,3 +2619,17 @@ and smoke evidence is local operational evidence, separate from live consumer
 cancellation and durable persistence acceptance.
 Bounded adapter race fuzz passed with 1,717 executions
 (/tmp/scribe1102-fuzz.log).
+
+## v1.103.0 — release terminal ping++ input storage
+
+Reader now releases its bounded scanner and caller input reference at EOF or
+terminal ingestion failure. Long-lived consumers no longer retain the scanner's
+up-to-4-MiB document buffer after ingestion completes. Repeated EOF and failures
+remain stable; cancellation remains caller-owned and does not discard pending
+input. Behavioral tests pin terminal storage release and repeated results.
+No public API change or throughput claim. Live consumer persistence remains
+separate; Phase 3 stays paused.
+
+Validation: make check evidence in /tmp/scribe1103-check.log; bounded adapter
+race fuzz evidence in /tmp/scribe1103-fuzz.log. Service reinstall and HTTP smoke
+are local operational evidence only.

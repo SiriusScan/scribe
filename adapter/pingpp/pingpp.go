@@ -230,6 +230,7 @@ func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 			return scribe.Target{}, false, err
 		}
 		if r.err != nil {
+			r.scan = nil
 			return scribe.Target{}, false, r.err
 		}
 		if len(r.pending) > 0 {
@@ -241,8 +242,12 @@ func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 			}
 			return t, true, nil
 		}
+		if r.scan == nil {
+			return scribe.Target{}, false, nil
+		}
 		if !r.scan.Scan() {
 			r.err = r.scan.Err()
+			r.scan = nil
 			if r.err == nil && r.lines == 0 {
 				r.err = fmt.Errorf("empty ping++ stream")
 			}

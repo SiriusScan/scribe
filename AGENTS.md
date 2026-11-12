@@ -684,3 +684,7 @@ live consumer persistence acceptance.
 v1.101.0 adds bounded exclude_versions match alternatives for patched releases.
 Preserve semantic equality, nested skip/probe policy and missing-version clean
 guards. Phase 3 stays paused; no throughput or live consumer acceptance claim.
+
+v1.103.0 releases pingpp Reader scanner/input storage at terminal EOF or failure.
+Repeated terminal results remain stable; caller cancellation retains resumable
+pending input. No throughput claim; Phase 3 stays paused.
