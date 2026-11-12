@@ -2383,3 +2383,24 @@ Validation: focused fingerprint/selection tests passed. Bounded race planner fuz
 passed with 1,443 executions and ten new interesting inputs after completing all
 796 baseline seeds (/tmp/scribe187-fuzz-retry.log). An initial five-second attempt
 expired during startup. Full make check evidence: /tmp/scribe187-check.log.
+
+
+v1.88.0 reuses a bounded per-run worker pool instead of creating a goroutine
+for each action. Scheduler-owned host/module admission, pacing, serialized sink
+backpressure and cancellation draining remain authoritative. Workers close and
+join before Run returns; Lua states remain invocation-owned. Repeated-window
+behavioral tests cover one/eight workers and successive runs. No public API
+change or throughput speedup claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and static CLI build), /tmp/scribe188-check.log. Bounded race
+planner fuzz passed with 585/806 baseline seeds; mutations did not begin
+(/tmp/scribe188-fuzz.log). Raw executed-Lua samples: benchmarks/v1.88.0/execution.txt.
+Environment: Go 1.26.10, Linux amd64, i9-13900H, four available CPUs.
+Each sample executes and checks 512 completed action outputs; ns/op is full batch
+latency and actions/s is 512 divided by batch seconds. One worker: 15.49–21.39 ms,
+23,936–33,049 actions/s; eight workers: 22.81–43.33 ms, 11,818–22,449 actions/s.
+Three single-batch samples per setting, module limit zero, unfiltered path, taken
+after checks and fuzzing finished. Short shared-host samples show no scaling gain
+and have no pre-change control; no throughput improvement is established.

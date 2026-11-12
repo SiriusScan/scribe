@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -61,6 +62,18 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 	keyFor := func(t Task) moduleKey { return moduleKey{t.Script.Dialect, t.Script.ID} }
 	pending := make([]scheduledTask, 0, e.options.Window)
 	done := make(chan completion, e.workers)
+	work := make(chan scheduledTask)
+	var workers sync.WaitGroup
+	workers.Add(e.workers)
+	for i := 0; i < e.workers; i++ {
+		go func() {
+			defer workers.Done()
+			for p := range work {
+				done <- completion{e.execute(runCtx, p.task), p.host}
+			}
+		}()
+	}
+	defer func() { close(work); workers.Wait() }()
 	active, failed := 0, 0
 	var globalNext time.Time
 	eof := false
@@ -246,7 +259,7 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			p.host.starts++
 			p.host.next = time.Now().Add(e.options.HostInterval)
 			active++
-			go func(p scheduledTask) { done <- completion{e.execute(runCtx, p.task), p.host} }(p)
+			work <- p
 			now = time.Now()
 		}
 		if len(pending) == 0 && active == 0 {

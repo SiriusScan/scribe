@@ -586,3 +586,12 @@ v1.87.0 adds original pinned Dovecot POP3 ready greeting identity and CPE hints.
 Preserve strict greeting boundaries, unknown absent versions, caller authority,
 product skip diagnostics and CPE-only false-clean guards. No throughput claim;
 live consumer persistence remains separate and Phase 3 stays paused.
+
+
+v1.88.0 reuses a bounded per-run worker pool instead of creating a goroutine
+for each action. Scheduler-owned host/module admission, pacing, serialized sink
+backpressure and cancellation draining remain authoritative. Workers close and
+join before Run returns; Lua states remain invocation-owned. Repeated-window
+behavioral tests cover one/eight workers and successive runs. No public API
+change or throughput speedup claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
