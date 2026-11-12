@@ -3,6 +3,7 @@ package pingpp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"reflect"
 	"strings"
@@ -181,5 +182,32 @@ func TestUpstreamErrorDiagnosticBound(t *testing.T) {
 	_, ok, again := r.Next(context.Background())
 	if ok || again != err {
 		t.Fatalf("reader must retain terminal error: %v %v", ok, again)
+	}
+}
+
+func TestSchemaDiagnosticBound(t *testing.T) {
+	for _, size := range []int{16, 1024, 1025, 4 << 20} {
+		// Quoted control bytes expand during formatting; bound the input first.
+		schema := strings.Repeat("\x01", size)
+		targets, err := Targets(Document{SchemaVersion: schema})
+		if err == nil || len(targets) != 0 || len(err.Error()) > 4200 {
+			t.Fatalf("size %d: targets=%d diagnostic length=%d", size, len(targets), len(fmt.Sprint(err)))
+		}
+		if strings.Contains(err.Error(), "(truncated)") != (size > 1024) {
+			t.Fatalf("size %d: incorrect truncation", size)
+		}
+	}
+	data, err := json.Marshal(Document{SchemaVersion: strings.Repeat("x", 8192)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := NewReader(strings.NewReader(string(data)))
+	_, ok, first := r.Next(context.Background())
+	if ok || first == nil || len(first.Error()) > 1200 {
+		t.Fatalf("reader: %v %v", ok, first)
+	}
+	_, ok, again := r.Next(context.Background())
+	if ok || again != first {
+		t.Fatal("schema failure must remain terminal")
 	}
 }

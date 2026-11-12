@@ -227,3 +227,8 @@ v1.29.0 bounds pingpp.scan/v1 upstream error diagnostic details to 1 KiB with
 explicit truncation. Preserve terminal reader errors and inconclusive results;
 oversized upstream errors must never produce targets. No throughput claim.
 Live consumer persistence remains separate; Phase 3 stays paused.
+
+v1.30.0 shares bounded pingpp diagnostic detail formatting for upstream errors
+and unsupported schema strings. Bound before quoted formatting; preserve explicit
+truncation, terminal reader failures and zero targets on errors. No performance
+claim. Live consumer persistence remains separate; Phase 3 stays paused.

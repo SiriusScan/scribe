@@ -68,19 +68,10 @@ type Claim struct {
 // leave the corresponding fact unknown; host-wide claims never identify a port.
 func Targets(d Document) ([]scribe.Target, error) {
 	if d.SchemaVersion != SchemaVersion {
-		return nil, fmt.Errorf("unsupported ping++ schema %q", d.SchemaVersion)
+		return nil, fmt.Errorf("unsupported ping++ schema %q", boundedDiagnostic(d.SchemaVersion))
 	}
 	if len(d.Error) > 0 && string(d.Error) != "null" {
-		// Upstream errors are untrusted and may occupy most of a document.
-		// Keep diagnostics bounded even for direct SDK documents.
-		const limit = 1024
-		detail := d.Error
-		suffix := ""
-		if len(detail) > limit {
-			detail = detail[:limit]
-			suffix = "... (truncated)"
-		}
-		return nil, fmt.Errorf("ping++ target error: %s%s", detail, suffix)
+		return nil, fmt.Errorf("ping++ target error: %s", boundedDiagnostic(string(d.Error)))
 	}
 	if d.Asset == nil {
 		return nil, fmt.Errorf("ping++ document missing asset")
@@ -149,6 +140,15 @@ func Targets(d Document) ([]scribe.Target, error) {
 		out = append(out, t)
 	}
 	return out, nil
+}
+
+// boundedDiagnostic limits untrusted details before formatting can expand them.
+func boundedDiagnostic(detail string) string {
+	const limit = 1024
+	if len(detail) > limit {
+		return detail[:limit] + "... (truncated)"
+	}
+	return detail
 }
 
 // Reader reads bounded JSONL documents and exposes a RunTargetStream producer.

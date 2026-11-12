@@ -1318,3 +1318,20 @@ The sequential bounded adapter race fuzz campaign passed 33,927 executions
 (/tmp/scribe129-fuzz.log). Service reinstall and complete HTTP smoke are
 operational evidence only. Live consumer cancellation/persistence remains
 blocked on the consumer contract; Phase 3 stays paused.
+
+## v1.30.0 — bounded ping++ schema diagnostics (2026-11-12)
+
+Adapter hardening continues with unsupported schema diagnostics: caller-supplied
+schema strings previously bypassed the upstream error detail limit. A shared
+helper now caps both details at 1 KiB before formatting, with explicit truncation.
+Quoted control bytes can expand within a finite formatted bound. Focused tests
+cover boundary lengths, oversized direct SDK input, escaped control bytes and
+sticky terminal streaming errors; failures never produce targets.
+
+No public API or wire schema change and no performance claim. Live consumer
+cancellation/persistence remains blocked on the consumer contract; Phase 3 stays
+paused. Validation logs: /tmp/scribe130-{check,acceptance,fuzz}.log. Service
+reinstallation and complete HTTP smoke are separate operational evidence.
+
+make check, make acceptance-local and the explicit CGO-disabled CLI build passed.
+The bounded reader race fuzz campaign passed 13,502 executions with two workers.
