@@ -378,3 +378,15 @@ retains single-chunk reads. The existing five-second/context deadline covers the
 whole exchange; premature EOF fails without returning partial successful data.
 This supports fixed-length protocol replies without treating socket read
 boundaries as message boundaries.
+
+
+v1.58.0 adds delimiter-framed tcp.exchange replies: a string second argument
+reads through that delimiter (1..256 bytes), inclusive, within the existing 64 KiB
+reply ceiling and five-second deadline. Missing delimiters and premature EOF are
+errors without partial successful output. Connection setup and verified TLS use
+the existing path. Multi-exchange sessions remain follow-up work; Phase 3 stays
+paused. Controlled loopback evidence is separate from live consumer acceptance.
+
+For a line-framed reply, use `sirius.call("tcp.exchange", "PING\r\n", "\r\n")`.
+The returned `data` includes the delimiter. This performs one exchange on one
+connection; it does not create a persistent session.

@@ -364,3 +364,11 @@ v1.57.0 adds optional exact-length tcp.exchange reads (1..65536 bytes).
 Preserve the default single-chunk behavior, verified TLS and shared five-second
 deadline. Premature EOF is an execution error with no partial successful result.
 Phase 3 stays paused.
+
+
+v1.58.0 adds delimiter-framed tcp.exchange replies: a string second argument
+reads through that delimiter (1..256 bytes), inclusive, within the existing 64 KiB
+reply ceiling and five-second deadline. Missing delimiters and premature EOF are
+errors without partial successful output. Connection setup and verified TLS use
+the existing path. Multi-exchange sessions remain follow-up work; Phase 3 stays
+paused. Controlled loopback evidence is separate from live consumer acceptance.

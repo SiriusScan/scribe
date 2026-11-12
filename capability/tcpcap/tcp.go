@@ -2,6 +2,7 @@
 package tcpcap
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -15,6 +16,8 @@ import (
 // Function connects to the supplied endpoint, optionally sends one string, and
 // receives one chunk (at most 64 KiB). An optional second integer argument
 // requests exactly that many bytes (1..65536); premature EOF is an error.
+// A string second argument reads through a 1..256-byte delimiter, inclusive,
+// within 64 KiB; missing delimiters are errors.
 // No arguments performs a banner grab.
 // The exchange has a five-second ceiling, tightened by the context deadline.
 // Returned data is text (empty on EOF); eof is a boolean. TLS version is a
@@ -32,6 +35,7 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 	}
 	payload := ""
 	readBytes := 0
+	delimiter := ""
 	if len(args) > 2 {
 		return nil, fmt.Errorf("tcp.exchange accepts a payload and optional byte count")
 	}
@@ -43,11 +47,20 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 		}
 	}
 	if len(args) == 2 {
-		n, ok := args[1].(int64)
-		if !ok || n < 1 || n > 65536 {
-			return nil, fmt.Errorf("read byte count must be an integer from 1 to 65536")
+		switch v := args[1].(type) {
+		case int64:
+			if v < 1 || v > 65536 {
+				return nil, fmt.Errorf("read byte count must be an integer from 1 to 65536")
+			}
+			readBytes = int(v)
+		case string:
+			if len(v) == 0 || len(v) > 256 {
+				return nil, fmt.Errorf("read delimiter must contain 1 to 256 bytes")
+			}
+			delimiter = v
+		default:
+			return nil, fmt.Errorf("read selector must be an integer byte count or string delimiter")
 		}
-		readBytes = int(n)
 	}
 	if len(payload) > 65536 {
 		return nil, fmt.Errorf("payload exceeds 64 KiB")
@@ -93,12 +106,28 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 	}
 	buffer := make([]byte, 65536)
 	var n int
-	if readBytes > 0 {
+	if delimiter != "" {
+		// Read only through the delimiter, without consuming subsequent frames.
+		for n < len(buffer) {
+			var count int
+			count, err = io.ReadFull(stream, buffer[n:n+1])
+			n += count
+			if err != nil {
+				break
+			}
+			if bytes.HasSuffix(buffer[:n], []byte(delimiter)) {
+				break
+			}
+		}
+		if err == nil && !bytes.HasSuffix(buffer[:n], []byte(delimiter)) {
+			err = fmt.Errorf("reply delimiter absent within 64 KiB")
+		}
+	} else if readBytes > 0 {
 		n, err = io.ReadFull(stream, buffer[:readBytes])
 	} else {
 		n, err = stream.Read(buffer)
 	}
-	if err != nil && (readBytes > 0 || err != io.EOF) {
+	if err != nil && (readBytes > 0 || delimiter != "" || err != io.EOF) {
 		return nil, err
 	}
 	if err := ctx.Err(); err != nil {
