@@ -669,3 +669,8 @@ the API fixture was reviewed and updated. Behavioral loopback and real Lua CLI
 tests require response evidence, including non-2xx responses. Missing verdicts
 remain unknown. No throughput claim; live consumer persistence remains separate.
 Phase 3 stays paused.
+
+v1.98.0 sizes TCP exact-read buffers to the requested length and skips unused
+fixed buffers for EOF reads. Preserve framing, ceilings and all-or-error sessions.
+Raw capability allocation samples are not end-to-end throughput evidence.
+Phase 3 stays paused.

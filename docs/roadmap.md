@@ -2542,3 +2542,13 @@ Phase 3 stays paused.
 
 Validation: final make check passed (full race suite, external SDK acceptance,
 Windows/Darwin cross-builds, vet and CGO-disabled CLI build).
+
+v1.98.0 sizes native TCP exact-read storage to the requested length and avoids
+allocating unused fixed storage for read-to-EOF. Default and delimiter ceilings,
+verified TLS, session atomicity and deadlines remain unchanged. A behavioral
+regression pins exact framing without consuming the following frame. Raw local
+microbenchmark samples in benchmarks/v1.98.0 show 66,000 to 465 B/op for a
+one-byte exact reply; this is allocation evidence, not executed-Lua throughput
+or live consumer acceptance. No public API change. Phase 3 stays paused.
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe198-check-final.log.

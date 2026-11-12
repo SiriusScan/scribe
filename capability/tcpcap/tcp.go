@@ -169,7 +169,21 @@ func exchange(stream io.ReadWriter, args []any) (any, error) {
 	if writeOnly {
 		return map[string]any{"data": "", "eof": false}, nil
 	}
-	buffer := make([]byte, 65536)
+	if readBytes == -1 {
+		data, e := io.ReadAll(io.LimitReader(stream, 65537))
+		if e != nil {
+			return nil, e
+		}
+		if len(data) > 65536 {
+			return nil, fmt.Errorf("reply exceeds 64 KiB")
+		}
+		return map[string]any{"data": string(data), "eof": true}, nil
+	}
+	bufferSize := 65536
+	if readBytes > 0 {
+		bufferSize = readBytes
+	}
+	buffer := make([]byte, bufferSize)
 	var n int
 	if delimiter != "" {
 		// Read only through the delimiter, without consuming subsequent frames.
@@ -187,15 +201,6 @@ func exchange(stream io.ReadWriter, args []any) (any, error) {
 		if err == nil && !bytes.HasSuffix(buffer[:n], []byte(delimiter)) {
 			err = fmt.Errorf("reply delimiter absent within 64 KiB")
 		}
-	} else if readBytes == -1 {
-		data, e := io.ReadAll(io.LimitReader(stream, 65537))
-		if e != nil {
-			return nil, e
-		}
-		if len(data) > 65536 {
-			return nil, fmt.Errorf("reply exceeds 64 KiB")
-		}
-		return map[string]any{"data": string(data), "eof": true}, nil
 	} else if readBytes > 0 {
 		n, err = io.ReadFull(stream, buffer[:readBytes])
 	} else {

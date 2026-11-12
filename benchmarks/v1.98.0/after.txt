@@ -1,0 +1,9 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/capability/tcpcap
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkSmallExactReply-4   	 4023387	       269.6 ns/op	     465 B/op	       7 allocs/op
+BenchmarkSmallExactReply-4   	 5653530	       262.2 ns/op	     465 B/op	       7 allocs/op
+BenchmarkSmallExactReply-4   	 5484248	       216.8 ns/op	     465 B/op	       7 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/capability/tcpcap	3.764s
