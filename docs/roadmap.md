@@ -2317,3 +2317,16 @@ cross-builds, vet and CGO-disabled build), /tmp/scribe182-check.log. Focused que
 race tests passed. Bounded planner race fuzz passed with 156/796 baseline seeds;
 mutations did not begin (/tmp/scribe182-fuzz.log). Service POST smoke is operational
 evidence only, separate from live consumer persistence acceptance.
+
+
+v1.83.0 adds optional min_version_exclusive/max_version_exclusive match flags.
+They require their corresponding semantic-version bounds; empty ranges fail
+metadata validation. Existing bounds remain inclusive by default. Exclusive
+boundaries share nested selection, probe eligibility and version skip diagnostics;
+missing versions never establish clean identification. No throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and static CLI build), /tmp/scribe183-check.log. Focused
+exclusive-bound tests passed. Bounded planner race fuzz passed with 239/796
+baseline seeds covered; mutations did not begin (/tmp/scribe183-fuzz.log).

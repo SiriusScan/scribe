@@ -30,6 +30,10 @@ type Match struct {
 	MinVersion string `json:"min_version,omitempty"`
 	// MaxVersion is an inclusive semantic-version upper bound; empty is unbounded.
 	MaxVersion string `json:"max_version,omitempty"`
+	// MinVersionExclusive excludes the lower boundary when MinVersion is set.
+	MinVersionExclusive bool `json:"min_version_exclusive,omitempty"`
+	// MaxVersionExclusive excludes the upper boundary when MaxVersion is set.
+	MaxVersionExclusive bool `json:"max_version_exclusive,omitempty"`
 	// BannerRegex is a Go regular expression bounded to 4096 bytes; empty imposes no banner constraint.
 	BannerRegex string `json:"banner_regex,omitempty"`
 	// AnyOf contains alternative child matches; nil adds no condition.
@@ -51,6 +55,9 @@ func (m Match) validate(depth int) error {
 	if !(m.Confidence >= 0 && m.Confidence <= 1) {
 		return fmt.Errorf("confidence must be between zero and one")
 	}
+	if m.MinVersionExclusive && m.MinVersion == "" || m.MaxVersionExclusive && m.MaxVersion == "" {
+		return fmt.Errorf("exclusive version boundary requires its version bound")
+	}
 	if depth > 8 {
 		return fmt.Errorf("match nesting exceeds 8")
 	}
@@ -62,7 +69,7 @@ func (m Match) validate(depth int) error {
 			return fmt.Errorf("invalid semantic version %q", v)
 		}
 	}
-	if m.MinVersion != "" && m.MaxVersion != "" && semver.Compare(version(m.MinVersion), version(m.MaxVersion)) > 0 {
+	if m.MinVersion != "" && m.MaxVersion != "" && (semver.Compare(version(m.MinVersion), version(m.MaxVersion)) > 0 || semver.Compare(version(m.MinVersion), version(m.MaxVersion)) == 0 && (m.MinVersionExclusive || m.MaxVersionExclusive)) {
 		return fmt.Errorf("reversed version range")
 	}
 	if len(m.BannerRegex) > 4096 {
@@ -115,10 +122,10 @@ func (m Match) evaluate(t Target) (bool, bool) {
 		if !semver.IsValid(v) {
 			return false, false
 		}
-		if m.MinVersion != "" && semver.Compare(v, version(m.MinVersion)) < 0 {
+		if m.MinVersion != "" && (semver.Compare(v, version(m.MinVersion)) < 0 || m.MinVersionExclusive && semver.Compare(v, version(m.MinVersion)) == 0) {
 			return false, false
 		}
-		if m.MaxVersion != "" && semver.Compare(v, version(m.MaxVersion)) > 0 {
+		if m.MaxVersion != "" && (semver.Compare(v, version(m.MaxVersion)) > 0 || m.MaxVersionExclusive && semver.Compare(v, version(m.MaxVersion)) == 0) {
 			return false, false
 		}
 	}
@@ -199,7 +206,7 @@ func (m Match) skipReason(t Target) string {
 	}{
 		{"service", len(m.Services) > 0, t.Service == "", contains(m.Services, t.Service)},
 		{"transport", len(m.Protocols) > 0, t.Protocol == "", contains(m.Protocols, t.Protocol)},
-		{"version", m.MinVersion != "" || m.MaxVersion != "", t.Version == "", semver.IsValid(version(t.Version)) && (m.MinVersion == "" || semver.Compare(version(t.Version), version(m.MinVersion)) >= 0) && (m.MaxVersion == "" || semver.Compare(version(t.Version), version(m.MaxVersion)) <= 0)},
+		{"version", m.MinVersion != "" || m.MaxVersion != "", t.Version == "", semver.IsValid(version(t.Version)) && (m.MinVersion == "" || (semver.Compare(version(t.Version), version(m.MinVersion)) > 0 || !m.MinVersionExclusive && semver.Compare(version(t.Version), version(m.MinVersion)) == 0)) && (m.MaxVersion == "" || (semver.Compare(version(t.Version), version(m.MaxVersion)) < 0 || !m.MaxVersionExclusive && semver.Compare(version(t.Version), version(m.MaxVersion)) == 0))},
 		{"banner", m.BannerRegex != "", t.Banner == "", m.matchesBanner(t.Banner)},
 	} {
 		if field.required && !field.matches {

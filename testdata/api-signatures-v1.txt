@@ -131,6 +131,10 @@
 
 	MaxVersion string `json:"max_version,omitempty"`
 
+	MinVersionExclusive bool `json:"min_version_exclusive,omitempty"`
+
+	MaxVersionExclusive bool `json:"max_version_exclusive,omitempty"`
+
 	BannerRegex string `json:"banner_regex,omitempty"`
 
 	AnyOf []Match `json:"any_of,omitempty"`

@@ -560,3 +560,11 @@ retains stable ordering and host-spray fairness. A 4096-action regression pins
 ordered completed/unknown output alongside existing cancellation completeness
 coverage. This reduces queue movement; no measured throughput claim is made.
 Live consumer persistence remains separate; Phase 3 stays paused.
+
+
+v1.83.0 adds optional min_version_exclusive/max_version_exclusive match flags.
+They require their corresponding semantic-version bounds; empty ranges fail
+metadata validation. Existing bounds remain inclusive by default. Exclusive
+boundaries share nested selection, probe eligibility and version skip diagnostics;
+missing versions never establish clean identification. No throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.
