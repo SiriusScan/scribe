@@ -1615,3 +1615,22 @@ passed with 272/796 baseline seeds in five seconds; baseline coverage remained
 incomplete and mutations did not begin (/tmp/scribe138-fuzz.log). Service
 reinstall and complete POST /run smoke are operational evidence only; live
 consumer persistence/cancellation remains separate.
+
+## v1.39.0 — prepared banner selection (2026-11-12)
+
+The planner now prepares banner regular expressions once per indexed match tree,
+including all_of/any_of children, and reuses immutable Go regexes during parallel
+endpoint selection. This removes repeated regex compilation from indexed banner
+selection. Direct Match evaluation retains a safe compile fallback, including
+invalid patterns returning no match. Concurrent behavioral tests pin nested
+positive/negative selection and absence of product identification.
+
+Compatibility review: JSON and keyed Match literals retain their shape. Match
+now contains private cache state, so external unkeyed literals must migrate to
+keyed fields; the API fixture records this limitation. No measured throughput
+claim. Engine per-task metadata parsing remains a follow-up optimization.
+
+Validation: make check (/tmp/scribe139-check.log) and bounded race planner fuzz
+(/tmp/scribe139-fuzz.log; 233/796 cached baseline seeds, no mutations). Service reinstall and complete POST /run smoke are
+operational evidence only. Live consumer persistence remains separate; Phase 3
+stays paused.

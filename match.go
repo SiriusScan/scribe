@@ -11,6 +11,7 @@ import (
 // The zero Match accepts every endpoint but supplies no product identification.
 // Ports are advisory and never exclude an endpoint.
 type Match struct {
+	bannerPattern *regexp.Regexp
 	// CPE contains accepted CPE alternatives; nil imposes no CPE constraint.
 	CPE []string `json:"cpe,omitempty"`
 	// Confidence is minimum identity confidence in [0,1]; zero imposes no threshold.
@@ -121,7 +122,7 @@ func (m Match) evaluate(t Target) (bool, bool) {
 			return false, false
 		}
 	}
-	if m.BannerRegex != "" && !regexp.MustCompile(m.BannerRegex).MatchString(t.Banner) {
+	if m.BannerRegex != "" && !m.matchesBanner(t.Banner) {
 		return false, false
 	}
 	for _, child := range m.AllOf {
@@ -194,4 +195,30 @@ func (m Match) skipReason(t Target) string {
 		}
 	}
 	return "declarative match: required identification facts missing or mismatched"
+}
+
+// prepare owns compiled expressions within an index snapshot. Expressions are
+// immutable and safe for concurrent selection; mutable match trees are not shared.
+func (m *Match) prepare() {
+	if m.BannerRegex != "" {
+		m.bannerPattern = regexp.MustCompile(m.BannerRegex)
+	}
+	for i := range m.AnyOf {
+		m.AnyOf[i].prepare()
+	}
+	for i := range m.AllOf {
+		m.AllOf[i].prepare()
+	}
+}
+
+func (m Match) matchesBanner(banner string) bool {
+	p := m.bannerPattern
+	if p == nil || p.String() != m.BannerRegex {
+		var err error
+		p, err = regexp.Compile(m.BannerRegex)
+		if err != nil {
+			return false
+		}
+	}
+	return p.MatchString(banner)
 }

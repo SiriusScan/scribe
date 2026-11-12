@@ -260,3 +260,9 @@ v1.38.0 completes CPE hints for existing pinned Pure-FTPd/Sendmail banners via
 the shared mapper and selection policy matrix. Preserve caller identity authority,
 exact product skip reasons and CPE-only false-clean guards. No throughput claim;
 live consumer persistence remains separate. Phase 3 stays paused.
+
+v1.39.0 prepares nested banner regexes in index-owned matcher snapshots for
+parallel selection. Keep direct Match evaluation safe for invalid expressions
+and preserve banner-only unknown identification. Match now has private cache
+state: external literals must use keyed fields. No measured speedup claim;
+live consumer persistence remains separate and Phase 3 stays paused.

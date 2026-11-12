@@ -136,6 +136,7 @@
 	AnyOf []Match `json:"any_of,omitempty"`
 
 	AllOf []Match `json:"all_of,omitempty"`
+	// contains filtered or unexported fields
 }
 
 .: type Module struct {

@@ -54,6 +54,9 @@ func NewIndex(scripts []Script) (*Index, error) {
 				return nil, fmt.Errorf("%s: %w", s.ID, err)
 			}
 		}
+		if h.Match != nil {
+			h.Match.prepare()
+		}
 		s.Source = append([]byte(nil), s.Source...)
 		idx.entries = append(idx.entries, indexedScript{s, h})
 	}
