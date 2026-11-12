@@ -12,6 +12,11 @@ func TestNestedSkipDiagnostics(t *testing.T) {
 		target Target
 		reason string
 	}{
+		{"missing version", Match{MinVersion: "2.0.0"}, Target{}, "declarative match: version identification missing"},
+		{"old version", Match{MinVersion: "2.0.0"}, Target{Version: "1.0.0"}, "declarative match: version identification mismatched"},
+		{"missing banner", Match{BannerRegex: "Acme"}, Target{}, "declarative match: banner identification missing"},
+		{"wrong transport", Match{Protocols: []string{"tcp"}}, Target{Protocol: "udp"}, "declarative match: transport identification mismatched"},
+		{"missing CPE", Match{CPE: []string{"fixture"}}, Target{}, "declarative match: CPE identification missing"},
 		{"required product", Match{AllOf: []Match{{Products: []string{"redis"}}}}, Target{}, missing},
 		{"required mismatch", Match{AllOf: []Match{{Products: []string{"redis"}}}}, Target{Product: "mysql"}, mismatch},
 		{"agreed alternatives", Match{AnyOf: []Match{{Products: []string{"redis"}}, {Products: []string{"mysql"}}}}, Target{}, missing},

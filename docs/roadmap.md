@@ -2235,3 +2235,16 @@ cross-builds, vet and CGO-disabled CLI build), /tmp/scribe176-check.log.
 Bounded race planner fuzz passed after 180/796 baseline seeds; mutations did not
 begin (/tmp/scribe176-fuzz.log). Deployment POST smoke is operational evidence,
 separate from live consumer persistence acceptance.
+
+v1.77.0 exposes field-specific planner skip diagnostics for service, transport,
+version, banner and CPE constraints through the shared nested matcher. Missing
+facts remain distinct from observed mismatches; mixed alternative failures retain
+the general reason. Selection and false-clean gates remain conservative. No public
+API change or throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe177-check.log.
+Bounded planner race fuzz passed with 129/796 baseline seeds; mutations did
+not begin (/tmp/scribe177-fuzz.log). Deployment smoke is operational evidence
+only, separate from live consumer persistence acceptance.

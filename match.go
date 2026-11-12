@@ -191,6 +191,37 @@ func (m Match) skipReason(t Target) string {
 			return "declarative match: product identification mismatched"
 		}
 	}
+	for _, field := range []struct {
+		name     string
+		required bool
+		missing  bool
+		matches  bool
+	}{
+		{"service", len(m.Services) > 0, t.Service == "", contains(m.Services, t.Service)},
+		{"transport", len(m.Protocols) > 0, t.Protocol == "", contains(m.Protocols, t.Protocol)},
+		{"version", m.MinVersion != "" || m.MaxVersion != "", t.Version == "", semver.IsValid(version(t.Version)) && (m.MinVersion == "" || semver.Compare(version(t.Version), version(m.MinVersion)) >= 0) && (m.MaxVersion == "" || semver.Compare(version(t.Version), version(m.MaxVersion)) <= 0)},
+		{"banner", m.BannerRegex != "", t.Banner == "", m.matchesBanner(t.Banner)},
+	} {
+		if field.required && !field.matches {
+			state := "mismatched"
+			if field.missing {
+				state = "missing"
+			}
+			return "declarative match: " + field.name + " identification " + state
+		}
+	}
+	if len(m.CPE) > 0 {
+		matched := false
+		for _, c := range t.CPE {
+			matched = matched || contains(m.CPE, c)
+		}
+		if !matched {
+			if len(t.CPE) == 0 {
+				return "declarative match: CPE identification missing"
+			}
+			return "declarative match: CPE identification mismatched"
+		}
+	}
 	for _, child := range m.AllOf {
 		if ok, _ := child.evaluate(t); !ok {
 			return child.skipReason(t)

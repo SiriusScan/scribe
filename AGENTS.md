@@ -513,3 +513,10 @@ index. Public NewIndex and Select retain source ownership. Keep prepared metadat
 independent of source bytes and endpoint verdict gates invocation-specific.
 No measured throughput claim; live consumer persistence remains separate.
 Phase 3 stays paused.
+
+v1.77.0 exposes field-specific planner skip diagnostics for service, transport,
+version, banner and CPE constraints through the shared nested matcher. Missing
+facts remain distinct from observed mismatches; mixed alternative failures retain
+the general reason. Selection and false-clean gates remain conservative. No public
+API change or throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.

@@ -527,3 +527,10 @@ v1.76.0 avoids redundant full-source snapshots while preparing metadata for dire
 SDK execution. Public indexes and selections retain owned source snapshots;
 endpoint selection and conservative verdict gates remain unchanged. This removes
 an allocation path, with no measured throughput claim.
+
+v1.77.0 exposes field-specific planner skip diagnostics for service, transport,
+version, banner and CPE constraints through the shared nested matcher. Missing
+facts remain distinct from observed mismatches; mixed alternative failures retain
+the general reason. Selection and false-clean gates remain conservative. No public
+API change or throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
