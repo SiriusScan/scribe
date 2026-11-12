@@ -525,3 +525,11 @@ v1.78.0 assembles fragmented first TCP/TLS banner lines within the existing
 50 ms banner window, 250 ms endpoint budget and 8 KiB ceiling. Partial/stalled
 responses remain bounded; pinned fingerprints alone establish identity. No
 throughput claim; live consumer persistence remains separate. Phase 3 stays paused.
+
+
+v1.79.0 keys per-run planner probe observations by structured endpoint and service
+hint. A cached unsupported UDP probe no longer suppresses later DNS/NTP/SNMP
+eligibility on the same endpoint with a different supplied service. Failures remain
+cached per key and cache capacity stays bounded. Caller facts and conservative
+verdict gates remain authoritative. No public API change or throughput claim;
+live consumer persistence remains separate and Phase 3 stays paused.

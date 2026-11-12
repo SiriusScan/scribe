@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
-	"fmt"
 	"github.com/SiriusScan/scribe/fingerprint"
 
 	"net"
@@ -143,10 +142,16 @@ func probe(ctx context.Context, t Target) Target {
 }
 
 // probeCache is owned by one producer; failures are cached too.
-type probeCache map[string]Target
+type probeCacheKey struct {
+	host, ip, protocol, service string
+	port                        uint16
+	tls                         bool
+}
+
+type probeCache map[probeCacheKey]Target
 
 func (p probeCache) enrich(ctx context.Context, t Target, limit int, community ...string) Target {
-	key := fmt.Sprintf("%s/%s/%d/%s/%t", t.Host, t.IP, t.Port, t.Protocol, t.TLS)
+	key := probeCacheKey{t.Host, t.IP, t.Protocol, t.Service, t.Port, t.TLS}
 	f, ok := p[key]
 	if !ok {
 		if len(p) >= limit {

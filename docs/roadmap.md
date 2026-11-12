@@ -2261,3 +2261,16 @@ cross-builds, vet and CGO-disabled CLI build), /tmp/scribe178-check.log.
 Bounded race planner fuzz passed with 119/796 baseline seeds covered; mutations
 did not begin (/tmp/scribe178-fuzz.log). Deployment smoke is operational evidence
 only, separate from live consumer workflow persistence acceptance.
+
+
+v1.79.0 keys per-run planner probe observations by structured endpoint and service
+hint. A cached unsupported UDP probe no longer suppresses later DNS/NTP/SNMP
+eligibility on the same endpoint with a different supplied service. Failures remain
+cached per key and cache capacity stays bounded. Caller facts and conservative
+verdict gates remain authoritative. No public API change or throughput claim;
+live consumer persistence remains separate and Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin builds,
+vet and CGO-disabled CLI build), /tmp/scribe179-check.log. Bounded planner race
+fuzz passed after 160/796 baseline seeds; mutations did not begin
+(/tmp/scribe179-fuzz.log). Deployment smoke is operational evidence only.
