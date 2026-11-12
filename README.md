@@ -414,3 +414,9 @@ and all-or-error results remain intact. A deterministic coalesced-frame regressi
 checks ordered mixed framing and one underlying read for a 3 KiB reply sequence.
 This removes per-byte socket reads; no end-to-end throughput claim is made.
 Local transport evidence is separate from live consumer persistence. Phase 3 stays paused.
+
+Module scheduling: CLI and POST /run args accept `--module-concurrency N`
+and `--module-interval 100ms`. Limits apply per exact dialect/script ID within
+a run alongside global and host limits. Zero uses global concurrency or disables
+module pacing respectively. For example, `--concurrency 8 --module-concurrency 2
+--module-interval 100ms` limits each module while allowing other modules to run.

@@ -403,3 +403,10 @@ Zero disables it; negative intervals fail construction. Unrelated modules remain
 eligible under existing host/global/concurrency policy. Expire pacing entries;
 preserve cancellation terminal records and unknown verdicts. No throughput claim.
 Phase 3 stays paused; local deployment is separate from consumer acceptance.
+
+v1.64.0 exposes --module-interval and --module-concurrency through CLI and
+POST /run using the existing engine options and shared runner. Exact dialect/script
+keys, per-run scope, zero defaults and engine validation remain authoritative.
+Transport tests require paced completed actions and complete JSONL EOF, and reject
+negative intervals. No throughput claim; live consumer persistence remains separate.
+Phase 3 stays paused.

@@ -103,6 +103,8 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	tls := flags.Bool("tls", false, "known endpoint uses TLS")
 	argsJSON := flags.String("args", "{}", "script arguments as a JSON object (at most 64 KiB)")
 	plan := flags.Bool("plan", false, "report selection without executing scripts or probes")
+	moduleInterval := flags.Duration("module-interval", 0, "minimum interval between starts of the same dialect/script per run")
+	moduleConcurrency := flags.Int("module-concurrency", 0, "maximum concurrent invocations per dialect/script; 0 uses concurrency")
 	globalInterval := flags.Duration("global-interval", 0, "minimum interval between all script starts per run")
 	concurrency := flags.Int("concurrency", 4, "maximum concurrent scripts, 1-256")
 	hostConcurrency := flags.Int("host-concurrency", 0, "maximum concurrent scripts per host; 0 uses concurrency")
@@ -362,7 +364,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	if *events {
 		observer = func(event scribe.Event) error { return encoder.Encode(event) }
 	}
-	engine, err := scribe.New(scribe.Options{OnEvent: observer, Plan: *plan, ScriptTimeout: *timeout, GlobalInterval: *globalInterval, SNMPCommunity: *community, StrictIdentification: *strict, Exhaustive: *exhaustive, Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
+	engine, err := scribe.New(scribe.Options{OnEvent: observer, Plan: *plan, ScriptTimeout: *timeout, GlobalInterval: *globalInterval, ModuleInterval: *moduleInterval, ModuleConcurrency: *moduleConcurrency, SNMPCommunity: *community, StrictIdentification: *strict, Exhaustive: *exhaustive, Concurrency: *concurrency, HostConcurrency: *hostConcurrency, HostInterval: *hostInterval, HostErrorBudget: *hostErrors, Strategy: scribe.Strategy(*strategy)}, runtime)
 	if err != nil {
 		return fail(err)
 	}
