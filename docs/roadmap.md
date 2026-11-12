@@ -1566,3 +1566,24 @@ campaign passed with 12,597 executions, log /tmp/scribe135-fuzz.log. Service
 reinstall and POST /run smoke provide operational evidence only. Live consumer
 persistence/cancellation remains blocked on its route/store contract; Phase 3
 stays paused.
+
+## v1.36.0 — retain TLS banner identification for selection (2026-11-12)
+
+Planner priority: TLS endpoints that immediately send a protocol banner now retain
+TLS, TLS version, certificate subject and negotiated ALPN alongside fingerprinted
+service/product/version, banner and CPE facts. Previously the banner return path
+replaced the handshake observations, preventing downstream rules and consumers from
+using the observed transport. The probe reuses its existing facts accumulator;
+no API, limits, trust policy or verdict policy changes. A controlled TLS listener
+sends a pinned OpenSSH banner and requires both transport and product observations.
+This is planner socket evidence, not SSH session or live consumer acceptance.
+No throughput claim, NSE expansion or diagnostic-bounding work. Phase 3 stays paused.
+
+Bounded race planner fuzz passed, covering 294/796 cached baseline seeds in
+its five-second budget; it did not finish baseline coverage or start mutations
+(/tmp/scribe136-fuzz.log).
+
+Validation: make check passed (race suite, external SDK acceptance, vet,
+CGO-disabled CLI build and Windows/Darwin cross-builds), log
+/tmp/scribe136-check.log. Service reinstall and complete POST /run smoke remain
+operational evidence only; live consumer persistence/cancellation is separate.

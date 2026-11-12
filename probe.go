@@ -125,7 +125,11 @@ func probe(ctx context.Context, t Target) Target {
 		return facts
 	}
 	f := fingerprint.Default().Match(string(b[:n]), http.Header{})
-	return Target{CPE: inferredCPE(f.Product, f.Version), Confidence: 0.8, Banner: string(b[:n]), Service: f.Service, Product: f.Product, Version: f.Version}
+	facts.CPE = inferredCPE(f.Product, f.Version)
+	facts.Confidence = 0.8
+	facts.Banner = string(b[:n])
+	facts.Service, facts.Product, facts.Version = f.Service, f.Product, f.Version
+	return facts
 }
 
 // probeCache is owned by one producer; failures are cached too.

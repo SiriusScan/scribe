@@ -246,3 +246,7 @@ measurement, not network or live consumer acceptance. Phase 3 stays paused.
 v1.35.0 bounds pingpp JSON decoder diagnostics through the existing formatter.
 Preserve terminal reader failures, zero targets and explicit truncation for
 oversized numeric tokens. Live consumer acceptance remains separate; Phase 3 paused.
+
+v1.36.0 retains TLS handshake observations when planner probes receive a banner.
+Keep transport and pinned banner identity together; certificate observations do
+not establish trust or vulnerability verdicts. Phase 3 stays paused.
