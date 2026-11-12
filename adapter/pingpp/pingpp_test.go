@@ -297,3 +297,49 @@ func TestProductVersionMissingClaims(t *testing.T) {
 		}
 	}
 }
+
+func TestProductConfidence(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		claims []Claim
+		want   float64
+	}{
+		{"strong", []Claim{{Product: "nginx", Confidence: "strong"}}, .8},
+		{"exact", []Claim{{Product: "nginx", Confidence: "exact"}}, 1},
+		{"partial", []Claim{{Product: "nginx", Confidence: "strong"}, {Product: "nginx", Confidence: "exact"}}, 1},
+		{"conflict", []Claim{{Product: "nginx", Confidence: "exact"}, {Product: "other", Confidence: "strong"}}, 0},
+		{"weak", []Claim{{Product: "nginx", Confidence: "weak"}}, 0},
+		{"contradicted", []Claim{{Product: "nginx", Confidence: "exact", ContradictionIDs: []string{"x"}}}, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var d Document
+			data, err := os.ReadFile("testdata/scan.jsonl")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := json.Unmarshal(data, &d); err != nil {
+				t.Fatal(err)
+			}
+			d.Asset.Claims = tc.claims
+			for i := range d.Asset.Claims {
+				d.Asset.Claims[i].Subject = "192.0.2.1/tcp/443"
+				d.Asset.Claims[i].Kind = "product"
+			}
+			targets, err := Targets(d)
+			if err != nil || len(targets) != 1 {
+				t.Fatalf("%+v %v", targets, err)
+			}
+			idx, err := scribe.NewIndex([]scribe.Script{{ID: "confidence", Dialect: scribe.Sirius, Source: []byte(`-- scribe: {"match":{"products":["nginx"],"confidence":0.9,"on_unknown":"skip"}}`)}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			selected := idx.Select(targets[0])
+			if (len(selected) == 1) != (tc.want >= .9) {
+				t.Fatalf("confidence selection: %+v", selected)
+			}
+			if targets[0].Confidence != tc.want {
+				t.Fatalf("%+v", targets[0])
+			}
+		})
+	}
+}

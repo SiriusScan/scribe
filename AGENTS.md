@@ -313,3 +313,9 @@ v1.48.0 adds original pinned Envoy HTTP Server identity and CPE hints through
 the shared fingerprint/planner path. Preserve strict identity boundaries, unknown
 missing versions, caller authority, exact product skip reasons and CPE-only
 false-clean guards. No throughput claim; Phase 3 stays paused.
+
+v1.49.0 maps accepted pingpp product identity confidence into planner facts:
+strong is 0.8 and exact is 1, using the strongest accepted agreeing product
+claim. Conflicting products retain zero confidence; service/TLS claims do not
+establish product confidence. This is adapter policy, not calibrated probability.
+Version conflicts remain unknown. Phase 3 stays paused.

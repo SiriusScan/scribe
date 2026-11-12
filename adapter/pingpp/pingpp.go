@@ -99,6 +99,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 		services := map[string]bool{}
 		products := map[string]string{}
 		conflict := false
+		productConfidence := 0.0
 		for _, c := range claims[key] {
 			if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
 				continue
@@ -116,6 +117,13 @@ func Targets(d Document) ([]scribe.Target, error) {
 				}
 			case "product":
 				if c.Product != "" {
+					confidence := 0.8 // Adapter policy: strong identity evidence.
+					if c.Confidence == "exact" {
+						confidence = 1
+					}
+					if confidence > productConfidence {
+						productConfidence = confidence
+					}
 					if old, ok := products[c.Product]; ok && old != "" && c.Version != "" && old != c.Version {
 						conflict = true
 					}
@@ -134,6 +142,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 		if len(products) == 1 {
 			for p, v := range products {
 				t.Product = p
+				t.Confidence = productConfidence
 				if !conflict {
 					t.Version = v
 				}

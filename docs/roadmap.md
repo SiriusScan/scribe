@@ -1812,3 +1812,18 @@ passed with 312/796 cached baseline seeds covered in five seconds; baseline
 coverage remained incomplete and mutations did not begin (/tmp/scribe148-fuzz.log).
 Service reinstall and complete POST /run smoke are operational evidence only;
 live consumer persistence remains separate.
+
+## v1.49.0 — adapter confidence for planner selection (2026-11-12)
+
+Closes an existing pingpp adapter/planner capability gap: accepted product claims
+now carry confidence into target facts, enabling minimum-confidence selection.
+Adapter policy maps strong to 0.8 and exact to 1 and uses the strongest accepted
+claim for an agreed product. These scores are policy levels, not calibrated
+probabilities. Conflicting products, weak and contradicted claims supply no
+product confidence. Service/TLS evidence cannot raise it. Existing version conflict
+and endpoint isolation semantics remain intact. Focused fixtures cover confidence
+levels, combined evidence, conflicts and rejected claims. No public API change or
+throughput claim. Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe149-check.log). Service reinstall and complete
+POST /run smoke are operational evidence only, not live workflow acceptance.
