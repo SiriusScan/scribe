@@ -588,3 +588,8 @@ For a fixed release boundary, use for example
 in the existing script metadata declaration. Version 2.0.0 is excluded; earlier
 semantic versions match. `min_version_exclusive` works analogously. Each flag
 requires its corresponding bound. Omitted flags preserve inclusive matching.
+
+The native `http.head` capability accepts an origin-form path, for example
+`sirius.call("http.head", "/status")`, and returns the same status/header shape
+as `http.get` with an empty body. Redirects are not followed. SDK users register
+`Client.HeadFunction` under the exact `http.head` grant.

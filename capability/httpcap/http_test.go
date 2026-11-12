@@ -285,3 +285,34 @@ func TestEndpointPoolBound(t *testing.T) {
 		t.Fatalf("pool count %d", len(c.pools))
 	}
 }
+
+func TestHeadKnownTarget(t *testing.T) {
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		if r.Method != http.MethodHead || r.RequestURI != "/check?q=1" {
+			t.Errorf("unexpected request: %s %s", r.Method, r.RequestURI)
+		}
+		w.Header().Set("Location", "/redirected")
+		w.Header().Set("Content-Length", "9999999")
+		w.WriteHeader(http.StatusFound)
+	}))
+	defer server.Close()
+	c := newClient(t, Options{MaxBodyBytes: 1})
+	result, err := c.HeadFunction(context.Background(), fixtureTarget(t, server.URL), []any{"/check?q=1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := result.(map[string]any)
+	if got["status"] != int64(302) || got["body"] != "" || calls.Load() != 1 {
+		t.Fatalf("unexpected HEAD result: %#v calls=%d", got, calls.Load())
+	}
+	for _, path := range []string{"https://other.example/", "//other.example/", "/bad#fragment"} {
+		if _, err := c.HeadFunction(context.Background(), fixtureTarget(t, server.URL), []any{path}); err == nil {
+			t.Fatalf("accepted invalid path %q", path)
+		}
+	}
+	if calls.Load() != 1 {
+		t.Fatal("invalid path reached endpoint")
+	}
+}

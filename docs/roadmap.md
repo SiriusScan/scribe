@@ -2428,3 +2428,18 @@ and profiling overhead preclude a throughput speedup claim. CPU profile has
 mallocgc at 23.21% cumulative; cache locking is not established as dominant.
 State pooling remains deferred to preserve isolation. Deployment smoke is local
 operational evidence, separate from live consumer workflow persistence.
+
+
+v1.90.0 adds exact http.head capability through the existing bounded HTTP client
+and CLI/POST registry. HEAD returns status, headers and an empty body; redirects
+remain evidence without following them. Endpoint confinement, verified TLS,
+timeouts and header limits share the GET path. SDK callers explicitly register
+Client.HeadFunction and grant http.head. The additive public method was reviewed
+and the API fixture updated. Behavioral loopback tests pin method/path, large
+Content-Length without body download, redirects and invalid authority rejection.
+No throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+Validation: make check passed (race suite, external SDK acceptance,
+Windows/Darwin cross-builds, vet and CGO-disabled build), /tmp/scribe190-check.log.
+Focused HEAD CLI race regression passed separately after adding that test.
+Deployment POST smoke is operational evidence, not live consumer acceptance.

@@ -604,3 +604,13 @@ mutable Lua state. Behavioral tests pin library operations, disabled APIs and
 mutation isolation. Short CPU profiles implicate allocation/initialization costs,
 not a demonstrated dominant cache lock. No scaling speedup claim; live consumer
 persistence remains separate and Phase 3 stays paused.
+
+
+v1.90.0 adds exact http.head capability through the existing bounded HTTP client
+and CLI/POST registry. HEAD returns status, headers and an empty body; redirects
+remain evidence without following them. Endpoint confinement, verified TLS,
+timeouts and header limits share the GET path. SDK callers explicitly register
+Client.HeadFunction and grant http.head. The additive public method was reviewed
+and the API fixture updated. Behavioral loopback tests pin method/path, large
+Content-Length without body download, redirects and invalid authority rejection.
+No throughput claim; live consumer persistence remains separate. Phase 3 paused.

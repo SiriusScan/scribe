@@ -32,7 +32,7 @@ type Options struct {
 	DisableReuse bool
 }
 
-// Client grants GET requests only to the endpoint supplied by the caller.
+// Client grants GET and HEAD requests only to the endpoint supplied by the caller.
 // Reusable connections are partitioned by logical authority, fixed IP and TLS.
 // The zero Client is not usable; initialize it with New and close it after use.
 type Client struct {
@@ -115,6 +115,17 @@ func (c *Client) Close() {
 // Non-2xx responses are returned as evidence; redirects are never followed.
 // A body larger than MaxBodyBytes returns an error, never a partial success.
 func (c *Client) Function(ctx context.Context, target scribe.Target, args []any) (any, error) {
+	return c.request(ctx, target, args, http.MethodGet)
+}
+
+// HeadFunction implements the exact "http.head" capability. It accepts the same
+// origin-form path as Function and returns status, headers and an empty body.
+// Endpoint confinement, verified TLS and finite request limits are shared.
+func (c *Client) HeadFunction(ctx context.Context, target scribe.Target, args []any) (any, error) {
+	return c.request(ctx, target, args, http.MethodHead)
+}
+
+func (c *Client) request(ctx context.Context, target scribe.Target, args []any, method string) (any, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("HTTP context is required")
 	}
@@ -149,7 +160,7 @@ func (c *Client) Function(ctx context.Context, target scribe.Target, args []any)
 		connectionHost = target.IP
 	}
 	ctx = context.WithValue(ctx, dialAddressKey{}, net.JoinHostPort(connectionHost, port))
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("create HTTP request: %w", err)
 	}
