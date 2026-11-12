@@ -11,7 +11,7 @@ import (
 
 func TestMarkerCorpus(t *testing.T) {
 	for _, fixture := range []struct{ name, digest, function string }{
-		{"http-marker", "233d593087b6b58ee84d6fe4cc2731c9b556da9c0b9b166648fd48c246803c6b", "http.get"}, {"tcp-marker", "eb1fd95d6b05339647f635b54488044b782271a0e7ca95cff3a3973f845654fc", "tcp.exchange"}, {"tls-marker", "d2b314eb779c734fbfd1382e2b2b7ea16b5a4554e16ecb0bdc81204d20779369", "tcp.exchange"},
+		{"http-security-headers", "3688e1380e6258d4b39adde7357703222462ce832b2fbb645dbcaba0649cded3", "http.get"}, {"http-marker", "233d593087b6b58ee84d6fe4cc2731c9b556da9c0b9b166648fd48c246803c6b", "http.get"}, {"tcp-marker", "eb1fd95d6b05339647f635b54488044b782271a0e7ca95cff3a3973f845654fc", "tcp.exchange"}, {"tls-marker", "d2b314eb779c734fbfd1382e2b2b7ea16b5a4554e16ecb0bdc81204d20779369", "tcp.exchange"},
 	} {
 		t.Run(fixture.name, func(t *testing.T) {
 			source, err := os.ReadFile("../../testdata/sirius/" + fixture.name + ".lua")
@@ -27,6 +27,18 @@ func TestMarkerCorpus(t *testing.T) {
 						rt, err := NewNative(Options{Functions: map[string]scribe.Function{fixture.function: func(context.Context, scribe.Target, []any) (any, error) {
 							if fixture.function == "tcp.exchange" {
 								return map[string]any{"data": marker, "tls": map[string]any{"version": 771}}, nil
+							}
+							if fixture.name == "http-security-headers" {
+								status := 200
+								headers := map[string]any{}
+								if marker == "clean" {
+									headers["content-security-policy"] = []any{"default-src 'self'"}
+									headers["x-content-type-options"] = []any{"nosniff"}
+								}
+								if marker == "unrecognized" {
+									status = 503
+								}
+								return map[string]any{"status": status, "headers": headers}, nil
 							}
 							return map[string]any{"status": 200, "headers": map[string]any{"x-sirius-fixture": []any{marker}}}, nil
 						}}})

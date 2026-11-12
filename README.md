@@ -350,3 +350,19 @@ Module inventory: `scribe --dialect sirius --script path/to/check.lua --list-mod
 prints one JSONL object per script with `script`, `dialect`, `match`, and
 `warnings`. It validates metadata without executing scripts or probing targets.
 Invalid metadata fails the invocation; missing match blocks produce lint warnings.
+
+### Embedding checklist
+
+Use the runnable [embed example](examples/embed) for callback handling and
+per-run admission limits. GlobalInterval and HostInterval pace task starts, not
+network requests inside a script. ModuleConcurrency limits active invocations by
+exact dialect and script ID; separate Run calls have independent limits.
+Keep the result sink open through cooperative cancellation and verify complete
+terminal records before assessing a batch. Job envelopes must supply exact
+capability grants; missing grants deny calls.
+
+The pinned `testdata/sirius/http-security-headers.lua` checks CSP and nosniff
+configuration on successful HTTP responses. It is an original configuration
+fixture, not a CVE detector; non-200 responses remain unknown. Its declared
+fixture product must be replaced with an appropriate reviewed deployment policy
+before operational use.

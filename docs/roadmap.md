@@ -880,3 +880,52 @@ Validation: make check and make acceptance-local passed. These establish local
 transport, SDK, race, static and cross-build evidence, separate from live
 Sirius/vGPT cancellation and persisted-report acceptance. Broader real-world
 corpus acquisition and live consumer acceptance remain open.
+
+## v1.13.0 — configuration corpus and limiter measurements (2026-11-12)
+
+Added an original MIT pinned HTTP CSP/nosniff configuration script with explicit
+match and verdict blocks. The existing corpus matrix checks missing headers,
+present headers and non-200 unknown results across product identity and exhaustive
+policy. This is a practical configuration check using registered responses, not
+a CVE claim or acquired upstream corpus. Broader real-world corpus acquisition
+remains open. Nested matcher tests now pin missing version, banner and service
+skip reasons under both policies. README refresh links the existing embed example
+and explains grants, stream completeness and admission limits.
+
+make check and make acceptance-local passed. Reused BenchmarkPlannerExecution,
+Go 1.26.10 linux/amd64 on shared apps01, i9-13900H, four workers, three sequential
+samples after validation with no overlapping Scribe load/fuzz run. Each batch has
+512 terminal records; unfiltered executes 512 actions, selected executes 64 and
+skips 448. actions/s divides verified completed actions by elapsed batch time;
+selection therefore changes both numerator and work. ns/op measures whole batches,
+not individual actions. ModuleConcurrency 0 resolves to four; 1 caps each exact
+dialect/script key. Scheduler review confirms module/host caps precede admission
+and GlobalInterval/HostInterval pace starts; both intervals are zero here. These
+CPU fixtures do not measure network rate limiting or prove throughput improvements.
+Shared-host variation prevents a speedup claim.
+
+Command: go test ./runtime/lua54 -run '^$' -bench '^BenchmarkPlannerExecution$' -benchmem -count=3
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	     100	  10287142 ns/op	     49771 actions/s	15982916 B/op	  158610 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	     100	  10715554 ns/op	     47781 actions/s	15982235 B/op	  158630 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	      98	  10796543 ns/op	     47423 actions/s	15982471 B/op	  158588 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     993	   1841220 ns/op	     34760 actions/s	 2212416 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     982	   1381095 ns/op	     46340 actions/s	 2212326 B/op	   21860 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     902	   1483526 ns/op	     43141 actions/s	 2212376 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	      94	  10788757 ns/op	     47457 actions/s	15975412 B/op	  158423 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	      78	  13390126 ns/op	     38237 actions/s	15978810 B/op	  158467 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	     102	  11730529 ns/op	     43647 actions/s	15974908 B/op	  158414 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     694	   1553472 ns/op	     41198 actions/s	 2212417 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     669	   1508143 ns/op	     42436 actions/s	 2212413 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     883	   2044292 ns/op	     31307 actions/s	 2212449 B/op	   21862 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	16.755s
+```
+
+Live Sirius/vGPT persisted-report acceptance remains separate and unfinished.
+No NSE expansion; Phase 3 remains paused.

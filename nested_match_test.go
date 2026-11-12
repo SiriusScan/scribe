@@ -18,6 +18,9 @@ func TestNestedMatcherSelection(t *testing.T) {
 		}{
 			{"http", "1.0.0", "", "Acme", true},
 			{"http", "2.0.0", "", "Acme", true},
+			{"http", "", "", "Acme", false},
+			{"ssh", "", "", "Acme", false},
+			{"", "1.0.0", "", "Acme", false},
 			{"http", "2.0.1", "", "Acme", false},
 			{"ssh", "", "Acme fixture", "Acme", true},
 			{"ssh", "", "Other", "Acme", false},
