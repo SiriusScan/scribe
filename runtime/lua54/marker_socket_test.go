@@ -29,7 +29,7 @@ import (
 // The pinned original corpus also runs through real bounded transports.
 // TLS rejection and isolated local-CA trust both retain conservative verdicts.
 func TestMarkerCorpusSockets(t *testing.T) {
-	for _, protocol := range []string{"http", "tcp", "tls", "trusted-tls", "redis-tcp", "redis-trusted-tls", "pop3-tcp", "pop3-trusted-tls"} {
+	for _, protocol := range []string{"http", "tcp", "tls", "trusted-tls", "redis-tcp", "redis-trusted-tls", "pop3-tcp", "pop3-trusted-tls", "smtp-tcp", "smtp-trusted-tls"} {
 		trustedTLS := strings.HasSuffix(protocol, "trusted-tls")
 		service, script, request := "http", protocol+"-marker", "SCRIBE\r\n"
 		vulnerable, clean := "vulnerable", "clean"
@@ -38,6 +38,10 @@ func TestMarkerCorpusSockets(t *testing.T) {
 			service, script = "redis", "tcp-redis-auth"
 			request = "*1\r\n$4\r\nPING\r\n"
 			vulnerable, clean = "+PONG\r\n", "-NOAUTH Authentication required.\r\n"
+		case strings.HasPrefix(protocol, "smtp-"):
+			service, script = "http", "tcp-smtp-vrfy"
+			request = "VRFY root\r\n"
+			vulnerable, clean = "250 root", "502 Command not implemented"
 		case strings.HasPrefix(protocol, "pop3-"):
 			service, script = "pop3", "tcp-pop3-auth"
 			request = "USER root\r\n"

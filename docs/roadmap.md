@@ -1183,3 +1183,22 @@ remain unfinished. Phase 3 stays paused. No production API or dependency changes
 
 Validation: make check and make acceptance-local; service reinstall and POST
 :18081/run smoke are separate operational evidence.
+
+## v1.23.0 — SMTP socket policy acceptance (2026-11-12)
+
+The shared socket matrix executes the pinned original SMTP VRFY fixtures over
+loopback TCP and certificate-verified TLS. Exact VRFY root requests, three
+verdicts, malformed/trailing/empty responses and normal/exhaustive product gates
+reuse the existing bounded listener and isolated CA child. The fixtures retain
+their historical http service hint; this is controlled single-exchange policy
+evidence, not SMTP greeting/session interoperability or general enumeration.
+
+Consumer reinspection: local vgpt/services/agent-api.py still directly rewrites
+runs.json and exposes synchronous run-script/retrieval without cancellation.
+The live :8090 endpoint responds (GET /health returns 404), but no controlled
+cancellation contract exists. Live cancellation and durable consumer persistence
+acceptance remain blocked on consumer implementation; no acceptance is claimed
+from local fake stores. No consumer code or Phase 3 work was changed.
+
+Validation: make check and make acceptance-local. Release installation and the
+complete POST :18081/run smoke stream are separate operational checks.

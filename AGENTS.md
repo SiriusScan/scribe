@@ -190,3 +190,9 @@ v1.22.0 parameterizes the shared socket matrix for original POP3 TCP/trusted TLS
 USER fixtures. Preserve exact requests, malformed-response unknown verdicts and
 normal/exhaustive product gates. Controlled USER responses do not establish full
 POP3 login/session acceptance. SMTP socket coverage remains open; Phase 3 stays paused.
+
+v1.23.0 reuses the shared TCP/trusted TLS socket matrix for pinned SMTP VRFY
+fixtures, including exact requests and conservative malformed-response policy.
+Historical fixture service hints remain http; this is single-exchange policy
+evidence, not SMTP session interoperability. Live consumer cancellation and durable
+persistence remain blocked by the consumer route/store contract. Phase 3 stays paused.
