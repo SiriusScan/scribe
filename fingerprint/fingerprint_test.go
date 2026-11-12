@@ -214,3 +214,30 @@ func TestSquidIdentity(t *testing.T) {
 		}
 	}
 }
+
+// Original observations pin Traefik identity boundaries, not upstream compatibility.
+func TestTraefikIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"Traefik/3.0.5", "3.0.5", true},
+		{"traefik/2.9.12", "2.9.12", true},
+		{"Traefik", "", true},
+		{"Traefik/3.0.5 proxy", "3.0.5", true},
+		{"Traefikish", "", false},
+		{"proxy Traefik/3.0.5", "", false},
+		{"Traefik/3.0.5evil", "", false},
+		{"Traefik/", "", false},
+		{"Traefik/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "Traefik", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}

@@ -1879,3 +1879,18 @@ Validation: make check logged in /tmp/scribe152-check.log. Bounded race planner
 fuzz passed with 225/796 baseline seeds covered in five seconds; mutations did
 not begin (/tmp/scribe152-fuzz.log). Service reinstall and complete POST /run
 smoke are operational evidence only, separate from live workflow acceptance.
+
+## v1.53.0 — Traefik planner identity (2026-11-12)
+
+Original pinned Traefik HTTP Server observations now supply product/version and
+CPE hints through the shared fingerprint/planner mapper. Versionless headers
+identify the product without inventing a version. Boundary fixtures reject
+misleading prefixes and malformed versions. Shared selection fixtures preserve
+caller identity authority, exact missing/mismatched product skip reasons and the
+CPE-only false-clean gate. No public API change or throughput claim; live consumer
+persistence remains separate and Phase 3 stays paused.
+
+Validation: make check logged in /tmp/scribe153-check.log. Bounded race planner
+fuzz passed with 298/796 baseline seeds covered in six seconds; mutations did
+not begin (/tmp/scribe153-fuzz.log). Service reinstall and complete POST /run
+smoke provide operational evidence only, separate from live workflow acceptance.
