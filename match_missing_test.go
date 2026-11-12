@@ -25,3 +25,23 @@ func TestAlternativeIdentificationNeeds(t *testing.T) {
 		t.Fatal("required identity lost")
 	}
 }
+
+func TestAlternativeProductEvidence(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		branches   []Match
+		identified bool
+	}{
+		{"later product", []Match{{Services: []string{"http"}}, {Products: []string{"nginx"}}}, true},
+		{"earlier product", []Match{{Products: []string{"nginx"}}, {Services: []string{"ssh"}}}, true},
+		{"mismatched product", []Match{{Services: []string{"http"}}, {Products: []string{"Apache"}}}, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := Match{AnyOf: tc.branches}
+			ok, identified := m.evaluate(Target{Service: "http", Product: "nginx"})
+			if !ok || identified != tc.identified {
+				t.Fatalf("applicable=%v identified=%v", ok, identified)
+			}
+		})
+	}
+}

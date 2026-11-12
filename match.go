@@ -134,6 +134,11 @@ func (m Match) evaluate(t Target) (bool, bool) {
 			yes, id := child.evaluate(t)
 			ok = ok || yes
 			identified = identified || (yes && id)
+			// Once applicability and product evidence are established, later
+			// alternatives cannot change either result.
+			if ok && identified {
+				break
+			}
 		}
 		if !ok {
 			return false, false

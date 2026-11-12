@@ -1283,3 +1283,21 @@ Validation: make check and make acceptance-local. This is local adapter/build
 acceptance, with no measured throughput claim. Live consumer cancellation and
 durable persistence remain blocked on the consumer contract. Phase 3 stays paused.
 Service reinstall and complete POST smoke are separate operational evidence.
+
+## v1.28.0 — planner alternative evaluation (2026-11-12)
+
+Priority review selected the planner's any_of evaluation loop. Once applicability
+and positive product identification are both established, remaining alternatives
+cannot change the result and are no longer evaluated. Service-only matches still
+visit later alternatives to collect product evidence for the existing clean gate.
+Focused regressions pin later/earlier matching products and mismatched products.
+No public API, identity authority or verdict policy changes; no throughput claim.
+Live consumer persistence remains blocked; Phase 3 stays paused.
+
+Validation logs: /tmp/scribe128-check.log, /tmp/scribe128-acceptance.log and
+/tmp/scribe128-fuzz.log. Service installation and complete HTTP smoke are
+operational evidence, separate from consumer workflow acceptance.
+
+Both required targets passed. The initial ten-second planner fuzz budget expired
+in baseline replay; the 45-second retry passed with 7,106 executions. No measured
+speedup is claimed. Retry log: /tmp/scribe128-fuzz-retry.log.

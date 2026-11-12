@@ -217,3 +217,8 @@ v1.27.0 clears consumed pingpp Reader target slots and releases drained pending
 arrays. Preserve target order and returned facts; keep reader memory bounded by
 its current document. This is retention hardening, with no throughput claim.
 Phase 3 stays paused.
+
+v1.28.0 short-circuits any_of evaluation only after applicability and positive
+product evidence are established. Service-only alternatives must retain later
+product evidence; mismatched alternatives never identify a product. No throughput
+claim. Phase 3 stays paused.
