@@ -151,12 +151,23 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 		return err
 	}
 	cache := make(probeCache)
+	// Bound metadata retention independently of the submitted batch size.
+	metadata := make(map[[32]byte]*selectionHints)
 	n := 0
 	return e.run(ctx, func(context.Context) (Task, bool, error) {
 		if n == len(tasks) {
 			return Task{}, false, nil
 		}
 		t := tasks[n]
+		key := sha256.Sum256(t.Script.Source)
+		if hints, ok := metadata[key]; ok {
+			t.preparedHints = hints
+		} else if len(metadata) < e.options.Window {
+			if idx, err := NewIndex([]Script{t.Script}); err == nil {
+				t.preparedHints = &idx.entries[0].hints
+				metadata[key] = t.preparedHints
+			}
+		}
 		if e.options.PlannerProbes && !e.options.Plan {
 			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts, e.options.SNMPCommunity)
 		}

@@ -2192,3 +2192,18 @@ cross-builds, vet and CGO-disabled CLI build), /tmp/scribe173-check.log.
 Bounded adapter race fuzz passed with 4,621 executions after all 151 baseline
 seeds completed (/tmp/scribe173-fuzz.log). Service smoke evidence is operational
 only, separate from live consumer workflow acceptance.
+
+
+v1.74.0 reuses prepared selection metadata for repeated direct Engine.Run scripts
+within each run, keyed by source SHA-256 and bounded by Window entries. Excess
+unique sources retain ordinary validation and execution. Endpoint matching and
+clean gates remain invocation-specific; invalid metadata retains execution errors.
+This extends selected-run metadata reuse to direct SDK batches. No public API
+change or measured throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and static CLI build), /tmp/scribe174-check.log. Additional
+focused race tests preserve failed/unknown invalid-metadata records. Bounded
+planner race fuzz passed after 253/796 baseline seeds; mutations did not begin
+(/tmp/scribe174-fuzz.log). No throughput measurement is claimed.

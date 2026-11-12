@@ -490,3 +490,12 @@ so equivalent IPv6 spellings combine accepted identity evidence. Exact port and
 transport isolation, confidence filtering and conservative conflict handling remain
 intact. Host-wide and malformed subjects supply no identity. No public API change
 or throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+
+v1.74.0 reuses prepared selection metadata for repeated direct Engine.Run scripts
+within each run, keyed by source SHA-256 and bounded by Window entries. Excess
+unique sources retain ordinary validation and execution. Endpoint matching and
+clean gates remain invocation-specific; invalid metadata retains execution errors.
+This extends selected-run metadata reuse to direct SDK batches. No public API
+change or measured throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.

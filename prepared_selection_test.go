@@ -61,3 +61,49 @@ func TestPreparedSelectionCleanGate(t *testing.T) {
 		t.Fatalf("delivery count=%d err=%v", count, err)
 	}
 }
+
+func TestDirectRunPreparedMetadata(t *testing.T) {
+	e, err := New(Options{StrictIdentification: true}, preparedRuntime{t})
+	if err != nil {
+		t.Fatal(err)
+	}
+	script := Script{ID: "direct", Dialect: Sirius, Source: []byte(`-- scribe: {"match":{"products":["nginx"]}}`)}
+	var tasks []Task
+	for _, product := range []string{"nginx", "apache", "", "nginx"} {
+		tasks = append(tasks, Task{Script: script, Target: Target{Host: "localhost", Product: product}})
+	}
+	count := 0
+	err = e.Run(context.Background(), tasks, func(r Result) error {
+		count++
+		if r.Target.Product == "nginx" {
+			if r.Verdict != NotVulnerable {
+				t.Errorf("matching result: %+v", r)
+			}
+		} else if r.Verdict != Unknown {
+			t.Errorf("false clean: %+v", r)
+		}
+		return nil
+	})
+	if err != nil || count != len(tasks) {
+		t.Fatalf("count=%d err=%v", count, err)
+	}
+}
+
+func TestDirectRunInvalidMetadataRemainsFailed(t *testing.T) {
+	e, err := New(Options{}, preparedRuntime{t})
+	if err != nil {
+		t.Fatal(err)
+	}
+	task := Task{Script: Script{ID: "invalid", Dialect: Sirius, Source: []byte(`-- scribe: {"match":{"bogus":true}}`)}, Target: Target{Host: "localhost"}}
+	count := 0
+	err = e.Run(context.Background(), []Task{task, task}, func(r Result) error {
+		count++
+		if r.Status != Failed || r.Verdict != Unknown {
+			t.Errorf("invalid metadata: %+v", r)
+		}
+		return nil
+	})
+	if err == nil || count != 2 {
+		t.Fatalf("count=%d err=%v", count, err)
+	}
+}
