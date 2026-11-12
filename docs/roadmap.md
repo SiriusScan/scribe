@@ -1974,3 +1974,17 @@ paused. Controlled loopback evidence is separate from live consumer acceptance.
 Validation: `make check` evidence is recorded in /tmp/scribe158-check.log;
 focused delimiter tests cover fragmented completion, EOF, reply bounds and invalid
 delimiter lengths. Service smoke evidence is recorded in /tmp/scribe158-smoke.log.
+
+## v1.59.0 — bounded TCP/TLS sessions (2026-11-12)
+
+Closes the multi-exchange transport gap using the existing tcp.exchange path.
+A single array of argument arrays executes up to sixteen exchanges on one
+connection, sharing verified TLS, cancellation and a five-second deadline.
+Every step is validated before dialing. Ordered replies are returned only after
+all steps succeed. Loopback fixtures assert greeting/command ordering and discard
+partial session results on truncated replies. No interpreter state or connection
+escapes the invocation. No throughput claim; live consumer acceptance remains
+separate and Phase 3 stays paused.
+
+Validation: make check recorded in /tmp/scribe159-check.log; service smoke in
+/tmp/scribe159-smoke.log provides operational evidence only.

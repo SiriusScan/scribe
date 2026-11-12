@@ -372,3 +372,8 @@ reply ceiling and five-second deadline. Missing delimiters and premature EOF are
 errors without partial successful output. Connection setup and verified TLS use
 the existing path. Multi-exchange sessions remain follow-up work; Phase 3 stays
 paused. Controlled loopback evidence is separate from live consumer acceptance.
+
+v1.59.0 adds bounded tcp.exchange sessions: one array of 1..16 argument arrays
+runs on a single TCP/verified TLS connection with one five-second deadline.
+Validate all steps before dialing; any failed step discards all successful output.
+Phase 3 stays paused; local socket evidence is separate from consumer acceptance.

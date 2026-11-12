@@ -390,3 +390,12 @@ paused. Controlled loopback evidence is separate from live consumer acceptance.
 For a line-framed reply, use `sirius.call("tcp.exchange", "PING\r\n", "\r\n")`.
 The returned `data` includes the delimiter. This performs one exchange on one
 connection; it does not create a persistent session.
+
+TCP sessions (v1.59.0): `sirius.call("tcp.exchange", {{"", "\r\n"},
+{"PING\r\n", "\r\n"}})` reads a greeting then sends a command on the same
+connection. The result contains `replies`, in order, with each exchange's `data`
+and `eof`; TLS metadata remains at the top level. Sessions accept 1..16 exchanges,
+each using the existing optional byte-count/delimiter selector and 64 KiB bounds.
+All steps share one five-second deadline and verified TLS setup. Any failed step
+returns an execution error without partial successful output. Missing verdicts
+remain unknown.

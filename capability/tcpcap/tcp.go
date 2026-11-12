@@ -18,6 +18,8 @@ import (
 // requests exactly that many bytes (1..65536); premature EOF is an error.
 // A string second argument reads through a 1..256-byte delimiter, inclusive,
 // within 64 KiB; missing delimiters are errors.
+// One array argument runs 1..16 argument arrays on the same connection and
+// returns ordered replies. A failed step discards all replies.
 // No arguments performs a banner grab.
 // The exchange has a five-second ceiling, tightened by the context deadline.
 // Returned data is text (empty on EOF); eof is a boolean. TLS version is a
@@ -33,6 +35,81 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 	if target.Protocol != "tcp" || target.Port == 0 {
 		return nil, fmt.Errorf("explicit TCP endpoint required")
 	}
+	steps := [][]any{args}
+	if len(args) == 1 {
+		if sequence, ok := args[0].([]any); ok {
+			if len(sequence) == 0 || len(sequence) > 16 {
+				return nil, fmt.Errorf("session requires 1..16 exchanges")
+			}
+			steps = nil
+			for _, item := range sequence {
+				pair, ok := item.([]any)
+				if !ok {
+					return nil, fmt.Errorf("session exchanges must be arrays")
+				}
+				steps = append(steps, pair)
+			}
+		}
+	}
+	// Validate every exchange before opening the connection.
+	for _, step := range steps {
+		if _, err := exchange(nil, step); err != nil {
+			return nil, err
+		}
+	}
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	host := target.Host
+	if target.IP != "" {
+		host = target.IP
+	}
+	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", net.JoinHostPort(host, strconv.Itoa(int(target.Port))))
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	stop := context.AfterFunc(ctx, func() { conn.Close() })
+	defer stop()
+	deadline, _ := ctx.Deadline()
+	if err = conn.SetDeadline(deadline); err != nil {
+		return nil, err
+	}
+	result := map[string]any{}
+	var stream net.Conn = conn
+	if target.TLS {
+		secure := tls.Client(conn, &tls.Config{ServerName: target.Host, MinVersion: tls.VersionTLS12})
+		if err = secure.HandshakeContext(ctx); err != nil {
+			return nil, err
+		}
+		state := secure.ConnectionState()
+		cert := state.PeerCertificates[0]
+		result["tls"] = map[string]any{"version": int(state.Version), "cipher_suite": tls.CipherSuiteName(state.CipherSuite), "subject": cert.Subject.String(), "issuer": cert.Issuer.String(), "not_before": cert.NotBefore.Format(time.RFC3339), "not_after": cert.NotAfter.Format(time.RFC3339)}
+		stream = secure
+	}
+	replies := make([]any, 0, len(steps))
+	for _, step := range steps {
+		reply, e := exchange(stream, step)
+		if e != nil {
+			return nil, e
+		}
+		replies = append(replies, reply)
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if len(args) == 1 {
+		if _, ok := args[0].([]any); ok {
+			result["replies"] = replies
+			return result, nil
+		}
+	}
+	for k, v := range replies[0].(map[string]any) {
+		result[k] = v
+	}
+	return result, nil
+}
+
+func exchange(stream net.Conn, args []any) (any, error) {
 	payload := ""
 	readBytes := 0
 	delimiter := ""
@@ -65,35 +142,11 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 	if len(payload) > 65536 {
 		return nil, fmt.Errorf("payload exceeds 64 KiB")
 	}
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	host := target.Host
-	if target.IP != "" {
-		host = target.IP
-	}
-	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", net.JoinHostPort(host, strconv.Itoa(int(target.Port))))
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-	stop := context.AfterFunc(ctx, func() { conn.Close() })
-	defer stop()
-	deadline, _ := ctx.Deadline()
-	if err = conn.SetDeadline(deadline); err != nil {
-		return nil, err
+	if stream == nil {
+		return nil, nil
 	}
 	result := map[string]any{}
-	var stream net.Conn = conn
-	if target.TLS {
-		secure := tls.Client(conn, &tls.Config{ServerName: target.Host, MinVersion: tls.VersionTLS12})
-		if err = secure.HandshakeContext(ctx); err != nil {
-			return nil, err
-		}
-		state := secure.ConnectionState()
-		cert := state.PeerCertificates[0]
-		result["tls"] = map[string]any{"version": int(state.Version), "cipher_suite": tls.CipherSuiteName(state.CipherSuite), "subject": cert.Subject.String(), "issuer": cert.Issuer.String(), "not_before": cert.NotBefore.Format(time.RFC3339), "not_after": cert.NotAfter.Format(time.RFC3339)}
-		stream = secure
-	}
+	var err error
 	for len(payload) > 0 {
 		n, e := io.WriteString(stream, payload)
 		if e != nil {
@@ -128,9 +181,6 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 		n, err = stream.Read(buffer)
 	}
 	if err != nil && (readBytes > 0 || delimiter != "" || err != io.EOF) {
-		return nil, err
-	}
-	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	result["data"] = string(buffer[:n])
