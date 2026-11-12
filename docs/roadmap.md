@@ -2179,3 +2179,16 @@ cross-builds, vet and static CLI build), /tmp/scribe172-check.log.
 Bounded race planner fuzz passed with 172/796 baseline seeds covered; mutations
 did not begin (/tmp/scribe172-fuzz.log). Service reinstall and complete POST /run
 smoke are operational evidence, separate from live consumer workflow acceptance.
+
+
+v1.73.0 canonicalizes pingpp.scan/v1 endpoint claim subjects before indexing,
+so equivalent IPv6 spellings combine accepted identity evidence. Exact port and
+transport isolation, confidence filtering and conservative conflict handling remain
+intact. Host-wide and malformed subjects supply no identity. No public API change
+or throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe173-check.log.
+Bounded adapter race fuzz passed with 4,621 executions after all 151 baseline
+seeds completed (/tmp/scribe173-fuzz.log). Service smoke evidence is operational
+only, separate from live consumer workflow acceptance.

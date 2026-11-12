@@ -10,6 +10,8 @@ import (
 	"io"
 	"net"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/SiriusScan/scribe"
 )
@@ -82,7 +84,9 @@ func Targets(d Document) ([]scribe.Target, error) {
 	// Index once so multi-endpoint documents do not repeatedly scan all claims.
 	claims := make(map[string][]Claim)
 	for _, c := range d.Asset.Claims {
-		claims[c.Subject] = append(claims[c.Subject], c)
+		if key, ok := canonicalSubject(c.Subject); ok {
+			claims[key] = append(claims[key], c)
+		}
 	}
 	var out []scribe.Target
 	seen := make(map[string]bool, len(d.Asset.Endpoints))
@@ -105,7 +109,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 			continue
 		}
 		t := scribe.Target{Host: e.Address, IP: e.Address, Port: e.Port, Protocol: e.Transport, State: "open"}
-		key = fmt.Sprintf("%s/%s/%d", e.Address, e.Transport, e.Port)
+		// Use the same canonical endpoint identity for claims and duplicate checks.
 		services := map[string]bool{}
 		products := map[string]string{}
 		conflict := false
@@ -172,6 +176,20 @@ func Targets(d Document) ([]scribe.Target, error) {
 		out = append(out, t)
 	}
 	return out, nil
+}
+
+// canonicalSubject accepts only exact endpoint subjects, never host-wide claims.
+func canonicalSubject(subject string) (string, bool) {
+	parts := strings.Split(subject, "/")
+	if len(parts) != 3 || (parts[1] != "tcp" && parts[1] != "udp") {
+		return "", false
+	}
+	ip := net.ParseIP(parts[0])
+	port, err := strconv.ParseUint(parts[2], 10, 16)
+	if ip == nil || err != nil || port == 0 || strconv.FormatUint(port, 10) != parts[2] {
+		return "", false
+	}
+	return fmt.Sprintf("%s/%s/%d", ip.String(), parts[1], port), true
 }
 
 // boundedDiagnostic limits untrusted details before formatting can expand them.

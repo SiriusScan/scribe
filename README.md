@@ -498,3 +498,10 @@ Probes never replace caller facts or establish clean verdicts. Behavioral tests
 cover nested branches and missing product evidence. No public API change or
 measured throughput claim. Live consumer persistence remains separate; Phase 3
 stays paused.
+
+
+v1.73.0 canonicalizes pingpp.scan/v1 endpoint claim subjects before indexing,
+so equivalent IPv6 spellings combine accepted identity evidence. Exact port and
+transport isolation, confidence filtering and conservative conflict handling remain
+intact. Host-wide and malformed subjects supply no identity. No public API change
+or throughput claim; live consumer persistence remains separate. Phase 3 paused.
