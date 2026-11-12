@@ -2016,3 +2016,20 @@ Local transport evidence is separate from live consumer persistence. Phase 3 sta
 Validation: make check passed (/tmp/scribe161-check.log): race suite, external
 SDK, Windows/Darwin cross-builds, vet and CGO-disabled CLI build. The existing
 TCP/TLS socket corpus passed with the buffered path.
+
+## v1.62.0 — nested planner skip-reason correctness (2026-11-12)
+
+Nested required matches now expose missing/mismatched product reasons through
+the existing planner path. Failed alternatives retain a specific reason when
+all agree and use the general diagnostic for mixed failures. Satisfied
+alternatives cannot introduce unrelated confidence failures. Behavioral tests
+cover required products, unanimous and mixed alternatives, and a satisfied
+alternative alongside a failed required branch. Applicability, false-clean gates
+and verdict semantics remain unchanged. This is a planner-correctness release,
+with no new execution capability or throughput claim. Phase 3 stays paused;
+live consumer persistence acceptance remains separate.
+
+Validation: make check in /tmp/scribe162-check.log covers the race suite,
+external SDK, Windows/Darwin cross-builds, vet and CGO-disabled CLI build.
+Service reinstall and complete POST /run smoke in /tmp/scribe162-smoke.log
+provide operational evidence only, separate from live workflow acceptance.

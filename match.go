@@ -179,13 +179,6 @@ func (m Match) skipReason(t Target) string {
 	if t.Confidence < m.Confidence {
 		return "declarative match: identification confidence below script threshold"
 	}
-	for _, g := range [][]Match{m.AnyOf, m.AllOf} {
-		for _, c := range g {
-			if t.Confidence < c.Confidence {
-				return c.skipReason(t)
-			}
-		}
-	}
 	if len(m.Products) > 0 {
 		if t.Product == "" {
 			return "declarative match: product identification missing"
@@ -193,6 +186,27 @@ func (m Match) skipReason(t Target) string {
 		if !contains(m.Products, t.Product) {
 			return "declarative match: product identification mismatched"
 		}
+	}
+	for _, child := range m.AllOf {
+		if ok, _ := child.evaluate(t); !ok {
+			return child.skipReason(t)
+		}
+	}
+	if len(m.AnyOf) > 0 {
+		for _, child := range m.AnyOf {
+			if ok, _ := child.evaluate(t); ok {
+				return "declarative match: required identification facts missing or mismatched"
+			}
+		}
+		// Every alternative failed. Preserve a specific reason when all
+		// alternatives agree; mixed failures require the general diagnostic.
+		reason := m.AnyOf[0].skipReason(t)
+		for _, child := range m.AnyOf[1:] {
+			if child.skipReason(t) != reason {
+				return "declarative match: required identification facts missing or mismatched"
+			}
+		}
+		return reason
 	}
 	return "declarative match: required identification facts missing or mismatched"
 }

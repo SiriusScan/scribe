@@ -29,6 +29,11 @@ func TestNestedMatcherSelection(t *testing.T) {
 			{"http", "1.0.0", "", "", false},
 		} {
 			reason := "declarative match: required identification facts missing or mismatched"
+			if tc.product == "Other" {
+				reason = "declarative match: product identification mismatched"
+			} else if tc.product == "" {
+				reason = "declarative match: product identification missing"
+			}
 			if exhaustive {
 				reason = "clean verdict requires a matching declared product identification"
 			}

@@ -392,3 +392,8 @@ and all-or-error results remain intact. A deterministic coalesced-frame regressi
 checks ordered mixed framing and one underlying read for a 3 KiB reply sequence.
 This removes per-byte socket reads; no end-to-end throughput claim is made.
 Local transport evidence is separate from live consumer persistence. Phase 3 stays paused.
+
+v1.62.0 makes nested planner skip reasons branch-aware. Failed required branches
+supply their own reasons; failed alternatives supply a specific reason only when
+all agree. Satisfied alternatives never contribute failure reasons. Preserve
+applicability, product clean gates and unknown verdicts. Phase 3 stays paused.
