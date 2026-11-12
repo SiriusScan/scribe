@@ -222,3 +222,8 @@ v1.28.0 short-circuits any_of evaluation only after applicability and positive
 product evidence are established. Service-only alternatives must retain later
 product evidence; mismatched alternatives never identify a product. No throughput
 claim. Phase 3 stays paused.
+
+v1.29.0 bounds pingpp.scan/v1 upstream error diagnostic details to 1 KiB with
+explicit truncation. Preserve terminal reader errors and inconclusive results;
+oversized upstream errors must never produce targets. No throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.

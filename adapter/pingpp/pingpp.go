@@ -71,7 +71,16 @@ func Targets(d Document) ([]scribe.Target, error) {
 		return nil, fmt.Errorf("unsupported ping++ schema %q", d.SchemaVersion)
 	}
 	if len(d.Error) > 0 && string(d.Error) != "null" {
-		return nil, fmt.Errorf("ping++ target error: %s", d.Error)
+		// Upstream errors are untrusted and may occupy most of a document.
+		// Keep diagnostics bounded even for direct SDK documents.
+		const limit = 1024
+		detail := d.Error
+		suffix := ""
+		if len(detail) > limit {
+			detail = detail[:limit]
+			suffix = "... (truncated)"
+		}
+		return nil, fmt.Errorf("ping++ target error: %s%s", detail, suffix)
 	}
 	if d.Asset == nil {
 		return nil, fmt.Errorf("ping++ document missing asset")

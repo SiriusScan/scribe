@@ -1301,3 +1301,20 @@ operational evidence, separate from consumer workflow acceptance.
 Both required targets passed. The initial ten-second planner fuzz budget expired
 in baseline replay; the 45-second retry passed with 7,106 executions. No measured
 speedup is claimed. Retry log: /tmp/scribe128-fuzz-retry.log.
+
+## v1.29.0 — bounded ping++ error diagnostics (2026-11-12)
+
+Priority review selected the existing adapter's upstream error propagation.
+Previously an error payload could be copied in full into downstream diagnostics,
+including direct SDK documents beyond the JSONL reader's document ceiling.
+Error details now retain at most 1 KiB with an explicit truncation marker.
+Small diagnostics remain intact; upstream failures still return no targets.
+Focused regressions cover the boundary, oversized payloads and sticky terminal
+reader errors. No public API or wire schema change and no throughput claim.
+
+Validation: make check and make acceptance-local; logs in
+/tmp/scribe129-check.log and /tmp/scribe129-acceptance.log.
+The sequential bounded adapter race fuzz campaign passed 33,927 executions
+(/tmp/scribe129-fuzz.log). Service reinstall and complete HTTP smoke are
+operational evidence only. Live consumer cancellation/persistence remains
+blocked on the consumer contract; Phase 3 stays paused.

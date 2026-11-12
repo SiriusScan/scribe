@@ -158,3 +158,28 @@ func TestReaderReleasesConsumedTargets(t *testing.T) {
 		t.Fatal("drained queue retains backing array")
 	}
 }
+
+func TestUpstreamErrorDiagnosticBound(t *testing.T) {
+	for _, size := range []int{16, 1024, 1025, 4 << 20} {
+		raw := json.RawMessage(strings.Repeat("x", size))
+		targets, err := Targets(Document{SchemaVersion: SchemaVersion, Error: raw})
+		if err == nil || len(targets) != 0 {
+			t.Fatalf("size %d: targets=%v error=%v", size, targets, err)
+		}
+		if len(err.Error()) > 1100 {
+			t.Fatalf("unbounded diagnostic: %d", len(err.Error()))
+		}
+		if strings.Contains(err.Error(), "(truncated)") != (size > 1024) {
+			t.Fatalf("size %d: incorrect truncation marker", size)
+		}
+	}
+	r := NewReader(strings.NewReader(`{"schema_version":"pingpp.scan/v1","error":"` + strings.Repeat("x", 4096) + `"}`))
+	_, ok, err := r.Next(context.Background())
+	if ok || err == nil || len(err.Error()) > 1150 {
+		t.Fatalf("reader: ok=%v error=%v", ok, err)
+	}
+	_, ok, again := r.Next(context.Background())
+	if ok || again != err {
+		t.Fatalf("reader must retain terminal error: %v %v", ok, again)
+	}
+}
