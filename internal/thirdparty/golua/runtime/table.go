@@ -19,6 +19,23 @@ func NewTable() *Table {
 	return &Table{mixedTable: &mixedTable{}}
 }
 
+// NewTableWithHashCapacity reserves hash slots for a known number of entries.
+// Writes still go through Set and its normal accounting contract.
+func NewTableWithHashCapacity(entries int) *Table {
+	t := NewTable()
+	if entries <= 0 {
+		return t
+	}
+	var base uint8
+	size := 1
+	for size < entries {
+		size <<= 1
+		base++
+	}
+	t.hashTable = &hashTable{slots: make([]hashTableSlot, size), nextFree: uintptr(size - 1), base: base}
+	return t
+}
+
 // Metatable returns the table's metatable.
 func (t *Table) Metatable() *Table {
 	return t.meta

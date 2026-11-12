@@ -230,7 +230,7 @@ func libraryValues(table *rt.Table) map[string]rt.Value {
 }
 
 func populateLibrary(vm *rt.Runtime, values map[string]rt.Value) *rt.Table {
-	table := rt.NewTable()
+	table := rt.NewTableWithHashCapacity(len(values) + 1)
 	for name, value := range values {
 		vm.SetEnv(table, name, value)
 	}

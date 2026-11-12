@@ -283,3 +283,9 @@ table and string metatable invocation-owned, including __index, and populate
 through accounted SetEnv calls. dump/random/randomseed remain disabled.
 Raw before/after executed-Lua samples live under benchmarks/; allocation reduction
 is measured, throughput speedup is not established. Phase 3 stays paused.
+
+v1.43.0 reserves invocation library hash storage using the shared initializer.
+Keep SetEnv accounting, invocation-owned mutable tables, normal growth and
+third-party notices. Raw executed-Lua before/after samples under benchmarks/
+establish allocation reduction only; no throughput speedup claim. Live consumer
+persistence remains separate and Phase 3 stays paused.

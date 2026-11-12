@@ -1710,3 +1710,28 @@ measurement. Live consumer persistence remains separate; Phase 3 stays paused.
 Validation: make check passed (/tmp/scribe142-check.log): race suite, external
 SDK acceptance, Windows/Darwin cross-compilation, vet and CGO-disabled CLI build.
 Build evidence is separate from scanner/agent integration acceptance.
+
+## v1.43.0 — reserve invocation library storage (2026-11-12)
+
+Continues the unfinished VM initialization allocation slice. A shared library
+initializer reserves hash storage from the known entry count, including room
+for string __index. Every table remains invocation-owned and populated through
+accounted SetEnv calls. The internal golua constructor preserves normal table
+writes and growth; a focused test covers empty, non-power-of-two and growing
+tables. Existing isolation fixtures remain the behavioral gate. Third-party
+license notices and the Lua baseline remain unchanged.
+
+Raw executed-Lua samples: [before](../benchmarks/v1.43.0-before.txt),
+[after](../benchmarks/v1.43.0-after.txt). Go 1.26.10 linux/amd64, i9-13900H,
+GOMAXPROCS=4. Sequential command for each revision:
+`GOMAXPROCS=4 go test ./runtime/lua54 -run '^$' -bench '^BenchmarkPlannerExecution/workers=4/module_limit=0/' -benchmem -count=3`.
+No Scribe checks, fuzz or deployment overlapped measurement. Each batch verifies
+512 executed actions unfiltered, or 64 actions plus 448 skips selected, including
+Lua sums and terminal counts. Unfiltered allocation bytes fall from
+13.61–13.64 MB to 11.88–11.89 MB; selected from 1.807 MB to 1.592–1.593 MB,
+roughly 12–13%. Raw timing ranges overlap substantially; no throughput speedup
+or retained-heap claim. Further VM allocation work remains open.
+
+Validation: make check (race suite, external SDK, cross-builds, vet and static
+CLI build). Service reinstall and complete POST /run smoke are operational
+evidence only. Live consumer persistence remains separate; Phase 3 stays paused.
