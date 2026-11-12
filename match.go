@@ -88,7 +88,10 @@ func (m Match) evaluate(t Target) (bool, bool) {
 	if len(m.CPE) > 0 {
 		matched := false
 		for _, c := range t.CPE {
-			matched = matched || contains(m.CPE, c)
+			if contains(m.CPE, c) {
+				matched = true
+				break
+			}
 		}
 		if !matched {
 			return false, false

@@ -1517,3 +1517,22 @@ Validation: make check and make acceptance-local; logs at
 and HTTP smoke are operational evidence, separate from live consumer durable
 persistence/cancellation acceptance, which remains blocked on its contract.
 Phase 3 stays paused; no NSE coverage expansion.
+
+## v1.33.0 — stop CPE selection after an accepted fact (2026-11-12)
+
+Priority review returns to smart target selection: the Go match evaluator now
+stops scanning endpoint CPE facts at the first accepted alternative. This follows
+the existing any_of short-circuit policy without changing applicability or
+positive product evidence. Focused fixtures cover first/last/absent CPE matches,
+missing facts, mismatched products and exact product skip reasons. CPE alone
+continues to supply no explicit product identification for the clean gate.
+No public API or wire changes; no measured throughput claim.
+
+Validation: make check (race suite, external SDK, vet, static CLI and platform
+cross-builds), with log /tmp/scribe133-check.log. A bounded race planner fuzz
+invocation passed (/tmp/scribe133-fuzz.log); its five-second budget exercised
+188 cached baseline seeds and did not complete baseline coverage or begin a new
+mutation campaign. Service reinstall and HTTP smoke are operational evidence,
+separate from live consumer durable persistence/cancellation acceptance.
+Phase 3 stays paused. Follow-ups retain measured engine scheduling and existing
+pingpp.scan/v1 adapter priorities; no NSE expansion.
