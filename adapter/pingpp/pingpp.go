@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sort"
 
 	"github.com/SiriusScan/scribe"
 )
@@ -56,6 +57,8 @@ type Claim struct {
 	Product string `json:"product"`
 	// Value contains the asserted claim value; empty provides none.
 	Value string `json:"value"`
+	// CPE contains the upstream product CPE hint; empty supplies none.
+	CPE string `json:"cpe"`
 	// Version contains asserted product version text; empty is unknown.
 	Version string `json:"version"`
 	// Confidence must be exact or strong to accept identity; empty supplies none.
@@ -100,6 +103,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 		products := map[string]string{}
 		conflict := false
 		productConfidence := 0.0
+		cpes := map[string]bool{}
 		for _, c := range claims[key] {
 			if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
 				continue
@@ -117,6 +121,9 @@ func Targets(d Document) ([]scribe.Target, error) {
 				}
 			case "product":
 				if c.Product != "" {
+					if c.CPE != "" {
+						cpes[c.CPE] = true
+					}
 					confidence := 0.8 // Adapter policy: strong identity evidence.
 					if c.Confidence == "exact" {
 						confidence = 1
@@ -145,6 +152,10 @@ func Targets(d Document) ([]scribe.Target, error) {
 				t.Confidence = productConfidence
 				if !conflict {
 					t.Version = v
+					for cpe := range cpes {
+						t.CPE = append(t.CPE, cpe)
+					}
+					sort.Strings(t.CPE)
 				}
 			}
 		}

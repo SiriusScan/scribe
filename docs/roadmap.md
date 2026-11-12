@@ -1924,3 +1924,24 @@ Validation: make check logged in /tmp/scribe155-check.log. Bounded race planner
 fuzz passed with 287/796 baseline seeds covered in six seconds; mutations did
 not begin (/tmp/scribe155-fuzz.log). Service reinstall and complete POST /run
 smoke provide operational evidence only, separate from live workflow acceptance.
+
+## v1.56.0 — enumeration CPE planner input (2026-11-12)
+
+Returns to the unfinished richer-facts adapter item instead of expanding HTTP
+fingerprints. The existing pingpp.scan/v1 mapper now carries product CPE hints
+into planner Target.CPE. The upstream field was verified in pkg/model/claim.go
+at pinned commit ff4085905039cbbc759a0a75fab897b49316ef1a via GitHub API.
+Only strong/exact, uncontradicted claims for the exact endpoint and an agreed
+product qualify. Version conflicts suppress all CPE hints conservatively; hints
+are sorted and deduplicated. Service, host, weak and contradicted claims cannot
+supply CPEs. This enables existing CPE selection without another mapper, wire
+schema changes, or new fingerprints. Additive Claim.CPE API fixture reviewed;
+external Claim literals should use keyed fields. No performance claim.
+
+Validation: make check (/tmp/scribe156-check.log), including race tests, external
+SDK, cross-builds, vet and static CLI build. Reader regressions require complete
+streams and conservative conflict/filter behavior. Service reinstall and POST
+/run smoke provide operational evidence only; live consumer persistence remains
+separate. Phase 3 stays paused.
+Bounded race FuzzReader also passed: 5,730 executions in seven seconds
+(/tmp/scribe156-fuzz.log).

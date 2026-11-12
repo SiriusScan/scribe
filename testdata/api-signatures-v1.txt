@@ -332,6 +332,8 @@ adapter/pingpp: type Claim struct {
 
 	Value string `json:"value"`
 
+	CPE string `json:"cpe"`
+
 	Version string `json:"version"`
 
 	Confidence string `json:"confidence"`

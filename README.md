@@ -366,3 +366,8 @@ configuration on successful HTTP responses. It is an original configuration
 fixture, not a CVE detector; non-200 responses remain unknown. Its declared
 fixture product must be replaced with an appropriate reviewed deployment policy
 before operational use.
+
+Since v1.56.0, `--pingpp-jsonl` also preserves upstream `cpe` hints from accepted
+strong/exact endpoint product claims. Hints are sorted and deduplicated, and
+product or version conflicts suppress them. Existing CPE planner constraints can
+select these enumeration facts; CPEs never establish a vulnerability verdict.

@@ -354,3 +354,8 @@ the existing fingerprint/planner mapper. Preserve strict identity boundaries,
 unknown missing versions, caller authority, exact product skip reasons and
 CPE-only false-clean guards. No throughput claim; live consumer persistence
 remains separate and Phase 3 stays paused.
+
+v1.56.0 consumes upstream pingpp.scan/v1 product CPE hints through the existing
+adapter. Accept only strong/exact uncontradicted endpoint product claims; omit
+CPEs when product or version evidence conflicts. Sort and deduplicate hints.
+CPE evidence never establishes a vulnerability verdict. Phase 3 stays paused.
