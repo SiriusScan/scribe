@@ -180,3 +180,8 @@ v1.11.0 pins exact nested matcher skip reasons under normal/exhaustive policy.
 The marker corpus now exercises real HTTP/TCP sockets and conservative untrusted
 TLS rejection in acceptance-local. Successful trusted TLS corpus execution remains
 follow-up work. Phase 3 stays paused.
+
+v1.21.0 reuses the socket corpus matrix for pinned Redis TCP/trusted TLS scripts.
+Retain exact RESP request assertions, product skip policy and unknown malformed
+responses. Controlled command-policy evidence is not general Redis authorization
+acceptance. Phase 3 stays paused.

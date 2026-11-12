@@ -1149,3 +1149,20 @@ three sequential race campaigns with two workers (including baseline replay).
 Logs for this host run: /tmp/scribe120-{check,acceptance,fuzz}.log.
 The new cases exposed an unanchored trusted-TLS child test selector; anchoring
 each path component prevents prefix matches from sharing cached certificate roots.
+
+## v1.21.0 — Redis socket policy acceptance (2026-11-12)
+
+The existing socket corpus harness now executes the pinned original Redis PING
+scripts over real loopback TCP and certificate-verified TLS. It checks the exact
+RESP request and completed vulnerable, authentication-required and unknown results,
+including trailing clean-like data, uppercase and empty replies. Matching, missing
+and conflicting caller products run under normal and exhaustive selection with
+exact skip reasons and unknown skipped verdicts. The isolated local CA child and
+bounded listener are reused; no production API or second runner was added.
+
+This is controlled Redis command-policy socket evidence, not comprehensive Redis
+authorization, CVE coverage or live consumer persistence acceptance. Broader
+POP3/SMTP socket coverage remains open. Phase 3 stays paused.
+
+Validation: make check and make acceptance-local; release installation and POST
+:18081/run smoke are separate operational evidence. No throughput claim.

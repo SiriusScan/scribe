@@ -28,13 +28,13 @@ import (
 // The pinned original corpus also runs through real bounded transports.
 // TLS rejection and isolated local-CA trust both retain conservative verdicts.
 func TestMarkerCorpusSockets(t *testing.T) {
-	for _, protocol := range []string{"http", "tcp", "tls", "trusted-tls"} {
+	for _, protocol := range []string{"http", "tcp", "tls", "trusted-tls", "redis-tcp", "redis-trusted-tls"} {
 		for _, product := range []string{"Scribe fixture", "", "Other"} {
 			for _, exhaustive := range []bool{false, true} {
 				for _, marker := range []string{"vulnerable", "clean", "unrecognized", "clean-trailing", "CLEAN", "empty"} {
 					t.Run(fmt.Sprintf("%s/%s/product=%s/exhaustive=%t", protocol, marker, product, exhaustive), func(t *testing.T) {
-						if protocol == "trusted-tls" && os.Getenv("SCRIBE_TLS_CHILD") == "" {
-							cmd := exec.Command(os.Args[0], "-test.run=^TestMarkerCorpusSockets$/^trusted-tls$/^"+marker+"$/^product="+product+"$/^exhaustive="+fmt.Sprint(exhaustive)+"$")
+						if (protocol == "trusted-tls" || protocol == "redis-trusted-tls") && os.Getenv("SCRIBE_TLS_CHILD") == "" {
+							cmd := exec.Command(os.Args[0], "-test.run=^TestMarkerCorpusSockets$/^"+protocol+"$/^"+marker+"$/^product="+product+"$/^exhaustive="+fmt.Sprint(exhaustive)+"$")
 							cmd.Env = append(os.Environ(), "SCRIBE_TLS_CHILD=1")
 							if out, err := cmd.CombinedOutput(); err != nil {
 								t.Fatalf("trusted TLS child: %v\n%s", err, out)
@@ -60,7 +60,7 @@ func TestMarkerCorpusSockets(t *testing.T) {
 							fn = tcpcap.Function
 						} else {
 							var listener net.Listener
-							if protocol == "trusted-tls" {
+							if protocol == "trusted-tls" || protocol == "redis-trusted-tls" {
 								key, e := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 								if e != nil {
 									t.Fatal(e)
@@ -95,20 +95,49 @@ func TestMarkerCorpusSockets(t *testing.T) {
 								}
 								defer c.Close()
 								c.SetDeadline(time.Now().Add(time.Second))
-								b := make([]byte, 8)
+								request := "SCRIBE\r\n"
+								if protocol == "redis-tcp" || protocol == "redis-trusted-tls" {
+									request = "*1\r\n$4\r\nPING\r\n"
+								}
+								b := make([]byte, len(request))
 								if _, e = io.ReadFull(c, b); e == nil {
+									if string(b) != request {
+										t.Errorf("request = %q, want %q", b, request)
+										return
+									}
 									if marker != "empty" {
-										io.WriteString(c, marker)
+										response := marker
+										if protocol == "redis-tcp" || protocol == "redis-trusted-tls" {
+											switch marker {
+											case "vulnerable":
+												response = "+PONG\r\n"
+											case "clean":
+												response = "-NOAUTH Authentication required.\r\n"
+											case "clean-trailing":
+												response = "-NOAUTH Authentication required.\r\nextra"
+											}
+										}
+										io.WriteString(c, response)
 									}
 								}
 							}()
 							defer func() { listener.Close(); <-done }()
 						}
 						scriptProtocol := protocol
-						if protocol == "trusted-tls" {
+						if protocol == "trusted-tls" || protocol == "redis-trusted-tls" {
 							scriptProtocol = "tls"
 						}
-						source, err := os.ReadFile("../../testdata/sirius/" + scriptProtocol + "-marker.lua")
+						if protocol == "redis-tcp" {
+							scriptProtocol = "tcp-redis-auth"
+						}
+						if protocol == "redis-trusted-tls" {
+							scriptProtocol = "tls-redis-auth"
+						}
+						suffix := "-marker"
+						if protocol == "redis-tcp" || protocol == "redis-trusted-tls" {
+							suffix = ""
+						}
+						source, err := os.ReadFile("../../testdata/sirius/" + scriptProtocol + suffix + ".lua")
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -131,7 +160,11 @@ func TestMarkerCorpusSockets(t *testing.T) {
 						if e != nil {
 							t.Fatal(e)
 						}
-						err = engine.RunSelected(ctx, idx, []scribe.Target{{Host: "localhost", IP: "127.0.0.1", Port: uint16(addr.(*net.TCPAddr).Port), Protocol: "tcp", Service: "http", Product: product, TLS: protocol == "tls" || protocol == "trusted-tls"}}, func(r scribe.Result) error {
+						service := "http"
+						if protocol == "redis-tcp" || protocol == "redis-trusted-tls" {
+							service = "redis"
+						}
+						err = engine.RunSelected(ctx, idx, []scribe.Target{{Host: "localhost", IP: "127.0.0.1", Port: uint16(addr.(*net.TCPAddr).Port), Protocol: "tcp", Service: service, Product: product, TLS: protocol == "tls" || (protocol == "trusted-tls" || protocol == "redis-trusted-tls")}}, func(r scribe.Result) error {
 							count++
 							want := scribe.Unknown
 							if marker == "vulnerable" {
