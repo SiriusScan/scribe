@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestConfidenceCPE(t *testing.T) {
@@ -119,5 +120,38 @@ func TestSSHListenerAcceptance(t *testing.T) {
 	<-done
 	if got.Service != "ssh" || got.Product != "OpenSSH" || got.Version != "9.0" {
 		t.Fatalf("SSH facts: %+v", got)
+	}
+}
+
+func TestDirectSDKProbeDemand(t *testing.T) {
+	for _, match := range []string{
+		`{"products":["nginx"]}`,
+		`{"products":["Apache"],"services":["ssh"]}`,
+		`{"any_of":[{"products":["nginx"]},{"products":["Apache"],"services":["ssh"]}]}`,
+	} {
+		t.Run(match, func(t *testing.T) {
+			listener, err := net.Listen("tcp", "127.0.0.1:0")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer listener.Close()
+			engine, err := New(Options{PlannerProbes: true}, cleanMatchRuntime{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			script := Script{ID: "demand", Dialect: Sirius, Source: []byte("-- scribe: {\"match\":" + match + "}")}
+			target := Target{Host: "127.0.0.1", Port: uint16(listener.Addr().(*net.TCPAddr).Port), Protocol: "tcp", Product: "nginx", Service: "http"}
+			count := 0
+			err = engine.Run(context.Background(), []Task{{Script: script, Target: target}}, func(r Result) error { count++; return nil })
+			if err != nil || count != 1 {
+				t.Fatalf("count=%d error=%v", count, err)
+			}
+			listener.(*net.TCPListener).SetDeadline(time.Now().Add(20 * time.Millisecond))
+			conn, err := listener.Accept()
+			if err == nil {
+				conn.Close()
+				t.Fatal("unnecessary identification connection")
+			}
+		})
 	}
 }

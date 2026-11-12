@@ -499,3 +499,11 @@ clean gates remain invocation-specific; invalid metadata retains execution error
 This extends selected-run metadata reuse to direct SDK batches. No public API
 change or measured throughput claim. Live consumer persistence remains separate;
 Phase 3 stays paused.
+
+
+v1.75.0 makes direct SDK batch identification probes demand-driven through the
+existing matcher. Satisfied facts and observed contradictions avoid network I/O;
+missing eligible identity facts retain bounded cached probes. Scripts without
+match declarations retain explicit PlannerProbes behavior. Conservative clean
+gates and per-run cache ownership remain intact. No throughput claim or public
+API change. Live consumer persistence remains separate; Phase 3 stays paused.

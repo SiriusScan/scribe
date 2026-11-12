@@ -162,13 +162,15 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 		key := sha256.Sum256(t.Script.Source)
 		if hints, ok := metadata[key]; ok {
 			t.preparedHints = hints
-		} else if len(metadata) < e.options.Window {
+		} else {
 			if idx, err := NewIndex([]Script{t.Script}); err == nil {
 				t.preparedHints = &idx.entries[0].hints
-				metadata[key] = t.preparedHints
+				if len(metadata) < e.options.Window {
+					metadata[key] = t.preparedHints
+				}
 			}
 		}
-		if e.options.PlannerProbes && !e.options.Plan {
+		if e.options.PlannerProbes && !e.options.Plan && (t.preparedHints == nil || t.preparedHints.Match == nil || t.preparedHints.Match.missing(t.Target)) {
 			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts, e.options.SNMPCommunity)
 		}
 		n++

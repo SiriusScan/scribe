@@ -2207,3 +2207,18 @@ cross-builds, vet and static CLI build), /tmp/scribe174-check.log. Additional
 focused race tests preserve failed/unknown invalid-metadata records. Bounded
 planner race fuzz passed after 253/796 baseline seeds; mutations did not begin
 (/tmp/scribe174-fuzz.log). No throughput measurement is claimed.
+
+
+v1.75.0 makes direct SDK batch identification probes demand-driven through the
+existing matcher. Satisfied facts and observed contradictions avoid network I/O;
+missing eligible identity facts retain bounded cached probes. Scripts without
+match declarations retain explicit PlannerProbes behavior. Conservative clean
+gates and per-run cache ownership remain intact. No throughput claim or public
+API change. Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe175-final-check.log.
+Focused loopback regressions verify no probe connections for satisfied and
+contradictory direct-task matches. Existing missing-identity execution still
+probes. Bounded race planner fuzz passed with 158/796 baseline seeds covered;
+mutations did not begin (/tmp/scribe175-fuzz.log).
