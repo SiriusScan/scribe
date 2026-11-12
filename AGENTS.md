@@ -196,3 +196,9 @@ fixtures, including exact requests and conservative malformed-response policy.
 Historical fixture service hints remain http; this is single-exchange policy
 evidence, not SMTP session interoperability. Live consumer cancellation and durable
 persistence remain blocked by the consumer route/store contract. Phase 3 stays paused.
+
+v1.24.0 compacts pending cancellation/error-budget records in one stable pass and
+clears removed queue references. Preserve queued order, terminal completeness and
+host-spray fairness. Socket corpus expansion is complete for this priority pass;
+prioritize planner, measured scheduling/throughput and existing pingpp adapter gaps.
+Live consumer cancellation remains blocked; Phase 3 stays paused.

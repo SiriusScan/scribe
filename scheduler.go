@@ -162,8 +162,8 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				break drainDone
 			}
 		}
-		for i := 0; i < len(pending); {
-			p := pending[i]
+		retained := pending[:0]
+		for _, p := range pending {
 			status, reason := Status(""), ""
 			if runCtx.Err() != nil {
 				status, reason = Cancelled, runCtx.Err().Error()
@@ -172,11 +172,12 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 			if status != "" {
 				emit(terminal(p.task, status, reason))
-				pending = append(pending[:i], pending[i+1:]...)
 				continue
 			}
-			i++
+			retained = append(retained, p)
 		}
+		clear(pending[len(retained):])
+		pending = retained
 		now := time.Now()
 		var wake time.Time
 		for active < e.workers && runCtx.Err() == nil {
@@ -209,7 +210,9 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				break
 			}
 			p := pending[chosen]
-			pending = append(pending[:chosen], pending[chosen+1:]...)
+			copy(pending[chosen:], pending[chosen+1:])
+			pending[len(pending)-1] = scheduledTask{}
+			pending = pending[:len(pending)-1]
 			globalNext = time.Now().Add(e.options.GlobalInterval)
 			modules[keyFor(p.task)]++
 			p.host.active++

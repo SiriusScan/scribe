@@ -1202,3 +1202,40 @@ from local fake stores. No consumer code or Phase 3 work was changed.
 
 Validation: make check and make acceptance-local. Release installation and the
 complete POST :18081/run smoke stream are separate operational checks.
+
+## v1.24.0 — linear pending-queue retirement (2026-11-12)
+
+Priority review selected engine scheduling hardening after the completed planner
+policy matrices. Cancellation and exhausted host budgets previously removed each
+pending task with a slice shift, causing quadratic copying within the bounded
+window. A stable in-place pass now retains eligible tasks and emits terminal
+records in the same order with linear copying. Removed slots are cleared both
+on compaction and normal admission to release stale script/target references.
+Worker isolation, host/module admission and fairness policy remain unchanged.
+
+A 4096-task regression checks cancellation completeness, exact queued order,
+unique terminal records and unknown verdicts; existing budget/strategy tests cover
+mixed retirement. SMTP/POP3/Redis socket corpora are complete for this priority
+pass; no further socket fixtures were added. Live consumer cancellation remains
+blocked and Phase 3 stays paused. Shared-host executed-Lua samples below are
+throughput evidence only, with no before/after speedup claim.
+
+Validation: make check and make acceptance-local passed; the new large-window
+regression also passed ten race-enabled repetitions. Sequential make fuzz-long
+FUZZ_TIME=10s passed planner, mixed-failure and adapter campaigns.
+Benchmark environment: Go 1.26.10 linux/amd64, apps01 shared i9-13900H,
+four workers; 512 terminal records, 512 unfiltered or 64 selected verified actions.
+ModuleConcurrency 0/1; no overlapping Scribe fuzz/load work.
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	      99	  11642598 ns/op	     43976 actions/s	15857708 B/op	  156008 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	    1059	   1755500 ns/op	     36457 actions/s	 2196979 B/op	   21541 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	     100	  10937823 ns/op	     46810 actions/s	15851163 B/op	  155849 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     747	   1922628 ns/op	     33288 actions/s	 2197087 B/op	   21542 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	6.814s
+```
