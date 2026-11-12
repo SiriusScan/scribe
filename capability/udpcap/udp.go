@@ -12,7 +12,9 @@ import (
 )
 
 // Function sends one string datagram and receives one reply from the supplied
-// UDP endpoint. Both datagrams are bounded to 65507 bytes. The five-second
+// UDP endpoint. An optional second integer argument limits replies to 1..65507
+// bytes, including every reply in a session. Oversized replies fail atomically.
+// Both datagrams are bounded to 65507 bytes. The five-second
 // deadline is tightened by the caller context. Protocol correlation belongs
 // to the script; a reply alone establishes no verdict.
 func Function(ctx context.Context, target scribe.Target, args []any) (any, error) {
@@ -24,6 +26,19 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 	}
 	if target.Protocol != "udp" || target.Port == 0 || target.TLS {
 		return nil, fmt.Errorf("explicit UDP endpoint without TLS required")
+	}
+	replyLimit := 65507
+	if len(args) == 2 {
+		switch n := args[1].(type) {
+		case int64:
+			if n < 1 || n > 65507 {
+				return nil, fmt.Errorf("reply limit must be 1..65507 bytes")
+			}
+			replyLimit = int(n)
+		default:
+			return nil, fmt.Errorf("reply limit must be an integer")
+		}
+		args = args[:1]
 	}
 	payloads, session, err := parsePayloads(args)
 	if err != nil {
@@ -46,7 +61,7 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 	if err := conn.SetDeadline(deadline); err != nil {
 		return nil, err
 	}
-	buffer := make([]byte, 65508)
+	buffer := make([]byte, replyLimit+1)
 	results := make([]any, 0, len(payloads))
 	for _, payload := range payloads {
 		if n, err := conn.Write([]byte(payload)); err != nil {
@@ -61,8 +76,8 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		if n > 65507 {
-			return nil, fmt.Errorf("reply exceeds 65507 bytes")
+		if n > replyLimit {
+			return nil, fmt.Errorf("reply exceeds %d bytes", replyLimit)
 		}
 		results = append(results, map[string]any{"data": string(buffer[:n])})
 	}

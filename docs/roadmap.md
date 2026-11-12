@@ -2130,3 +2130,17 @@ separate and Phase 3 stays paused.
 Validation: focused adapter race tests, bounded race FuzzReader (10,612 executions),
 vet and CGO-disabled CLI build passed. Full make check log:
 /tmp/scribe169-check.log. Deployment smoke log: /tmp/scribe169-smoke.log.
+
+
+v1.70.0 adds an optional integer reply ceiling to `udp.exchange` (1..65507):
+`sirius.call("udp.exchange", "REQUEST", 512)`. The same ceiling applies to every
+reply in a session. Oversized datagrams fail without partial output; a one-byte
+sentinel detects truncation. Defaults, exact grants, source-port stability and the
+shared context-bounded five-second deadline remain intact. This extends bounded
+raw protocol execution without discovery or retries. Local socket evidence is
+separate from live consumer persistence acceptance. Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK checks, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe170-check.log.
+Focused UDP race tests also passed after adding the session ceiling assertion.
+Deployment smoke is operational evidence only, separate from consumer acceptance.

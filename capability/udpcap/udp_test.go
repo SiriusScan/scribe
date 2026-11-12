@@ -118,7 +118,7 @@ func TestSession(t *testing.T) {
 		done <- nil
 	}()
 	target := scribe.Target{Host: "127.0.0.1", Protocol: "udp", Port: uint16(c.LocalAddr().(*net.UDPAddr).Port)}
-	got, err := Function(context.Background(), target, []any{[]any{"first", "", "last"}})
+	got, err := Function(context.Background(), target, []any{[]any{"first", "", "last"}, int64(8)})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,6 +149,41 @@ func TestSessionValidation(t *testing.T) {
 	for _, v := range []any{[]any{}, make([]any, 17), []any{"valid", 42}, []any{strings.Repeat("x", 65508)}} {
 		if _, _, err := parsePayloads([]any{v}); err == nil {
 			t.Fatalf("accepted %v", v)
+		}
+	}
+}
+
+func TestReplyLimit(t *testing.T) {
+	for _, size := range []int{0, 8, 9, 1000} {
+		c, err := net.ListenPacket("udp", "127.0.0.1:0")
+		if err != nil {
+			t.Fatal(err)
+		}
+		c.SetDeadline(time.Now().Add(time.Second))
+		done := make(chan struct{})
+		go func() {
+			defer close(done)
+			b := make([]byte, 32)
+			_, a, err := c.ReadFrom(b)
+			if err == nil {
+				c.WriteTo([]byte(strings.Repeat("x", size)), a)
+			}
+		}()
+		target := scribe.Target{Host: "127.0.0.1", Protocol: "udp", Port: uint16(c.LocalAddr().(*net.UDPAddr).Port)}
+		got, err := Function(context.Background(), target, []any{"request", int64(8)})
+		c.Close()
+		<-done
+		if size > 8 {
+			if err == nil || got != nil {
+				t.Fatalf("oversized reply succeeded: %v %v", got, err)
+			}
+		} else if err != nil || got.(map[string]any)["data"] != strings.Repeat("x", size) {
+			t.Fatalf("reply: %v %v", got, err)
+		}
+	}
+	for _, limit := range []any{int64(0), int64(-1), int64(65508), "8", float64(8)} {
+		if got, err := Function(context.Background(), scribe.Target{Host: "127.0.0.1", Protocol: "udp", Port: 9}, []any{"x", limit}); err == nil || got != nil {
+			t.Fatalf("accepted %v", limit)
 		}
 	}
 }

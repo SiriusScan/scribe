@@ -456,3 +456,12 @@ spellings. Distinct ports and transports remain independent; separate documents
 remain independent. This prevents duplicate script scheduling from ambiguous
 enumeration input. No throughput claim; live consumer persistence remains
 separate and Phase 3 stays paused.
+
+
+v1.70.0 adds an optional integer reply ceiling to `udp.exchange` (1..65507):
+`sirius.call("udp.exchange", "REQUEST", 512)`. The same ceiling applies to every
+reply in a session. Oversized datagrams fail without partial output; a one-byte
+sentinel detects truncation. Defaults, exact grants, source-port stability and the
+shared context-bounded five-second deadline remain intact. This extends bounded
+raw protocol execution without discovery or retries. Local socket evidence is
+separate from live consumer persistence acceptance. Phase 3 stays paused.
