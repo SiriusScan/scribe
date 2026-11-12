@@ -202,3 +202,8 @@ clears removed queue references. Preserve queued order, terminal completeness an
 host-spray fairness. Socket corpus expansion is complete for this priority pass;
 prioritize planner, measured scheduling/throughput and existing pingpp adapter gaps.
 Live consumer cancellation remains blocked; Phase 3 stays paused.
+
+v1.25.0 makes missing-fact detection branch-aware: a satisfied any_of alternative
+needs no sibling identification probe; unresolved alternatives and required
+all_of facts retain probing. Preserve explicit product clean gates and caller
+identity authority. Phase 3 stays paused.

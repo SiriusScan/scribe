@@ -1239,3 +1239,21 @@ BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     747	   1
 PASS
 ok  	github.com/SiriusScan/scribe/runtime/lua54	6.814s
 ```
+
+## v1.25.0 — branch-aware planner identification (2026-11-12)
+
+Satisfied any_of alternatives now suppress requests for missing facts in sibling
+branches, including nested all_of groups. This lets selected runs reuse supplied
+service identification without an unnecessary passive probe for an alternative
+product. Unresolved alternatives still request identification; all_of requirements
+remain mandatory. Existing applicability and explicit product clean gates remain
+in force. Focused tests cover satisfied, unresolved and required branches.
+
+Validation: make check and make acceptance-local. Service reinstall and complete
+POST :18081/run smoke are operational evidence, separate from consumer persistence.
+Live consumer cancellation remains blocked; Phase 3 stays paused.
+
+Both required targets passed. Sequential make fuzz-long FUZZ_TIME=15s passed;
+planner budget covered partial baseline replay, mixed failures reached 1997
+executions. An earlier five-second mixed-failure attempt exhausted its deadline
+during baseline replay; the longer retry passed. No throughput claim.

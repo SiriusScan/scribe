@@ -149,14 +149,21 @@ func (m Match) missing(t Target) bool {
 	if len(m.Services) > 0 && t.Service == "" || len(m.Products) > 0 && t.Product == "" || len(m.Protocols) > 0 && t.Protocol == "" || (m.MinVersion != "" || m.MaxVersion != "") && t.Version == "" || m.BannerRegex != "" && t.Banner == "" {
 		return true
 	}
-	for _, group := range [][]Match{m.AnyOf, m.AllOf} {
-		for _, c := range group {
-			if c.missing(t) {
-				return true
-			}
+	for _, c := range m.AllOf {
+		if c.missing(t) {
+			return true
 		}
 	}
-	return false
+	// A satisfied alternative needs no additional identification. Only seek
+	// missing facts when no alternative already establishes applicability.
+	missingAlternative := false
+	for _, c := range m.AnyOf {
+		if ok, _ := c.evaluate(t); ok {
+			return false
+		}
+		missingAlternative = missingAlternative || c.missing(t)
+	}
+	return missingAlternative
 }
 
 func (m Match) skipReason(t Target) string {
