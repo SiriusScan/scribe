@@ -9,6 +9,8 @@ import (
 
 func TestProductCPESelection(t *testing.T) {
 	for _, tc := range []struct{ header, banner, product, cpe string }{
+		{"lighttpd/1.4.76", "", "lighttpd", "cpe:/a:lighttpd:lighttpd:1.4.76"},
+		{"lighttpd", "", "lighttpd", "cpe:/a:lighttpd:lighttpd:*"},
 		{"nginx/1.26.2", "", "nginx", "cpe:/a:nginx:nginx:1.26.2"},
 		{"nginx", "", "nginx", "cpe:/a:nginx:nginx:*"},
 		{"", "+OK Dovecot 2.3.21 ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:2.3.21"},
@@ -96,6 +98,25 @@ func TestNginxMisleadingIdentity(t *testing.T) {
 			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
 			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
 			m := Match{Products: []string{"nginx"}}
+			if ok, id := m.evaluate(observed); ok || id {
+				t.Fatalf("misleading identity accepted: %+v", observed)
+			}
+			if reason := m.skipReason(observed); reason != "declarative match: product identification missing" {
+				t.Fatal(reason)
+			}
+			if len(observed.CPE) != 0 {
+				t.Fatal(observed.CPE)
+			}
+		})
+	}
+}
+
+func TestLighttpdMisleadingIdentity(t *testing.T) {
+	for _, header := range []string{"lighttpdProxy", "lighttpdTomcat/9.0", "lighttpd/2..4", "lighttpd/2.4evil", "lighttpd/", "lighttpd/2.4:injected"} {
+		t.Run(header, func(t *testing.T) {
+			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
+			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
+			m := Match{Products: []string{"lighttpd"}}
 			if ok, id := m.evaluate(observed); ok || id {
 				t.Fatalf("misleading identity accepted: %+v", observed)
 			}

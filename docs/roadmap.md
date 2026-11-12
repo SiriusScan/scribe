@@ -2570,3 +2570,19 @@ Validation: final make check passed (race suite, external SDK acceptance,
 Windows/Darwin cross-builds, vet and CGO-disabled CLI build);
 evidence: /tmp/scribe199-check-final.log. Deployment smoke is local operational
 evidence, separate from live consumer persistence acceptance.
+
+## v1.100.0 — conservative lighttpd planner identity
+
+Closes a planner fingerprint boundary gap: lighttpd now requires an exact product
+boundary and numeric version components. Misleading prefixes, empty version
+suffixes and malformed versions supply no product or CPE evidence. Versionless
+identity remains supported. Behavioral selection tests pin CPE mapping, caller
+authority, missing/mismatched product skip reasons and the CPE-only false-clean
+guard. No public API change or throughput claim. Phase 3 stays paused; live
+consumer persistence remains separate.
+
+Validation: make check evidence in /tmp/scribe1100-check-final.log (race suite,
+external SDK, Windows/Darwin cross-builds, vet and static CLI build). Bounded race
+planner fuzz passed with 555/806 baseline seeds; mutations did not begin
+(/tmp/scribe1100-fuzz.log). Service reinstall and smoke are local operational
+evidence only.

@@ -54,7 +54,7 @@ var defaultMatcher = New(
 	Rule{Pattern: regexp.MustCompile(`^220[^\r\n]*Pure-FTPd`), Service: "ftp", Product: "Pure-FTPd"},
 	Rule{Pattern: regexp.MustCompile(`^220[^\r\n]*Sendmail ([0-9.]+)`), Service: "smtp", Product: "Sendmail"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Microsoft-IIS(?:/([0-9.]+))?`), Service: "http", Product: "IIS"},
-	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^lighttpd(?:/([0-9.]+))?`), Service: "http", Product: "lighttpd"},
+	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^lighttpd(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|[ \t])`), Service: "http", Product: "lighttpd"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^(?:Apache Tomcat|Tomcat)(?:/([0-9.]+))?`), Service: "http", Product: "Tomcat"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Jetty[/(]([0-9.v]+)`), Service: "http", Product: "Jetty"},
 	Rule{Header: "", Pattern: regexp.MustCompile(`^220[^\r\n]*\bPostfix\b`), Service: "smtp", Product: "Postfix"},
