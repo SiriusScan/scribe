@@ -123,8 +123,8 @@ func FuzzMixedFailures(f *testing.F) {
 func TestTableLibraryInvocationIsolation(t *testing.T) {
 	r, _ := NewNative(Options{})
 	for _, source := range []string{
-		`return {api_version=1,action=function() table.insert=nil;table.extra=42;utf8.len=nil;utf8.extra=42; return {} end}`,
-		`return {api_version=1,action=function() assert(utf8.len("hello")==5);assert(utf8.extra==nil);assert(type(table.insert)=="function");assert(table.extra==nil);local x={};table.insert(x,42);return {data=x[1]} end}`,
+		`return {api_version=1,action=function() math.abs=nil;math.extra=42;string.upper=nil;string.extra=42;table.insert=nil;table.extra=42;utf8.len=nil;utf8.extra=42; return {} end}`,
+		`return {api_version=1,action=function() assert(math.abs(-2)==2);assert(math.extra==nil);assert(("abc"):upper()=="ABC");assert(string.extra==nil);assert("2"+3==5);assert(string.dump==nil and math.random==nil and math.randomseed==nil);assert(utf8.len("hello")==5);assert(utf8.extra==nil);assert(type(table.insert)=="function");assert(table.extra==nil);local x={};table.insert(x,42);return {data=x[1]} end}`,
 	} {
 		if _, err := r.Execute(context.Background(), task(scribe.Sirius, source)); err != nil {
 			t.Fatal(err)

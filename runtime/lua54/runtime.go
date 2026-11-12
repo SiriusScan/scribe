@@ -219,6 +219,23 @@ var baseOnce sync.Once
 var baseValues map[string]rt.Value
 var tableValues map[string]rt.Value
 var utf8Values map[string]rt.Value
+var mathValues, stringValues, stringMetaValues map[string]rt.Value
+
+func libraryValues(table *rt.Table) map[string]rt.Value {
+	values := make(map[string]rt.Value)
+	for k, v, ok := table.Next(rt.NilValue); ok && !k.IsNil(); k, v, ok = table.Next(k) {
+		values[k.AsString()] = v
+	}
+	return values
+}
+
+func populateLibrary(vm *rt.Runtime, values map[string]rt.Value) *rt.Table {
+	table := rt.NewTable()
+	for name, value := range values {
+		vm.SetEnv(table, name, value)
+	}
+	return table
+}
 
 func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 	// Upstream base.Load mutates package-level GoFunction compliance flags.
@@ -228,15 +245,19 @@ func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 		defer prototype.Close(nil)
 		base.Load(prototype)
 		tableModule, _ := tablelib.LibLoader.Load(prototype)
-		tableValues = make(map[string]rt.Value)
-		for k, v, ok := tableModule.AsTable().Next(rt.NilValue); ok && !k.IsNil(); k, v, ok = tableModule.AsTable().Next(k) {
-			tableValues[k.AsString()] = v
-		}
+		tableValues = libraryValues(tableModule.AsTable())
 		utf8Module, _ := utf8lib.LibLoader.Load(prototype)
-		utf8Values = make(map[string]rt.Value)
-		for k, v, ok := utf8Module.AsTable().Next(rt.NilValue); ok && !k.IsNil(); k, v, ok = utf8Module.AsTable().Next(k) {
-			utf8Values[k.AsString()] = v
-		}
+		utf8Values = libraryValues(utf8Module.AsTable())
+		mathModule, _ := mathlib.LibLoader.Load(prototype)
+		mathValues = libraryValues(mathModule.AsTable())
+		// These APIs mutate process-global PRNG state.
+		delete(mathValues, "random")
+		delete(mathValues, "randomseed")
+		stringModule, _ := stringlib.LibLoader.Load(prototype)
+		stringValues = libraryValues(stringModule.AsTable())
+		delete(stringValues, "dump")
+		stringMetaValues = libraryValues(prototype.RawMetatable(rt.StringValue("")))
+		delete(stringMetaValues, "__index")
 		baseValues = make(map[string]rt.Value)
 		for _, name := range []string{"assert", "error", "ipairs", "next", "pairs", "pcall", "rawequal", "rawget", "rawlen", "rawset", "select", "tonumber", "tostring", "type", "xpcall", "_VERSION"} {
 			baseValues[name] = prototype.GlobalEnv().Get(rt.StringValue(name))
@@ -246,29 +267,22 @@ func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 		vm.SetEnv(vm.GlobalEnv(), name, value)
 	}
 	vm.SetEnv(vm.GlobalEnv(), "_G", rt.TableValue(vm.GlobalEnv()))
-	// Table builtins are immutable Go functions with no invocation captures.
+	// Builtins are immutable Go functions with no invocation captures.
 	// Publish only values; every invocation still owns its mutable library table.
-	table := rt.NewTable()
-	for name, value := range tableValues {
-		vm.SetEnv(table, name, value)
-	}
+	table := populateLibrary(vm, tableValues)
 	modules := map[string]rt.Value{"table": rt.TableValue(table)}
 	vm.SetEnv(vm.GlobalEnv(), "table", modules["table"])
-	utf8Table := rt.NewTable()
-	for name, value := range utf8Values {
-		vm.SetEnv(utf8Table, name, value)
-	}
+	utf8Table := populateLibrary(vm, utf8Values)
 	modules["utf8"] = rt.TableValue(utf8Table)
 	vm.SetEnv(vm.GlobalEnv(), "utf8", modules["utf8"])
-	for name, load := range map[string]func(*rt.Runtime) (rt.Value, func()){"string": stringlib.LibLoader.Load, "math": mathlib.LibLoader.Load} {
-		value, _ := load(vm)
+	for name, values := range map[string]map[string]rt.Value{"string": stringValues, "math": mathValues} {
+		value := rt.TableValue(populateLibrary(vm, values))
 		modules[name] = value
 		vm.SetEnv(vm.GlobalEnv(), name, value)
 	}
-	vm.SetEnv(modules["string"].AsTable(), "dump", rt.NilValue)
-	// Upstream randomseed changes process-global Go PRNG state. Keep jobs isolated.
-	vm.SetEnv(modules["math"].AsTable(), "random", rt.NilValue)
-	vm.SetEnv(modules["math"].AsTable(), "randomseed", rt.NilValue)
+	meta := populateLibrary(vm, stringMetaValues)
+	vm.SetEnv(meta, "__index", modules["string"])
+	vm.SetStringMeta(meta)
 	return modules
 }
 

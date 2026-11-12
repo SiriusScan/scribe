@@ -276,3 +276,10 @@ Library initialization dominates sampled allocation bytes; cumulative profile
 percentages overlap. Preserve invocation-owned tables and accounted SetEnv when
 extending immutable builtin reuse. Allocation reduction remains unfinished;
 shared-host measurements establish no speedup. Phase 3 stays paused.
+
+v1.42.0 reuses immutable math/string builtin functions and string arithmetic
+metamethods through the existing library snapshot pattern. Keep every library
+table and string metatable invocation-owned, including __index, and populate
+through accounted SetEnv calls. dump/random/randomseed remain disabled.
+Raw before/after executed-Lua samples live under benchmarks/; allocation reduction
+is measured, throughput speedup is not established. Phase 3 stays paused.

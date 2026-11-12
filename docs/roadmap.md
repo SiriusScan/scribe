@@ -1680,3 +1680,33 @@ reduction remains unfinished; this release makes no optimization/speedup claim.
 Validation: make check passed (/tmp/scribe141-check.log). Service reinstall and
 complete POST /run smoke are operational evidence only. Live consumer persistence
 remains separate; Phase 3 stays paused.
+
+## v1.42.0 — immutable math/string builtin reuse (2026-11-12)
+
+Math/string Go functions and string arithmetic metamethods now follow the table
+library snapshot pattern. Library tables and the string metatable remain
+invocation-owned; all entries are installed through accounted SetEnv calls.
+String __index points to the invocation's string table. dump/random/randomseed
+remain unavailable. Shared helpers also populate table/utf8 without duplicate loops.
+The isolation fixture covers mutations, string methods/arithmetic and disabled APIs.
+
+Raw samples: [before](../benchmarks/v1.42.0-before.txt) and
+[after](../benchmarks/v1.42.0-after.txt). Go 1.26.10 linux/amd64,
+i9-13900H, GOMAXPROCS=4. Before command:
+GOMAXPROCS=4 go test ./runtime/lua54 -run '^$' -bench '^BenchmarkPlannerExecution$' -benchmem -count=3.
+After restricts -bench to '^BenchmarkPlannerExecution/workers=4/module_limit=0/'.
+Compare only that shared subset: 512 executed actions unfiltered; 64 actions and
+448 skips selected, with verified sums and terminal counts.
+Unfiltered bytes/batch fall from 15.87–15.88 MB to 13.60–13.61 MB
+(about 14.3%); allocations fall from 157,060–157,218 to 128,972–129,114.
+Selected bytes/batch fall from 2.092 MB to 1.807 MB (about 13.6%);
+allocations fall from 20,585–20,588 to 17,063–17,064.
+Unfiltered latency ranges are 17.72–23.48 ms before and 16.97–25.45 ms
+after; selected ranges are 2.48–2.76 and 2.39–2.73 ms.
+These shared-host samples establish allocation reduction, not a throughput
+speedup or retained-heap reduction. No Scribe checks/fuzz/deployment overlapped
+measurement. Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check passed (/tmp/scribe142-check.log): race suite, external
+SDK acceptance, Windows/Darwin cross-compilation, vet and CGO-disabled CLI build.
+Build evidence is separate from scanner/agent integration acceptance.
