@@ -929,3 +929,24 @@ ok  	github.com/SiriusScan/scribe/runtime/lua54	16.755s
 
 Live Sirius/vGPT persisted-report acceptance remains separate and unfinished.
 No NSE expansion; Phase 3 remains paused.
+
+## v1.14.0 — fixture-to-store acceptance (2026-11-12)
+
+Added a local pingpp.scan/v1 fixture → existing adapter → strict planner → Lua
+engine → report.Map → synced JSONL file → reopened EOF round trip. It preserves
+canonical report evidence, caller product and source digest for completed clean,
+product-skipped and Lua action-error cases. Noncompleted evidence must remain
+inconclusive. The existing acceptance-local TestMarkerCorpus selector runs it.
+This fake consumer store establishes local persistence only; live correlated
+Sirius/vGPT report retrieval, cancellation and storage wiring remain unfinished.
+
+Added an original MIT SHA-256-pinned HTTP session-cookie configuration check.
+The shared corpus matrix covers missing Secure/HttpOnly flags, both flags,
+unrecognized cookies, product mismatch/missing identity and exhaustive policy.
+This is registered-response configuration evidence, not a CVE or upstream corpus
+claim. Broader HTTP/TCP/TLS practical corpus growth remains open; this slice adds
+one HTTP script and reuses existing TCP/TLS socket coverage. No production API
+change or NSE expansion. Phase 3 remains paused.
+
+Validation: make check and make acceptance-local passed. Release operations
+reinstall the tagged systemd service and smoke the trusted POST :18081/run path.
