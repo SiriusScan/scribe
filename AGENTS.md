@@ -507,3 +507,9 @@ missing eligible identity facts retain bounded cached probes. Scripts without
 match declarations retain explicit PlannerProbes behavior. Conservative clean
 gates and per-run cache ownership remain intact. No throughput claim or public
 API change. Live consumer persistence remains separate; Phase 3 stays paused.
+
+v1.76.0 prepares direct execution metadata without copying source into a temporary
+index. Public NewIndex and Select retain source ownership. Keep prepared metadata
+independent of source bytes and endpoint verdict gates invocation-specific.
+No measured throughput claim; live consumer persistence remains separate.
+Phase 3 stays paused.

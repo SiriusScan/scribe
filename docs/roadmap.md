@@ -2222,3 +2222,16 @@ Focused loopback regressions verify no probe connections for satisfied and
 contradictory direct-task matches. Existing missing-identity execution still
 probes. Bounded race planner fuzz passed with 158/796 baseline seeds covered;
 mutations did not begin (/tmp/scribe175-fuzz.log).
+
+v1.76.0 removes redundant full-source snapshots from direct SDK metadata
+preparation, including uncached overflow tasks. Public NewIndex and Select keep
+owned source snapshots. Ownership and prepared-match regressions pin the boundary;
+existing direct-batch tests retain endpoint and false-clean behavior. No public API
+change or measured throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
+
+Validation: make check passed (full race suite, external SDK checks, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe176-check.log.
+Bounded race planner fuzz passed after 180/796 baseline seeds; mutations did not
+begin (/tmp/scribe176-fuzz.log). Deployment POST smoke is operational evidence,
+separate from live consumer persistence acceptance.

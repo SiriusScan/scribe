@@ -522,3 +522,8 @@ missing eligible identity facts retain bounded cached probes. Scripts without
 match declarations retain explicit PlannerProbes behavior. Conservative clean
 gates and per-run cache ownership remain intact. No throughput claim or public
 API change. Live consumer persistence remains separate; Phase 3 stays paused.
+
+v1.76.0 avoids redundant full-source snapshots while preparing metadata for direct
+SDK execution. Public indexes and selections retain owned source snapshots;
+endpoint selection and conservative verdict gates remain unchanged. This removes
+an allocation path, with no measured throughput claim.

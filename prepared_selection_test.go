@@ -107,3 +107,32 @@ func TestDirectRunInvalidMetadataRemainsFailed(t *testing.T) {
 		t.Fatalf("count=%d err=%v", count, err)
 	}
 }
+
+func TestMetadataPreparationSourceOwnership(t *testing.T) {
+	source := []byte("-- scribe: {\"match\":{\"products\":[\"nginx\"]}}\n")
+	script := Script{ID: "ownership", Dialect: Sirius, Source: source}
+	owned, err := NewIndex([]Script{script})
+	if err != nil {
+		t.Fatal(err)
+	}
+	local, err := newIndex([]Script{script}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if &owned.entries[0].script.Source[0] == &source[0] {
+		t.Fatal("public index borrowed source")
+	}
+	if &local.entries[0].script.Source[0] != &source[0] {
+		t.Fatal("metadata preparation copied source")
+	}
+	source[0] = '!'
+	if owned.entries[0].script.Source[0] != '-' {
+		t.Fatal("public snapshot changed")
+	}
+	for _, idx := range []*Index{owned, local} {
+		ok, identified := idx.entries[0].hints.Match.evaluate(Target{Host: "localhost", Product: "nginx"})
+		if !ok || !identified {
+			t.Fatal("prepared metadata lost")
+		}
+	}
+}

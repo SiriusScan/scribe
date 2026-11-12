@@ -163,7 +163,7 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 		if hints, ok := metadata[key]; ok {
 			t.preparedHints = hints
 		} else {
-			if idx, err := NewIndex([]Script{t.Script}); err == nil {
+			if idx, err := newIndex([]Script{t.Script}, false); err == nil {
 				t.preparedHints = &idx.entries[0].hints
 				if len(metadata) < e.options.Window {
 					metadata[key] = t.preparedHints
@@ -197,7 +197,7 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 	var planErr error
 	if hints == nil {
 		var idx *Index
-		idx, planErr = NewIndex([]Script{task.Script})
+		idx, planErr = newIndex([]Script{task.Script}, false)
 		if planErr == nil {
 			hints = &idx.entries[0].hints
 		}

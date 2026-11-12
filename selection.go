@@ -29,6 +29,11 @@ type Index struct{ entries []indexedScript }
 
 // NewIndex validates metadata and snapshots scripts for bounded selection.
 func NewIndex(scripts []Script) (*Index, error) {
+	return newIndex(scripts, true)
+}
+
+// newIndex may omit source ownership for invocation-local metadata preparation.
+func newIndex(scripts []Script, snapshot bool) (*Index, error) {
 	idx := &Index{}
 	for _, s := range scripts {
 		if s.ID == "" || len(s.Source) == 0 || len(s.Source) > MaxSourceBytes || (s.Dialect != Sirius && s.Dialect != NSE) {
@@ -61,7 +66,9 @@ func NewIndex(scripts []Script) (*Index, error) {
 		if h.Match != nil {
 			h.Match.prepare()
 		}
-		s.Source = append([]byte(nil), s.Source...)
+		if snapshot {
+			s.Source = append([]byte(nil), s.Source...)
+		}
 		idx.entries = append(idx.entries, indexedScript{s, h})
 	}
 	return idx, nil
