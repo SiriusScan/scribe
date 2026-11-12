@@ -106,3 +106,30 @@ func TestHAProxyIdentity(t *testing.T) {
 		}
 	}
 }
+
+// Original observations pin Envoy identity boundaries, not upstream compatibility.
+func TestEnvoyIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"Envoy/3.0.5", "3.0.5", true},
+		{"envoy/2.9.12", "2.9.12", true},
+		{"Envoy", "", true},
+		{"Envoy/3.0.5 proxy", "3.0.5", true},
+		{"Envoyish", "", false},
+		{"proxy Envoy/3.0.5", "", false},
+		{"Envoy/3.0.5evil", "", false},
+		{"Envoy/", "", false},
+		{"Envoy/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "Envoy", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}

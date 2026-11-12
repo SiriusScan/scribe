@@ -1796,3 +1796,19 @@ external SDK, vet, static CLI and platform cross-builds), logged in
 seeds covered in five seconds; mutations did not begin).
 Service reinstall and complete POST /run smoke are operational evidence only;
 live consumer persistence remains separate.
+
+## v1.48.0 — Envoy planner identity (2026-11-12)
+
+Continues the expanded fingerprint capability backlog in priority one. Original
+pinned Envoy Server observations now supply HTTP product/version and CPE hints
+through the existing planner. Versionless headers identify the product with an
+unknown version; malformed versions and misleading prefixes remain unknown.
+Shared selection fixtures pin caller authority, missing/mismatched product skip
+reasons and the CPE-only false-clean guard. No API or wire change, throughput
+claim or live consumer acceptance. Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe148-check.log). Bounded race planner fuzz
+passed with 312/796 cached baseline seeds covered in five seconds; baseline
+coverage remained incomplete and mutations did not begin (/tmp/scribe148-fuzz.log).
+Service reinstall and complete POST /run smoke are operational evidence only;
+live consumer persistence remains separate.

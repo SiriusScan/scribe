@@ -37,6 +37,7 @@ func New(rules ...Rule) *Matcher { return &Matcher{append([]Rule(nil), rules...)
 // Default returns the built-in banner and HTTP Server header rules.
 func Default() *Matcher {
 	return New(
+		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^envoy(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Envoy"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^HAProxy(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "HAProxy"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Caddy(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "Caddy"},
 		Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^openresty(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "OpenResty"},

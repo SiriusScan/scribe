@@ -9,6 +9,8 @@ import (
 
 func TestProductCPESelection(t *testing.T) {
 	for _, tc := range []struct{ header, banner, product, cpe string }{
+		{"envoy/1.32.3", "", "Envoy", "cpe:/a:envoyproxy:envoy:1.32.3"},
+		{"envoy", "", "Envoy", "cpe:/a:envoyproxy:envoy:*"},
 		{"HAProxy/3.0.5", "", "HAProxy", "cpe:/a:haproxy:haproxy:3.0.5"},
 		{"HAProxy", "", "HAProxy", "cpe:/a:haproxy:haproxy:*"},
 		{"Caddy/2.8.4", "", "Caddy", "cpe:/a:caddyserver:caddy:2.8.4"},

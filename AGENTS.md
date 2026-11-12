@@ -308,3 +308,8 @@ v1.47.0 makes on_unknown run respect observed contradictions across declarative
 fields and nested all_of/any_of branches. Missing facts may allow execution but
 never establish product identification or a clean verdict. Confidence/CPE gates
 remain conservative. Phase 3 stays paused.
+
+v1.48.0 adds original pinned Envoy HTTP Server identity and CPE hints through
+the shared fingerprint/planner path. Preserve strict identity boundaries, unknown
+missing versions, caller authority, exact product skip reasons and CPE-only
+false-clean guards. No throughput claim; Phase 3 stays paused.
