@@ -2061,3 +2061,17 @@ Phase 3 stays paused.
 
 Validation: make check; service reinstall and POST /run smoke are operational
 evidence only. Logs: /tmp/scribe164-check.log and /tmp/scribe164-smoke.log.
+
+
+## v1.65.0 — write-only session commands
+
+v1.65.0 adds write-only tcp.exchange steps: integer read selector 0 sends the
+payload and returns empty data with eof=false without reading. This supports
+commands without replies within existing bounded TCP/verified TLS sessions.
+Write failures still discard session output; all steps validate before dialing.
+Existing deadlines, grants and reply limits apply. Phase 3 stays paused; local
+transport evidence is separate from live consumer persistence acceptance.
+
+Validation: make check logged in /tmp/scribe165-check.log; focused race tests
+cover write-only no-read behavior, write failure and loopback session ordering.
+Deployment smoke is logged in /tmp/scribe165-smoke.log.

@@ -420,3 +420,16 @@ and `--module-interval 100ms`. Limits apply per exact dialect/script ID within
 a run alongside global and host limits. Zero uses global concurrency or disables
 module pacing respectively. For example, `--concurrency 8 --module-concurrency 2
 --module-interval 100ms` limits each module while allowing other modules to run.
+
+
+## v1.65.0 — write-only session commands
+
+v1.65.0 adds write-only tcp.exchange steps: integer read selector 0 sends the
+payload and returns empty data with eof=false without reading. This supports
+commands without replies within existing bounded TCP/verified TLS sessions.
+Write failures still discard session output; all steps validate before dialing.
+Existing deadlines, grants and reply limits apply. Phase 3 stays paused; local
+transport evidence is separate from live consumer persistence acceptance.
+
+For example, `sirius.call("tcp.exchange", {{"PING", 0}, {"", 4}})` sends
+PING without waiting, then reads exactly four bytes on the same connection.

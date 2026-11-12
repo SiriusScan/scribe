@@ -17,6 +17,7 @@ import (
 // Function connects to the supplied endpoint, optionally sends one string, and
 // receives one chunk (at most 64 KiB). An optional second integer argument
 // requests exactly that many bytes (1..65536); premature EOF is an error.
+// A zero byte count sends only, returning empty data and eof=false.
 // A string second argument reads through a 1..256-byte delimiter, inclusive,
 // within 64 KiB; missing delimiters are errors.
 // One array argument runs 1..16 argument arrays on the same connection and
@@ -117,6 +118,7 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 func exchange(stream io.ReadWriter, args []any) (any, error) {
 	payload := ""
 	readBytes := 0
+	writeOnly := false
 	delimiter := ""
 	if len(args) > 2 {
 		return nil, fmt.Errorf("tcp.exchange accepts a payload and optional byte count")
@@ -131,10 +133,11 @@ func exchange(stream io.ReadWriter, args []any) (any, error) {
 	if len(args) == 2 {
 		switch v := args[1].(type) {
 		case int64:
-			if v < 1 || v > 65536 {
-				return nil, fmt.Errorf("read byte count must be an integer from 1 to 65536")
+			if v < 0 || v > 65536 {
+				return nil, fmt.Errorf("read byte count must be an integer from 0 to 65536")
 			}
 			readBytes = int(v)
+			writeOnly = v == 0
 		case string:
 			if len(v) == 0 || len(v) > 256 {
 				return nil, fmt.Errorf("read delimiter must contain 1 to 256 bytes")
@@ -161,6 +164,9 @@ func exchange(stream io.ReadWriter, args []any) (any, error) {
 			return nil, io.ErrShortWrite
 		}
 		payload = payload[n:]
+	}
+	if writeOnly {
+		return map[string]any{"data": "", "eof": false}, nil
 	}
 	buffer := make([]byte, 65536)
 	var n int

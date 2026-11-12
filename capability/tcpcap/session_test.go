@@ -42,7 +42,7 @@ func TestSession(t *testing.T) {
 			done <- e
 		}()
 		target := scribe.Target{Host: "127.0.0.1", Port: uint16(l.Addr().(*net.TCPAddr).Port), Protocol: "tcp"}
-		v, e := Function(context.Background(), target, []any{[]any{[]any{"", "\r\n"}, []any{"PING", int64(4)}}})
+		v, e := Function(context.Background(), target, []any{[]any{[]any{"", "\r\n"}, []any{"PING", int64(0)}, []any{"", int64(4)}}})
 		if truncated {
 			if e == nil || v != nil {
 				t.Fatalf("partial session: %v %v", v, e)
@@ -52,7 +52,7 @@ func TestSession(t *testing.T) {
 				t.Fatal(e)
 			}
 			replies := v.(map[string]any)["replies"].([]any)
-			if len(replies) != 2 || replies[0].(map[string]any)["data"] != "hello\r\n" || replies[1].(map[string]any)["data"] != "PONG" {
+			if len(replies) != 3 || replies[0].(map[string]any)["data"] != "hello\r\n" || replies[1].(map[string]any)["data"] != "" || replies[2].(map[string]any)["data"] != "PONG" {
 				t.Fatal(v)
 			}
 		}
@@ -65,7 +65,7 @@ func TestSession(t *testing.T) {
 
 func TestSessionValidation(t *testing.T) {
 	target := scribe.Target{Host: "127.0.0.1", Port: 1, Protocol: "tcp"}
-	for _, steps := range [][]any{nil, make([]any, 17), {true}, {[]any{"", int64(0)}}, {[]any{"ok"}, []any{false}}} {
+	for _, steps := range [][]any{nil, make([]any, 17), {true}, {[]any{"", int64(-1)}}, {[]any{"ok"}, []any{false}}} {
 		if v, e := Function(context.Background(), target, []any{steps}); e == nil || v != nil {
 			t.Fatalf("accepted invalid session: %v %v", v, e)
 		}

@@ -410,3 +410,11 @@ keys, per-run scope, zero defaults and engine validation remain authoritative.
 Transport tests require paced completed actions and complete JSONL EOF, and reject
 negative intervals. No throughput claim; live consumer persistence remains separate.
 Phase 3 stays paused.
+
+
+v1.65.0 adds write-only tcp.exchange steps: integer read selector 0 sends the
+payload and returns empty data with eof=false without reading. This supports
+commands without replies within existing bounded TCP/verified TLS sessions.
+Write failures still discard session output; all steps validate before dialing.
+Existing deadlines, grants and reply limits apply. Phase 3 stays paused; local
+transport evidence is separate from live consumer persistence acceptance.
