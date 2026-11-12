@@ -1601,3 +1601,17 @@ Validation: make check, log /tmp/scribe137-check.log. Bounded race planner fuzz
 passed with 283/796 baseline seeds in its five-second budget; no mutation campaign
 began (/tmp/scribe137-fuzz.log). Service reinstall and POST /run smoke are
 operational evidence only; live consumer persistence remains separate.
+
+## v1.38.0 — CPE selection for pinned FTP/SMTP products (2026-11-12)
+
+Extend the shared inferredCPE mapper to Pure-FTPd and Sendmail, closing the
+remaining mapping gap for existing pinned banner identities. Reuse the HTTP
+selection policy matrix for original FTP/SMTP banners, wildcard/versioned CPEs,
+caller identity authority, exact product skip reasons and the CPE-only clean
+gate. No API change or throughput claim. Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe138-check.log). Bounded race planner fuzz
+passed with 272/796 baseline seeds in five seconds; baseline coverage remained
+incomplete and mutations did not begin (/tmp/scribe138-fuzz.log). Service
+reinstall and complete POST /run smoke are operational evidence only; live
+consumer persistence/cancellation remains separate.

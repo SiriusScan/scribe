@@ -154,7 +154,7 @@ func (p probeCache) enrich(ctx context.Context, t Target, limit int, community .
 
 // Only pinned fingerprint identities have CPE mappings.
 func inferredCPE(product, version string) []string {
-	prefix := map[string]string{"Caddy": "caddyserver:caddy", "OpenResty": "openresty:openresty", "IIS": "microsoft:internet_information_services", "lighttpd": "lighttpd:lighttpd", "Tomcat": "apache:tomcat", "Jetty": "eclipse:jetty", "Postfix": "postfix:postfix", "Exim": "exim:exim", "vsftpd": "vsftpd:vsftpd", "ProFTPD": "proftpd:proftpd", "MySQL": "oracle:mysql", "MariaDB": "mariadb:mariadb", "Redis": "redis:redis", "Dropbear": "dropbear_ssh_project:dropbear_ssh", "nginx": "nginx:nginx", "Apache": "apache:http_server", "OpenSSH": "openbsd:openssh"}[product]
+	prefix := map[string]string{"Pure-FTPd": "pureftpd:pure-ftpd", "Sendmail": "sendmail:sendmail", "Caddy": "caddyserver:caddy", "OpenResty": "openresty:openresty", "IIS": "microsoft:internet_information_services", "lighttpd": "lighttpd:lighttpd", "Tomcat": "apache:tomcat", "Jetty": "eclipse:jetty", "Postfix": "postfix:postfix", "Exim": "exim:exim", "vsftpd": "vsftpd:vsftpd", "ProFTPD": "proftpd:proftpd", "MySQL": "oracle:mysql", "MariaDB": "mariadb:mariadb", "Redis": "redis:redis", "Dropbear": "dropbear_ssh_project:dropbear_ssh", "nginx": "nginx:nginx", "Apache": "apache:http_server", "OpenSSH": "openbsd:openssh"}[product]
 	if prefix == "" {
 		return nil
 	}

@@ -7,14 +7,16 @@ import (
 	"github.com/SiriusScan/scribe/fingerprint"
 )
 
-func TestHTTPProductCPESelection(t *testing.T) {
-	for _, tc := range []struct{ header, product, cpe string }{
-		{"Caddy/2.8.4", "Caddy", "cpe:/a:caddyserver:caddy:2.8.4"},
-		{"openresty/1.27.1.1", "OpenResty", "cpe:/a:openresty:openresty:1.27.1.1"},
-		{"Caddy", "Caddy", "cpe:/a:caddyserver:caddy:*"},
+func TestProductCPESelection(t *testing.T) {
+	for _, tc := range []struct{ header, banner, product, cpe string }{
+		{"Caddy/2.8.4", "", "Caddy", "cpe:/a:caddyserver:caddy:2.8.4"},
+		{"openresty/1.27.1.1", "", "OpenResty", "cpe:/a:openresty:openresty:1.27.1.1"},
+		{"Caddy", "", "Caddy", "cpe:/a:caddyserver:caddy:*"},
+		{"", "220 Pure-FTPd ready", "Pure-FTPd", "cpe:/a:pureftpd:pure-ftpd:*"},
+		{"", "220 mail Sendmail 8.17.1 ready", "Sendmail", "cpe:/a:sendmail:sendmail:8.17.1"},
 	} {
-		t.Run(tc.header, func(t *testing.T) {
-			f := fingerprint.Default().Match("", http.Header{"Server": {tc.header}})
+		t.Run(tc.product+"/"+tc.header, func(t *testing.T) {
+			f := fingerprint.Default().Match(tc.banner, http.Header{"Server": {tc.header}})
 			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
 			if len(observed.CPE) != 1 || observed.CPE[0] != tc.cpe {
 				t.Fatalf("facts: %+v", observed)
