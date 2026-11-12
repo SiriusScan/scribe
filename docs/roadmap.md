@@ -2342,3 +2342,15 @@ claim. Phase 3 stays paused; live consumer persistence remains separate.
 Validation: make check log /tmp/scribe184-check.log; focused adapter tests and
 bounded race Reader fuzz log /tmp/scribe184-fuzz.log. Service POST smoke provides
 operational evidence only, separate from live consumer acceptance.
+
+## v1.85.0 — FileZilla FTP planner identity
+
+Extends the unfinished fingerprint coverage slice with original pinned FileZilla
+FTP greeting fixtures. The existing planner mapper supplies product/version and
+CPE hints; strict greeting boundaries reject misleading identities and malformed
+versions. Versionless greetings retain unknown versions. Shared selection tests
+retain caller authority and conservative clean gates. No throughput claim.
+Phase 3 stays paused; local service smoke is separate from live consumer persistence.
+
+Validation: make check (race suite, external SDK, cross-builds, vet and static
+CLI build), /tmp/scribe185-check.log.

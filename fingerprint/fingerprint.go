@@ -39,6 +39,7 @@ func Default() *Matcher { return defaultMatcher }
 
 // Rules and compiled expressions are immutable after initialization.
 var defaultMatcher = New(
+	Rule{Pattern: regexp.MustCompile(`^220[ -]FileZilla Server(?: ([0-9]+(?:\.[0-9]+)*))?(?: ready)?\r?\n?$`), Service: "ftp", Product: "FileZilla"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^envoy(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Envoy"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Varnish(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Varnish"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Squid(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Squid"},

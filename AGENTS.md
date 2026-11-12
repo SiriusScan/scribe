@@ -573,3 +573,7 @@ v1.84.0 rejects duplicate JSON object fields throughout pingpp.scan/v1 wire
 input before typed decoding, including escaped-equivalent keys. Keep independent
 object scopes, bounded nesting and terminal reader errors with zero targets from
 rejected documents. Phase 3 stays paused; no throughput claim.
+
+v1.85.0 adds original pinned FileZilla FTP greeting identity and CPE hints.
+Preserve strict greeting boundaries, unknown absent versions, caller authority
+and conservative clean gates. No throughput claim; Phase 3 stays paused.

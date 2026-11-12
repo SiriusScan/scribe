@@ -322,3 +322,28 @@ func TestCherokeeIdentity(t *testing.T) {
 		}
 	}
 }
+
+func TestFileZillaIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		banner, version string
+		match           bool
+	}{
+		{"220 FileZilla Server 1.9.4 ready\r\n", "1.9.4", true},
+		{"220-FileZilla Server", "", true},
+		{"220 FileZilla Serverish", "", false},
+		{"220 FileZilla Server 1..4", "", false},
+		{"220 FileZilla Server 1.9evil", "", false},
+		{"500 FileZilla Server 1.9.4", "", false},
+		{"220 proxy FileZilla Server 1.9.4", "", false},
+		{"220 FileZilla Server\r\nother", "", false},
+	} {
+		got := Default().Match(tc.banner, nil)
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "ftp", Product: "FileZilla", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.banner, got, want)
+		}
+	}
+}
