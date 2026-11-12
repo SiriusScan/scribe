@@ -1763,3 +1763,18 @@ Phase 3 stays paused.
 Validation: make check (/tmp/scribe145-check.log) and bounded race FuzzReader
 (/tmp/scribe145-fuzz.log). Service reinstall and complete POST /run smoke provide
 operational evidence only, separate from live consumer persistence acceptance.
+
+## v1.46.0 — HAProxy planner identity (2026-11-12)
+
+Continues the unfinished expanded fingerprint capability slice: original pinned
+HAProxy Server observations now supply HTTP product/version identity and CPE hints
+through the existing matcher and mapper. Product, version and CPE selection can
+use these observations without adding another planner path. Versionless headers
+retain unknown versions; misleading prefixes and malformed versions stay unknown.
+Shared selection tests preserve caller identity authority, exact product skip
+reasons and the CPE-only false-clean gate. No public API change or throughput
+claim. Phase 3 stays paused; live consumer persistence remains separate.
+
+Validation: make check (/tmp/scribe146-check.log) and bounded race planner fuzz
+(/tmp/scribe146-fuzz.log; 288/796 baseline seeds, no mutations). Service reinstall and complete POST /run smoke are
+operational evidence only, not live workflow acceptance.

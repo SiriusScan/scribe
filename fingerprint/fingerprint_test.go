@@ -79,3 +79,30 @@ func TestPinnedUnknownIdentities(t *testing.T) {
 		}
 	}
 }
+
+// Original observations pin HAProxy identity boundaries, not upstream compatibility.
+func TestHAProxyIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"HAProxy/3.0.5", "3.0.5", true},
+		{"haproxy/2.9.12", "2.9.12", true},
+		{"HAProxy", "", true},
+		{"HAProxy/3.0.5 proxy", "3.0.5", true},
+		{"HAProxyish", "", false},
+		{"proxy HAProxy/3.0.5", "", false},
+		{"HAProxy/3.0.5evil", "", false},
+		{"HAProxy/", "", false},
+		{"HAProxy/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "HAProxy", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}

@@ -298,3 +298,8 @@ v1.45.0 combines partial pingpp product-version evidence: absent versions do not
 contradict a supplied version for an agreed product. Distinct nonempty versions
 remain unknown regardless of empty/repeated claims or ordering. Preserve endpoint
 isolation and accepted-claim filtering. Phase 3 stays paused.
+
+v1.46.0 adds original pinned HAProxy HTTP Server identity and CPE hints through
+existing fingerprint/planner paths. Preserve strict header boundaries, unknown
+missing versions, caller identity authority and CPE-only false-clean guards.
+No throughput claim; live consumer persistence remains separate. Phase 3 paused.
