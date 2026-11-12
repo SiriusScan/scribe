@@ -1,0 +1,109 @@
+{
+  "response": {
+    "script_name": "scribe-v116-acceptance.lua",
+    "check": {
+      "ok": true,
+      "errors": []
+    },
+    "results": [
+      {
+        "label": "no-io-acceptance",
+        "host": "127.0.0.1",
+        "port": 1,
+        "verdict": "unknown",
+        "status": "completed",
+        "exit_code": 0,
+        "findings": [],
+        "logs": "",
+        "logs_truncated": false,
+        "raw": {
+          "schema_version": 1,
+          "script_id": "scribe-v116-acceptance.lua",
+          "script_sha256": "128f8aed11e64a205e6e1d4fd5a524fdb38d1c2a714843ddb94fdab426880af2",
+          "dialect": "sirius",
+          "target": {
+            "host": "127.0.0.1",
+            "port": 1,
+            "protocol": "tcp",
+            "service": "http"
+          },
+          "status": "completed",
+          "verdict": "unknown",
+          "output": {
+            "data": {
+              "correlation": "scribe-v1.16.0"
+            }
+          },
+          "elapsed_ms": 0
+        },
+        "stderr": "",
+        "tester": "http"
+      }
+    ],
+    "run_id": "8aca19e11e8e"
+  },
+  "retrieved": {
+    "id": "8aca19e11e8e",
+    "type": "run-script",
+    "inputs": {
+      "script_name": "scribe-v116-acceptance.lua",
+      "script": "return {api_version=1, action=function() return {verdict=\"unknown\", data={correlation=\"scribe-v1.16.0\"}} end}",
+      "targets": [
+        {
+          "host": "127.0.0.1",
+          "port": 1,
+          "label": "no-io-acceptance"
+        }
+      ]
+    },
+    "status": "succeeded",
+    "iterations": 1,
+    "started_at": 1794503449.276918,
+    "finished_at": 1794503449.2833462,
+    "duration_s": 0.01,
+    "result": {
+      "script_name": "scribe-v116-acceptance.lua",
+      "check": {
+        "ok": true,
+        "errors": []
+      },
+      "results": [
+        {
+          "label": "no-io-acceptance",
+          "host": "127.0.0.1",
+          "port": 1,
+          "verdict": "unknown",
+          "status": "completed",
+          "exit_code": 0,
+          "findings": [],
+          "logs": "",
+          "logs_truncated": false,
+          "raw": {
+            "schema_version": 1,
+            "script_id": "scribe-v116-acceptance.lua",
+            "script_sha256": "128f8aed11e64a205e6e1d4fd5a524fdb38d1c2a714843ddb94fdab426880af2",
+            "dialect": "sirius",
+            "target": {
+              "host": "127.0.0.1",
+              "port": 1,
+              "protocol": "tcp",
+              "service": "http"
+            },
+            "status": "completed",
+            "verdict": "unknown",
+            "output": {
+              "data": {
+                "correlation": "scribe-v1.16.0"
+              }
+            },
+            "elapsed_ms": 0
+          },
+          "stderr": "",
+          "tester": "http"
+        }
+      ],
+      "run_id": "8aca19e11e8e"
+    },
+    "error": null
+  }
+}

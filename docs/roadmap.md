@@ -991,3 +991,34 @@ BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     772	   1
 PASS
 ok  	github.com/SiriusScan/scribe/runtime/lua54	5.873s
 ```
+
+## v1.16.0 — socket identity matrices and live correlated retrieval (2026-11-12)
+
+The original digest-pinned HTTP/TCP/TLS marker corpus now runs its real socket
+three-verdict cases across matching, missing and conflicting product facts and
+normal/exhaustive selection. Exact skip reasons, unknown skipped verdicts and
+untrusted TLS failures are asserted through the existing selected runner. The
+trusted TLS child retains certificate verification. This broadens socket policy
+coverage; it does not add CVE or upstream corpus claims.
+
+Live apps01 → vGPT agent-api 192.168.123.43:8090 /agent/run-script → installed
+Scribe POST :18081/run → vGPT /runs/8aca19e11e8e retrieval succeeded. Committed
+acceptance/v1.16.0-vgpt.json contains the response and independently retrieved
+run record, source digest and explicit completed/unknown evidence. The controlled
+script performs no target I/O; its correlation marker survives retrieval. The
+consumer source stores runs in /srv/vgpt/agent-api/runs.json. This is live vGPT
+run-record persistence evidence, not Sirius report-envelope storage acceptance.
+The tested service was the previously installed release; the v1.16.0 service is
+separately reinstalled and smoke-tested at release.
+
+Still blocked/open: Sirius report-store ingestion/retrieval has no established
+controlled job submission and report correlation contract in this checkout;
+no Sirius storage acceptance is claimed. Live vGPT cancellation is also open:
+the inspected agent-api routes provide synchronous execution and run retrieval,
+but no cancellation route. Disk durability/restart recovery and concurrent
+run-store integrity are unverified (consumer save_run rewrites JSON without an
+atomic transaction). These require consumer work, not another Scribe mapper.
+Broader practical TCP/TLS scripts remain open. No NSE expansion; Phase 3 stays paused.
+
+Validation: make check and make acceptance-local; release service smoke recorded
+separately from consumer acceptance. No performance claim.
