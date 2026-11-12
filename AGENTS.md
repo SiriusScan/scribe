@@ -237,3 +237,8 @@ v1.31.0 measures the verified executed-Lua matrix across 1/2/4/8 workers,
 module limits 0/1 and both selection paths. Preserve action output and terminal
 count checks; report raw samples and distinguish batch latency from actions/s.
 Shared-host scaling is not a before/after speedup claim. Phase 3 stays paused.
+
+v1.32.0 shares the verified planner benchmark runner with a 100,000-addition
+Lua workload and pins its one/eight-worker sums and unknown verdicts in the race
+suite. Retain full terminal counts and raw samples; longer CPU scaling is local
+measurement, not network or live consumer acceptance. Phase 3 stays paused.

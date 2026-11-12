@@ -44,6 +44,15 @@ func BenchmarkLuaBatch(b *testing.B) {
 // BenchmarkPlannerExecution checks actual Lua action output for every completed
 // invocation; both paths emit the full matrix, including planner skips.
 func BenchmarkPlannerExecution(b *testing.B) {
+	benchmarkPlannerExecution(b, 100)
+}
+
+// BenchmarkPlannerLongExecution amortizes setup with longer Lua CPU work.
+func BenchmarkPlannerLongExecution(b *testing.B) {
+	benchmarkPlannerExecution(b, 100000)
+}
+
+func benchmarkPlannerExecution(b *testing.B, iterations int) {
 	for _, concurrency := range []int{1, 2, 4, 8} {
 		for _, moduleLimit := range []int{0, 1} {
 			for _, selected := range []bool{false, true} {
@@ -71,7 +80,7 @@ func BenchmarkPlannerExecution(b *testing.B) {
 						if selected {
 							hint = fmt.Sprintf("-- scribe: {\"services\":[%q]}\n", service)
 						}
-						s := scribe.Script{ID: fmt.Sprint(j), Dialect: scribe.Sirius, Source: []byte(hint + "return {api_version=1,action=function() local n=0; for i=1,100 do n=n+i end; return {data=n,verdict='unknown'} end}")}
+						s := scribe.Script{ID: fmt.Sprint(j), Dialect: scribe.Sirius, Source: plannerWorkload(hint, iterations)}
 						scripts = append(scripts, s)
 						for _, t := range targets {
 							tasks = append(tasks, scribe.Task{Script: s, Target: t})
@@ -89,7 +98,7 @@ func BenchmarkPlannerExecution(b *testing.B) {
 							records++
 							if r.Status == scribe.Completed {
 								completed++
-								if fmt.Sprint(r.Output.Data) != "5050" {
+								if fmt.Sprint(r.Output.Data) != fmt.Sprint(int64(iterations)*int64(iterations+1)/2) {
 									b.Fatalf("action output: %#v", r.Output.Data)
 								}
 							} else if r.Status != scribe.Skipped {
@@ -119,5 +128,39 @@ func BenchmarkPlannerExecution(b *testing.B) {
 			}
 		}
 
+	}
+}
+
+func plannerWorkload(hint string, iterations int) []byte {
+	return []byte(hint + fmt.Sprintf("return {api_version=1,action=function() local n=0; for i=1,%d do n=n+i end; return {data=n,verdict='unknown'} end}", iterations))
+}
+
+func TestPlannerLongWorkload(t *testing.T) {
+	for _, workers := range []int{1, 8} {
+		t.Run(fmt.Sprint(workers), func(t *testing.T) {
+			r, err := NewNative(Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			e, err := scribe.New(scribe.Options{Concurrency: workers}, r)
+			if err != nil {
+				t.Fatal(err)
+			}
+			tasks := make([]scribe.Task, 16)
+			for i := range tasks {
+				tasks[i] = scribe.Task{Script: scribe.Script{ID: "long", Dialect: scribe.Sirius, Source: plannerWorkload("", 100000)}, Target: scribe.Target{Host: fmt.Sprintf("host-%d", i)}}
+			}
+			count := 0
+			err = e.Run(context.Background(), tasks, func(r scribe.Result) error {
+				count++
+				if r.Status != scribe.Completed || fmt.Sprint(r.Output.Data) != "5000050000" || r.Output.Verdict != scribe.Unknown {
+					t.Errorf("unexpected result: %+v", r)
+				}
+				return nil
+			})
+			if err != nil || count != len(tasks) {
+				t.Fatalf("records=%d err=%v", count, err)
+			}
+		})
 	}
 }

@@ -1432,3 +1432,88 @@ Validation: make check passed (race suite, external SDK acceptance, vet,
 CGO-disabled CLI build and Windows/Darwin cross-compilation). No public API,
 wire schema or runtime policy changed. Live consumer cancellation/persistence
 remains separate and blocked on its contract. Phase 3 stays paused.
+
+## v1.32.0 — longer executed-Lua worker matrix (2026-11-12)
+
+Priority review selected the remaining workload-duration measurement gap in the
+parallel engine. The existing planner benchmark now shares its runner and source
+builder with BenchmarkPlannerLongExecution: 100,000 additions per action rather
+than 100. Both retain 32 scripts × 16 targets, workers 1/2/4/8, module limits
+0/1, and selected/unfiltered paths. Every action sum and all 512 terminal records
+are checked; selected runs complete 64 actions. A race-suite regression executes
+the same longer source at one and eight workers and checks explicit unknown
+verdicts, sums and complete records. Production scheduling and public APIs do
+not change.
+
+Environment: apps01 shared i9-13900H, Go 1.26.10 linux/amd64, GOMAXPROCS=8.
+Command: go test ./runtime/lua54 -run '^$' -bench
+'^BenchmarkPlannerLongExecution$' -benchtime=1x -count=3 -cpu=8.
+Samples ran without overlapping Scribe test/fuzz/load work. Longer CPU work
+shows useful parallel execution in this controlled workload; this is neither a
+before/after engine speedup nor network-bound throughput evidence. ns/op is
+batch latency; actions/s counts verified completed actions, excluding skips.
+One iteration per sample limits statistical confidence; shared-host variation
+remains. Raw samples follow.
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerLongExecution/workers=1/module_limit=0/selected=false-8         	       1	2651972837 ns/op	       193.1 actions/s	17148040 B/op	  170968 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=0/selected=false-8         	       1	2493481129 ns/op	       205.3 actions/s	16885744 B/op	  170546 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=0/selected=false-8         	       1	2391529978 ns/op	       214.1 actions/s	16816744 B/op	  170539 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=0/selected=true-8          	       1	 306805524 ns/op	       208.6 actions/s	 2339736 B/op	   23439 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=0/selected=true-8          	       1	 330864694 ns/op	       193.4 actions/s	 2339096 B/op	   23436 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=0/selected=true-8          	       1	 318042211 ns/op	       201.2 actions/s	 2339576 B/op	   23437 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=1/selected=false-8         	       1	2554064050 ns/op	       200.5 actions/s	16929704 B/op	  170580 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=1/selected=false-8         	       1	2513548492 ns/op	       203.7 actions/s	16960672 B/op	  170570 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=1/selected=false-8         	       1	2513193321 ns/op	       203.7 actions/s	16886656 B/op	  170548 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=1/selected=true-8          	       1	 311095297 ns/op	       205.7 actions/s	 2339832 B/op	   23446 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=1/selected=true-8          	       1	 283176910 ns/op	       226.0 actions/s	 2339576 B/op	   23437 allocs/op
+BenchmarkPlannerLongExecution/workers=1/module_limit=1/selected=true-8          	       1	 312331735 ns/op	       204.9 actions/s	 2339608 B/op	   23444 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=0/selected=false-8         	       1	1326673605 ns/op	       385.9 actions/s	17149048 B/op	  171146 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=0/selected=false-8         	       1	1261888061 ns/op	       405.7 actions/s	17054424 B/op	  171493 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=0/selected=false-8         	       1	1258762707 ns/op	       406.7 actions/s	17189584 B/op	  171936 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=0/selected=true-8          	       1	 153223796 ns/op	       417.7 actions/s	 2340472 B/op	   23442 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=0/selected=true-8          	       1	 164565580 ns/op	       388.9 actions/s	 2341448 B/op	   23451 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=0/selected=true-8          	       1	 164497597 ns/op	       389.1 actions/s	 2303032 B/op	   23437 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=1/selected=false-8         	       1	1482141688 ns/op	       345.4 actions/s	17200880 B/op	  170736 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=1/selected=false-8         	       1	1427020821 ns/op	       358.8 actions/s	17122864 B/op	  170699 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=1/selected=false-8         	       1	1408075861 ns/op	       363.6 actions/s	17386032 B/op	  170791 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=1/selected=true-8          	       1	 167437474 ns/op	       382.2 actions/s	 2381008 B/op	   23468 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=1/selected=true-8          	       1	 173073896 ns/op	       369.8 actions/s	 2381392 B/op	   23469 allocs/op
+BenchmarkPlannerLongExecution/workers=2/module_limit=1/selected=true-8          	       1	 172544260 ns/op	       370.9 actions/s	 2378216 B/op	   23458 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=0/selected=false-8         	       1	 896837459 ns/op	       570.9 actions/s	17721224 B/op	  171811 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=0/selected=false-8         	       1	1191895907 ns/op	       429.6 actions/s	17809016 B/op	  172722 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=0/selected=false-8         	       1	1332683267 ns/op	       384.2 actions/s	17793152 B/op	  173056 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=0/selected=true-8          	       1	 153258145 ns/op	       417.6 actions/s	 2460512 B/op	   23527 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=0/selected=true-8          	       1	 144247629 ns/op	       443.7 actions/s	 2457248 B/op	   23501 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=0/selected=true-8          	       1	 128698463 ns/op	       497.3 actions/s	 2421648 B/op	   23513 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=1/selected=false-8         	       1	1037927264 ns/op	       493.3 actions/s	17665432 B/op	  170883 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=1/selected=false-8         	       1	1202296994 ns/op	       425.9 actions/s	17631064 B/op	  170908 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=1/selected=false-8         	       1	1307615883 ns/op	       391.6 actions/s	17480264 B/op	  170883 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=1/selected=true-8          	       1	 146466960 ns/op	       437.0 actions/s	 2458784 B/op	   23512 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=1/selected=true-8          	       1	 144147901 ns/op	       444.0 actions/s	 2458032 B/op	   23512 allocs/op
+BenchmarkPlannerLongExecution/workers=4/module_limit=1/selected=true-8          	       1	 145455552 ns/op	       440.0 actions/s	 2456112 B/op	   23477 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=0/selected=false-8         	       1	1584413662 ns/op	       323.1 actions/s	17897456 B/op	  173373 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=0/selected=false-8         	       1	1600694092 ns/op	       319.9 actions/s	17721864 B/op	  171637 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=0/selected=false-8         	       1	1433445693 ns/op	       357.2 actions/s	17702144 B/op	  171985 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=0/selected=true-8          	       1	 178535823 ns/op	       358.5 actions/s	 2426408 B/op	   23495 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=0/selected=true-8          	       1	 145087833 ns/op	       441.1 actions/s	 2462056 B/op	   23512 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=0/selected=true-8          	       1	 149906761 ns/op	       426.9 actions/s	 2461336 B/op	   23462 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=1/selected=false-8         	       1	 943264683 ns/op	       542.8 actions/s	17552024 B/op	  170735 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=1/selected=false-8         	       1	1200597496 ns/op	       426.5 actions/s	17664056 B/op	  170746 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=1/selected=false-8         	       1	1043386598 ns/op	       490.7 actions/s	17671024 B/op	  170839 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=1/selected=true-8          	       1	 124256253 ns/op	       515.1 actions/s	 2458768 B/op	   23493 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=1/selected=true-8          	       1	 108831157 ns/op	       588.1 actions/s	 2460144 B/op	   23508 allocs/op
+BenchmarkPlannerLongExecution/workers=8/module_limit=1/selected=true-8          	       1	 100405299 ns/op	       637.4 actions/s	 2462112 B/op	   23527 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	42.654s
+```
+
+Validation: make check and make acceptance-local; logs at
+/tmp/scribe132-check.log and /tmp/scribe132-acceptance.log. Service reinstall
+and HTTP smoke are operational evidence, separate from live consumer durable
+persistence/cancellation acceptance, which remains blocked on its contract.
+Phase 3 stays paused; no NSE coverage expansion.
