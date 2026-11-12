@@ -68,7 +68,7 @@ var defaultMatcher = New(
 
 	Rule{Pattern: regexp.MustCompile(`^SSH-\S+-OpenSSH_([^\s]+)`), Service: "ssh", Product: "OpenSSH"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^nginx(?:/([^\s]+))?(?:$|\s)`), Service: "http", Product: "nginx"},
-	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Apache(?:/([^\s]+))?`), Service: "http", Product: "Apache"},
+	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Apache(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|[ \t])`), Service: "http", Product: "Apache"},
 )
 
 // Match bounds each input to 8 KiB. Callers decide whether to adopt inferred facts.

@@ -13,6 +13,8 @@ func TestProductCPESelection(t *testing.T) {
 		{"", "+OK Dovecot ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:*"},
 		{"", "220 FileZilla Server 1.9.4 ready\r\n", "FileZilla", "cpe:/a:filezilla-project:filezilla_server:1.9.4"},
 		{"", "220-FileZilla Server", "FileZilla", "cpe:/a:filezilla-project:filezilla_server:*"},
+		{"Apache/2.4.62 (Unix)", "", "Apache", "cpe:/a:apache:http_server:2.4.62"},
+		{"Apache", "", "Apache", "cpe:/a:apache:http_server:*"},
 		{"Varnish/7.6.1", "", "Varnish", "cpe:/a:varnish-cache:varnish:7.6.1"},
 		{"Varnish", "", "Varnish", "cpe:/a:varnish-cache:varnish:*"},
 		{"Squid/7.6.1", "", "Squid", "cpe:/a:squid-cache:squid:7.6.1"},
@@ -64,5 +66,24 @@ func TestProductCPESelection(t *testing.T) {
 	}
 	if got := inferredCPE("Caddy", "2.8:injected"); len(got) != 0 {
 		t.Fatal(got)
+	}
+}
+
+func TestApacheMisleadingIdentity(t *testing.T) {
+	for _, header := range []string{"ApacheProxy", "ApacheTomcat/9.0", "Apache/2..4", "Apache/2.4evil", "Apache/", "Apache/2.4:injected"} {
+		t.Run(header, func(t *testing.T) {
+			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
+			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
+			m := Match{Products: []string{"Apache"}}
+			if ok, id := m.evaluate(observed); ok || id {
+				t.Fatalf("misleading identity accepted: %+v", observed)
+			}
+			if reason := m.skipReason(observed); reason != "declarative match: product identification missing" {
+				t.Fatal(reason)
+			}
+			if len(observed.CPE) != 0 {
+				t.Fatal(observed.CPE)
+			}
+		})
 	}
 }

@@ -614,3 +614,11 @@ Client.HeadFunction and grant http.head. The additive public method was reviewed
 and the API fixture updated. Behavioral loopback tests pin method/path, large
 Content-Length without body download, redirects and invalid authority rejection.
 No throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+
+v1.91.0 tightens Apache HTTP Server identity boundaries in the shared planner
+fingerprint path. Misleading prefixes and malformed numeric versions no longer
+supply product/CPE evidence. Original fixtures retain versionless and versioned
+Apache identities, caller authority, exact product skip diagnostics and CPE-only
+false-clean guards. No public API change or throughput claim; live consumer
+persistence remains separate. Phase 3 stays paused.

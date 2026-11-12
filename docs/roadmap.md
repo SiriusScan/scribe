@@ -2443,3 +2443,16 @@ Validation: make check passed (race suite, external SDK acceptance,
 Windows/Darwin cross-builds, vet and CGO-disabled build), /tmp/scribe190-check.log.
 Focused HEAD CLI race regression passed separately after adding that test.
 Deployment POST smoke is operational evidence, not live consumer acceptance.
+
+
+v1.91.0 tightens Apache HTTP Server identity boundaries in the shared planner
+fingerprint path. Misleading prefixes and malformed numeric versions no longer
+supply product/CPE evidence. Original fixtures retain versionless and versioned
+Apache identities, caller authority, exact product skip diagnostics and CPE-only
+false-clean guards. No public API change or throughput claim; live consumer
+persistence remains separate. Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe191-check.log.
+Bounded race planner fuzz passed with 124/806 baseline seeds; mutations did not
+begin (/tmp/scribe191-fuzz.log). Service smoke remains operational evidence.
