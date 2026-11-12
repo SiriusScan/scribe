@@ -27,7 +27,8 @@ func mergeProbe(t, f Target) Target {
 	if t.Banner == "" {
 		t.Banner = f.Banner
 	}
-	identityCompatible := t.Product == "" || f.Product == "" || t.Product == f.Product
+	identityCompatible := (t.Product == "" || f.Product == "" || t.Product == f.Product) &&
+		(t.Version == "" || f.Version == "" || t.Version == f.Version)
 	if t.Confidence == 0 && identityCompatible {
 		t.Confidence = f.Confidence
 	}
@@ -135,7 +136,9 @@ func probe(ctx context.Context, t Target) Target {
 	}
 	f := fingerprint.Default().Match(string(b[:n]), http.Header{})
 	facts.CPE = inferredCPE(f.Product, f.Version)
-	facts.Confidence = 0.8
+	if f.Product != "" {
+		facts.Confidence = 0.8
+	}
 	facts.Banner = string(b[:n])
 	facts.Service, facts.Product, facts.Version = f.Service, f.Product, f.Version
 	return facts
