@@ -1,0 +1,64 @@
+File: lua54.test
+Build ID: cc259fb0fa6c31d47914f17f8c42509d5d9fe665
+Type: alloc_space
+Time: 2026-11-12 19:12:41 UTC
+Showing nodes accounting for 10480.23MB, 97.29% of 10771.84MB total
+Dropped 127 nodes (cum <= 53.86MB)
+      flat  flat%   sum%        cum   cum%
+ 6071.79MB 56.37% 56.37%  6071.79MB 56.37%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*hashTable).grow
+  844.04MB  7.84% 64.20%  4303.52MB 39.95%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).SetEnvGoFunc
+  567.51MB  5.27% 69.47%   567.51MB  5.27%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.StringValue (inline)
+  502.99MB  4.67% 74.14%   710.50MB  6.60%  github.com/SiriusScan/scribe.(*Engine).run
+  474.13MB  4.40% 78.54%  1066.72MB  9.90%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.New
+  238.61MB  2.22% 80.76%  1386.59MB 12.87%  github.com/SiriusScan/scribe/runtime/lua54.runNative
+  209.04MB  1.94% 82.70%   209.04MB  1.94%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.mkValuePool (inline)
+  175.02MB  1.62% 84.32%   175.02MB  1.62%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewThread
+  171.03MB  1.59% 85.91%   171.03MB  1.59%  github.com/SiriusScan/scribe/runtime/lua54.(*conversion).fromLua
+  136.54MB  1.27% 87.18%  6700.43MB 62.20%  github.com/SiriusScan/scribe/runtime/lua54.loadLibraries
+  135.55MB  1.26% 88.44%  8602.68MB 79.86%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).Execute.func4
+  134.50MB  1.25% 89.69%   134.50MB  1.25%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewTable (inline)
+  112.02MB  1.04% 90.73%   112.02MB  1.04%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.mkCellPool (inline)
+  111.52MB  1.04% 91.76%   111.52MB  1.04%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*valuePool).get (inline)
+  108.51MB  1.01% 92.77%   169.51MB  1.57%  fmt.Sprintf
+   95.51MB  0.89% 93.65%    95.51MB  0.89%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime/internal/luagc.NewClonePool (inline)
+   77.51MB  0.72% 94.37%    78.01MB  0.72%  github.com/SiriusScan/scribe.NewIndex
+   60.01MB  0.56% 94.93%    60.01MB  0.56%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*runtimeContextManager).PopContext
+   59.50MB  0.55% 95.48%    59.50MB  0.55%  fmt.(*pp).printValue
+   56.51MB  0.52% 96.01%   103.01MB  0.96%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*runtimeContextManager).PushContext
+   50.50MB  0.47% 96.48%    90.01MB  0.84%  context.WithDeadlineCause
+   47.50MB  0.44% 96.92%   184.51MB  1.71%  github.com/SiriusScan/scribe.(*Engine).run.func3
+   13.50MB  0.13% 97.04%       58MB  0.54%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewTerminationWith (inline)
+      10MB 0.093% 97.14%  9932.43MB 92.21%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).Execute
+       9MB 0.084% 97.22% 10051.94MB 93.32%  github.com/SiriusScan/scribe.(*Engine).execute
+    7.89MB 0.073% 97.29%   718.39MB  6.67%  github.com/SiriusScan/scribe/runtime/lua54.benchmarkPlannerExecution.func1
+         0     0% 97.29%    90.01MB  0.84%  context.WithDeadline (inline)
+         0     0% 97.29%    90.01MB  0.84%  context.WithTimeout
+         0     0% 97.29%    59.50MB  0.55%  fmt.(*pp).doPrintf
+         0     0% 97.29%    59.50MB  0.55%  fmt.(*pp).printArg
+         0     0% 97.29%    79.16MB  0.73%  github.com/SiriusScan/scribe.(*Engine).Run
+         0     0% 97.29%   631.34MB  5.86%  github.com/SiriusScan/scribe.(*Engine).RunSelected
+         0     0% 97.29% 10051.94MB 93.32%  github.com/SiriusScan/scribe.(*Engine).run.func5
+         0     0% 97.29%   631.34MB  5.86%  github.com/SiriusScan/scribe.(*Engine).runTargets
+         0     0% 97.29%  1925.31MB 17.87%  github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/mathlib.load
+         0     0% 97.29%  2539.23MB 23.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/stringlib.load
+         0     0% 97.29%   149.02MB  1.38%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Closure).Continuation
+         0     0% 97.29%   217.01MB  2.01%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*LuaCont).RunInThread
+         0     0% 97.29%  2991.30MB 27.77%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).SetEnv
+         0     0% 97.29%  6071.79MB 56.37%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).SetTable
+         0     0% 97.29%  6071.79MB 56.37%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Table).Set
+         0     0% 97.29%  8765.70MB 81.38%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).CallContext
+         0     0% 97.29%    60.01MB  0.56%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).CallContext.func1
+         0     0% 97.29%   217.01MB  2.01%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).RunContinuation
+         0     0% 97.29%   366.03MB  3.40%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).call
+         0     0% 97.29%  6071.79MB 56.37%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*mixedTable).grow
+         0     0% 97.29%  6071.79MB 56.37%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*mixedTable).insert
+         0     0% 97.29%   366.03MB  3.40%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.Call
+         0     0% 97.29%   424.04MB  3.94%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.Call1
+         0     0% 97.29%   149.02MB  1.38%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewLuaCont
+         0     0% 97.29%   179.01MB  1.66%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.SetIndex
+         0     0% 97.29%    95.51MB  0.89%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime/internal/luagc.NewDefaultPool (inline)
+         0     0% 97.29%   713.42MB  6.62%  github.com/SiriusScan/scribe/runtime/lua54.(*conversion).toLua
+         0     0% 97.29%   231.04MB  2.14%  github.com/SiriusScan/scribe/runtime/lua54.nativeOutput
+         0     0% 97.29%       93MB  0.86%  github.com/SiriusScan/scribe/runtime/lua54.setFunction (inline)
+         0     0% 97.29%   712.31MB  6.61%  testing.(*B).launch
+         0     0% 97.29%   718.89MB  6.67%  testing.(*B).runN

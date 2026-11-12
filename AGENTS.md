@@ -270,3 +270,9 @@ live consumer persistence remains separate and Phase 3 stays paused.
 v1.40.0 reuses index-owned immutable selection metadata during selected engine
 execution. Direct tasks retain metadata validation; evaluate endpoint matches and
 clean gates per invocation. No measured throughput claim. Phase 3 stays paused.
+
+v1.41.0 records the verified executed-Lua allocation baseline in docs/benchmarks.
+Library initialization dominates sampled allocation bytes; cumulative profile
+percentages overlap. Preserve invocation-owned tables and accounted SetEnv when
+extending immutable builtin reuse. Allocation reduction remains unfinished;
+shared-host measurements establish no speedup. Phase 3 stays paused.

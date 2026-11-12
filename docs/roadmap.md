@@ -1649,3 +1649,34 @@ remains separate.
 Validation: make check (/tmp/scribe140-check.log), plus bounded race planner fuzz
 (/tmp/scribe140-fuzz.log; 259/796 baseline seeds, no mutations). Service reinstall and complete POST /run smoke provide
 operational evidence only.
+
+## v1.41.0 — executed-engine allocation baseline (2026-11-12)
+
+Takes the profiling portion of the unfinished VM initialization allocation slice.
+Reuses BenchmarkPlannerExecution with four workers, module limit zero and both
+selection paths. Go 1.26.10 linux/amd64, i9-13900H, GOMAXPROCS=4 (benchmark suffix).
+No concurrent Scribe checks, fuzzing or deployment ran during measurement; other
+projects share this host. Warm runtime caches; 100 Lua additions per action.
+
+Command: `go test ./runtime/lua54 -run '^$' -bench '^BenchmarkPlannerExecution/workers=4/module_limit=0/' -benchmem -count=3 -memprofile=/tmp/scribe141.mem`.
+Raw samples: [planner](benchmarks/v1.41.0-planner.txt),
+[allocation profile](benchmarks/v1.41.0-allocations.txt).
+
+Unfiltered batches execute 512 actions and emit 512 terminal records: 10.51–14.79
+ms/batch, 34,623–48,724 actions/s, approximately 15.87 MB/batch. Selected batches
+execute 64 actions and emit 448 skips: 1.38–2.45 ms/batch, 26,116–46,387 actions/s,
+approximately 2.09 MB/batch. Actions/s divides executed actions by batch seconds,
+not total records. Every batch verifies action sums and terminal counts. Selection
+reduces work; its batch latency must not be interpreted as a throughput speedup.
+
+Sampled alloc_space attributes 56.37% flat bytes to hashTable.grow, 62.20%
+cumulative to loadLibraries, and 39.95% cumulative to SetEnvGoFunc. Cumulative
+percentages overlap and must not be added. This measures allocated bytes, not
+retained heap or CPU time. The next implementation candidate is immutable math/
+string builtin function reuse following the existing table-library pattern, while
+keeping mutable tables invocation-owned and SetEnv accounting intact. That
+reduction remains unfinished; this release makes no optimization/speedup claim.
+
+Validation: make check passed (/tmp/scribe141-check.log). Service reinstall and
+complete POST /run smoke are operational evidence only. Live consumer persistence
+remains separate; Phase 3 stays paused.
