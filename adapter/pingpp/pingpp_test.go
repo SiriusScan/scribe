@@ -81,3 +81,31 @@ func FuzzReader(f *testing.F) {
 		}
 	})
 }
+
+// Conflicting versions must not depend on the order of wire claims.
+func TestConflictingVersionOrder(t *testing.T) {
+	for _, reverse := range []bool{false, true} {
+		data, err := os.ReadFile("testdata/scan.jsonl")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var d Document
+		if err := json.Unmarshal(data, &d); err != nil {
+			t.Fatal(err)
+		}
+		d.Asset.Claims = append(d.Asset.Claims, Claim{Subject: "192.0.2.1/tcp/443", Kind: "product", Product: "nginx", Version: "other", Confidence: "strong"})
+		if reverse {
+			for i, j := 0, len(d.Asset.Claims)-1; i < j; i, j = i+1, j-1 {
+				d.Asset.Claims[i], d.Asset.Claims[j] = d.Asset.Claims[j], d.Asset.Claims[i]
+			}
+		}
+		targets, err := Targets(d)
+		if err != nil || len(targets) != 1 {
+			t.Fatalf("targets=%+v err=%v", targets, err)
+		}
+		got := targets[0]
+		if got.Product != "" || got.Version != "" || got.Service != "http" || !got.TLS {
+			t.Fatalf("conflicting identity: %+v", got)
+		}
+	}
+}

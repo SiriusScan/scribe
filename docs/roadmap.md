@@ -861,3 +861,22 @@ real-world corpus acquisition remain open. No NSE expansion or performance claim
 Phase 3 stays paused.
 
 The bounded identity-authority fuzz campaign passed 18,577 executions.
+
+## v1.12.0 — trusted TLS corpus and adapter conflict coverage (2026-11-12)
+
+The pinned TLS marker script now executes against a loopback TLS listener using
+an ephemeral locally generated CA certificate. An isolated test process trusts
+that CA through the system root configuration used by the existing TCP capability;
+certificate verification stays enabled. Shared socket assertions require completed
+vulnerable, not_vulnerable and unknown marker results, while existing untrusted
+TLS cases still require failed/unknown records. No production API was needed.
+
+The existing pingpp.scan/v1 adapter now has regression coverage for contradictory
+versions of the same product in both claim orders. Product/version remain unknown
+while independent HTTP and TLS observations survive. No second mapper or upstream
+schema change, NSE expansion, or performance claim. Phase 3 stays paused.
+
+Validation: make check and make acceptance-local passed. These establish local
+transport, SDK, race, static and cross-build evidence, separate from live
+Sirius/vGPT cancellation and persisted-report acceptance. Broader real-world
+corpus acquisition and live consumer acceptance remain open.
