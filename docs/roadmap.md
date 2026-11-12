@@ -1748,3 +1748,18 @@ public API change, throughput claim, or live consumer acceptance. Phase 3 stays 
 Validation: make check (/tmp/scribe144-check.log); bounded race FuzzReader passed
 with 2,591 executions (/tmp/scribe144-fuzz.log). Service reinstall and POST /run
 smoke are operational evidence, separate from live consumer persistence.
+
+## v1.45.0 — combine partial adapter version evidence (2026-11-12)
+
+Continues the pingpp.scan/v1 adapter capability backlog: accepted claims agreeing
+on product now retain a supplied version when sibling claims omit their version.
+Missing evidence does not contradict a known version; two different nonempty
+versions still leave the version unknown, including after later empty claims.
+Existing endpoint isolation, confidence and contradiction filters remain intact.
+Focused order and conflict regressions accompany the shared mapper change.
+No public API or wire change, throughput claim or live consumer acceptance.
+Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe145-check.log) and bounded race FuzzReader
+(/tmp/scribe145-fuzz.log). Service reinstall and complete POST /run smoke provide
+operational evidence only, separate from live consumer persistence acceptance.

@@ -116,10 +116,12 @@ func Targets(d Document) ([]scribe.Target, error) {
 				}
 			case "product":
 				if c.Product != "" {
-					if old, ok := products[c.Product]; ok && old != c.Version {
+					if old, ok := products[c.Product]; ok && old != "" && c.Version != "" && old != c.Version {
 						conflict = true
 					}
-					products[c.Product] = c.Version
+					if c.Version != "" || products[c.Product] == "" {
+						products[c.Product] = c.Version
+					}
 				}
 			}
 		}

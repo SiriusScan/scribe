@@ -272,3 +272,28 @@ func TestProductAgreementWithVersionConflict(t *testing.T) {
 		}
 	}
 }
+
+func TestProductVersionMissingClaims(t *testing.T) {
+	data, err := os.ReadFile("testdata/scan.jsonl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, versions := range [][]string{{"", "1.24"}, {"1.24", ""}, {"", "1.24", "", "1.25", ""}} {
+		var d Document
+		if err := json.Unmarshal(data, &d); err != nil {
+			t.Fatal(err)
+		}
+		d.Asset.Claims = nil
+		for _, v := range versions {
+			d.Asset.Claims = append(d.Asset.Claims, Claim{Subject: "192.0.2.1/tcp/443", Kind: "product", Product: "nginx", Version: v, Confidence: "strong"})
+		}
+		want := "1.24"
+		if len(versions) > 2 {
+			want = ""
+		}
+		targets, err := Targets(d)
+		if err != nil || len(targets) != 1 || targets[0].Product != "nginx" || targets[0].Version != want {
+			t.Fatalf("versions=%v: %+v %v", versions, targets, err)
+		}
+	}
+}

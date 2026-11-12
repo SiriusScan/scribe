@@ -293,3 +293,8 @@ persistence remains separate and Phase 3 stays paused.
 v1.44.0 retains agreed pingpp product identity when accepted claims disagree
 only on version; the version stays unknown regardless of claim order.
 Different products remain unknown. Phase 3 stays paused.
+
+v1.45.0 combines partial pingpp product-version evidence: absent versions do not
+contradict a supplied version for an agreed product. Distinct nonempty versions
+remain unknown regardless of empty/repeated claims or ordering. Preserve endpoint
+isolation and accepted-claim filtering. Phase 3 stays paused.
