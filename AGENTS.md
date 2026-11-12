@@ -520,3 +520,8 @@ facts remain distinct from observed mismatches; mixed alternative failures retai
 the general reason. Selection and false-clean gates remain conservative. No public
 API change or throughput claim. Live consumer persistence remains separate;
 Phase 3 stays paused.
+
+v1.78.0 assembles fragmented first TCP/TLS banner lines within the existing
+50 ms banner window, 250 ms endpoint budget and 8 KiB ceiling. Partial/stalled
+responses remain bounded; pinned fingerprints alone establish identity. No
+throughput claim; live consumer persistence remains separate. Phase 3 stays paused.

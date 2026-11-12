@@ -1,6 +1,7 @@
 package scribe
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -84,7 +85,16 @@ func probe(ctx context.Context, t Target) Target {
 	c.SetDeadline(deadline)
 	b := make([]byte, 8192)
 	c.SetReadDeadline(time.Now().Add(50 * time.Millisecond))
-	n, _ := c.Read(b)
+	n, readErr := c.Read(b)
+	// Assemble a fragmented first banner line without enlarging the endpoint budget.
+	for n > 0 && n < len(b) && readErr == nil && !bytes.Contains(b[:n], []byte("\n")) {
+		var more int
+		more, readErr = c.Read(b[n:])
+		n += more
+		if more == 0 {
+			break
+		}
+	}
 	c.SetDeadline(deadline)
 	if n == 0 {
 		if !t.TLS && !facts.TLS {

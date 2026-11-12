@@ -2248,3 +2248,16 @@ cross-builds, vet and CGO-disabled CLI build), /tmp/scribe177-check.log.
 Bounded planner race fuzz passed with 129/796 baseline seeds; mutations did
 not begin (/tmp/scribe177-fuzz.log). Deployment smoke is operational evidence
 only, separate from live consumer persistence acceptance.
+
+v1.78.0 extends planner identification to fragmented first-line TCP/TLS banners.
+The existing connection read path assembles chunks through the first newline,
+EOF, read deadline or 8 KiB ceiling. The 50 ms banner window and 250 ms endpoint
+budget remain authoritative. Loopback regressions pin split OpenSSH identity
+and bounded stalled partial replies. No public API change or throughput claim;
+live consumer persistence remains separate and Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe178-check.log.
+Bounded race planner fuzz passed with 119/796 baseline seeds covered; mutations
+did not begin (/tmp/scribe178-fuzz.log). Deployment smoke is operational evidence
+only, separate from live consumer workflow persistence acceptance.

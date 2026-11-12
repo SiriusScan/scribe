@@ -534,3 +534,8 @@ facts remain distinct from observed mismatches; mixed alternative failures retai
 the general reason. Selection and false-clean gates remain conservative. No public
 API change or throughput claim. Live consumer persistence remains separate;
 Phase 3 stays paused.
+
+Planner banner probes assemble fragmented first lines on TCP and TLS within the
+existing 50 ms banner window, 250 ms endpoint budget and 8 KiB response ceiling.
+This supports split protocol greetings without adding retries or discovery.
+Fingerprint observations remain separate from vulnerability verdicts.
