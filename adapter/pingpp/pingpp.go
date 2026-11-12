@@ -204,7 +204,7 @@ func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 			r.pending, err = Targets(d)
 		}
 		if err != nil {
-			r.err = fmt.Errorf("ping++ line %d: %w", r.lines, err)
+			r.err = fmt.Errorf("ping++ line %d: %s", r.lines, boundedDiagnostic(err.Error()))
 		}
 	}
 }

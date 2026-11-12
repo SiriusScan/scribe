@@ -233,3 +233,17 @@ func TestInvalidEndpointDiagnosticsBounded(t *testing.T) {
 		})
 	}
 }
+
+func TestReaderBoundsDecoderDiagnostics(t *testing.T) {
+	// Overflow diagnostics include the complete untrusted numeric token.
+	input := `{"schema_version":"pingpp.scan/v1","asset":{"endpoints":[{"port":` + strings.Repeat("9", 16384) + `}]}}`
+	r := NewReader(strings.NewReader(input))
+	_, ok, err := r.Next(context.Background())
+	if ok || err == nil || len(err.Error()) > 1100 || !strings.Contains(err.Error(), "truncated") {
+		t.Fatalf("ok=%v error=%v", ok, err)
+	}
+	_, ok, again := r.Next(context.Background())
+	if ok || again != err {
+		t.Fatalf("terminal error changed: %v", again)
+	}
+}

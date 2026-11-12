@@ -242,3 +242,7 @@ v1.32.0 shares the verified planner benchmark runner with a 100,000-addition
 Lua workload and pins its one/eight-worker sums and unknown verdicts in the race
 suite. Retain full terminal counts and raw samples; longer CPU scaling is local
 measurement, not network or live consumer acceptance. Phase 3 stays paused.
+
+v1.35.0 bounds pingpp JSON decoder diagnostics through the existing formatter.
+Preserve terminal reader failures, zero targets and explicit truncation for
+oversized numeric tokens. Live consumer acceptance remains separate; Phase 3 paused.

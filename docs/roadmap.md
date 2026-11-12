@@ -1552,3 +1552,17 @@ CLI build and Windows/Darwin cross-builds), log /tmp/scribe134-check.log.
 Service reinstall and POST /run smoke are operational evidence only; live
 consumer cancellation and durable persistence remain separate and blocked on
 the consumer contract.
+
+## v1.35.0 — bounded pingpp decoder diagnostics (2026-11-12)
+
+The existing reader applies boundedDiagnostic to decoder failures as well as
+adapter validation errors. Overflowing numeric JSON tokens can otherwise echo
+nearly an entire bounded input line into an error. The regression requires
+explicit truncation, a bounded diagnostic, zero targets and a stable terminal
+error on repeated reads. No public API or wire changes and no throughput claim.
+
+Validation: make check, log /tmp/scribe135-check.log; bounded race FuzzReader
+campaign passed with 12,597 executions, log /tmp/scribe135-fuzz.log. Service
+reinstall and POST /run smoke provide operational evidence only. Live consumer
+persistence/cancellation remains blocked on its route/store contract; Phase 3
+stays paused.
