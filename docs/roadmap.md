@@ -2504,3 +2504,12 @@ separate full race suite (/tmp/scribe194-race.log). Focused planner/adapter race
 regressions passed. Bounded planner race fuzz passed with 90/806 baseline seeds;
 mutations did not begin (/tmp/scribe194-fuzz.log). Deployment POST smoke is
 local operational evidence, separate from live consumer persistence acceptance.
+
+v1.95.0 extends native HTTP execution with explicit bounded request headers,
+allowing header-dependent vulnerability probes through the existing GET/HEAD
+client and CLI/POST registry. Shared validation rejects invalid/ambiguous fields
+and authority/framing overrides before network I/O. Loopback tests verify both
+methods and require zero requests for rejected headers. No public signature
+change or throughput claim. Live consumer persistence remains separate; Phase 3
+stays paused. Validation: make check evidence in /tmp/scribe195-check.log;
+deployment POST smoke is local operational evidence only.

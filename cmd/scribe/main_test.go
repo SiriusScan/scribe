@@ -188,6 +188,9 @@ func TestCLIRegistersHEADForTheKnownEndpoint(t *testing.T) {
 	var receivedHost atomic.Value
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
+		if r.Header.Get("X-Probe") != "marker" {
+			t.Error("missing Lua request header")
+		}
 		receivedHost.Store(r.Host)
 		fmt.Fprint(w, "local fixture")
 	}))
@@ -199,7 +202,7 @@ func TestCLIRegistersHEADForTheKnownEndpoint(t *testing.T) {
 	path := scriptFile(t, `return {
   api_version = 1,
   action = function()
-    local response = sirius.call("http.head", "/fixture")
+    local response = sirius.call("http.head", "/fixture", {["X-Probe"] = "marker"})
     return {data = {status = response.status, body = response.body}}
   end
 }`)

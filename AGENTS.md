@@ -644,3 +644,8 @@ pingpp.Run regression requires zero reads and zero result callbacks. Existing
 nonempty selection, cancellation and verdict semantics remain authoritative.
 No public API change or throughput claim. Live consumer persistence remains
 separate; Phase 3 stays paused.
+
+v1.95.0 adds optional explicit request headers to existing http.get/http.head.
+Validate all headers before I/O; bound to 64 entries and 8 KiB, reject ambiguous
+names and reserved authority/framing/proxy headers. Keep headers invocation-owned,
+endpoint confinement and verdict semantics intact. Phase 3 stays paused.

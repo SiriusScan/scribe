@@ -316,3 +316,37 @@ func TestHeadKnownTarget(t *testing.T) {
 		t.Fatal("invalid path reached endpoint")
 	}
 }
+
+func TestExplicitRequestHeaders(t *testing.T) {
+	var calls atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		if r.Header.Get("X-Probe") != "marker" {
+			t.Error("missing explicit header")
+		}
+		w.WriteHeader(204)
+	}))
+	defer srv.Close()
+	c := newClient(t, Options{})
+	target := fixtureTarget(t, srv.URL)
+	for _, fn := range []scribe.Function{c.Function, c.HeadFunction} {
+		result, err := fn(context.Background(), target, []any{"/", map[string]any{"X-Probe": "marker"}})
+		if err != nil || result.(map[string]any)["status"] != int64(204) {
+			t.Fatalf("%v %v", result, err)
+		}
+	}
+	for _, headers := range []any{
+		"invalid", map[string]any{"Host": "evil"}, map[string]any{"Content-Length": "3"},
+		map[string]any{"X-Test": "bad\r\nInjected: yes"}, map[string]any{"Bad Name": "value"},
+		map[string]any{"X-Test": false}, map[string]any{"X-Test": strings.Repeat("a", 8192)},
+		map[string]any{"X-Test": "a", "x-test": "b"},
+	} {
+		result, err := c.Function(context.Background(), target, []any{"/", headers})
+		if err == nil || result != nil {
+			t.Fatalf("accepted invalid headers: %v", headers)
+		}
+	}
+	if calls.Load() != 2 {
+		t.Fatalf("invalid request reached socket: %d", calls.Load())
+	}
+}

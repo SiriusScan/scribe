@@ -110,7 +110,9 @@ func (c *Client) Close() {
 }
 
 // Function implements scribe.Function for the "http.get" capability. Its single
-// argument must be an origin-form path such as "/status?detail=1". Results contain
+// argument must be an origin-form path such as "/status?detail=1". An optional
+// second argument is a map[string]any of string header values (64 entries,
+// 8 KiB total names and values). Authority/framing headers are reserved. Results contain
 // status (integer), body (string), and headers (lowercase names to string arrays).
 // Non-2xx responses are returned as evidence; redirects are never followed.
 // A body larger than MaxBodyBytes returns an error, never a partial success.
@@ -138,12 +140,49 @@ func (c *Client) request(ctx context.Context, target scribe.Target, args []any, 
 	if target.Port == 0 || target.Protocol != "tcp" {
 		return nil, fmt.Errorf("HTTP requires an explicit TCP target and nonzero port")
 	}
-	if len(args) != 1 {
-		return nil, fmt.Errorf("http.get requires exactly one origin-form path")
+	if len(args) < 1 || len(args) > 2 {
+		return nil, fmt.Errorf("HTTP requires an origin-form path and optional headers")
 	}
 	path, ok := args[0].(string)
 	if !ok {
 		return nil, fmt.Errorf("http.get path must be a string")
+	}
+	headers := make(http.Header)
+	if len(args) == 2 {
+		values, ok := args[1].(map[string]any)
+		if !ok || len(values) > 64 {
+			return nil, fmt.Errorf("HTTP headers must be a map with at most 64 entries")
+		}
+		total := 0
+		for name, raw := range values {
+			value, ok := raw.(string)
+			if !ok || name == "" {
+				return nil, fmt.Errorf("HTTP header names and values must be strings")
+			}
+			for _, ch := range name {
+				if !strings.ContainsRune("!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", ch) {
+					return nil, fmt.Errorf("invalid HTTP header name")
+				}
+			}
+			for _, ch := range value {
+				if (ch < 32 && ch != '\t') || ch == 127 {
+					return nil, fmt.Errorf("invalid HTTP header value")
+				}
+			}
+			key := http.CanonicalHeaderKey(name)
+			switch key {
+			case "Host", "Content-Length", "Transfer-Encoding", "Connection", "Trailer", "Upgrade", "Proxy-Authorization", "Proxy-Connection":
+				return nil, fmt.Errorf("HTTP header %s is reserved", key)
+			}
+			if _, exists := headers[key]; exists {
+				return nil, fmt.Errorf("duplicate HTTP header %s", key)
+			}
+			total += len(name) + len(value)
+			if total > 8192 {
+				return nil, fmt.Errorf("HTTP request headers exceed 8192 bytes")
+			}
+			headers.Set(key, value)
+		}
 	}
 	u, err := originPath(path)
 	if err != nil {
@@ -164,6 +203,7 @@ func (c *Client) request(ctx context.Context, target scribe.Target, args []any, 
 	if err != nil {
 		return nil, fmt.Errorf("create HTTP request: %w", err)
 	}
+	req.Header = headers
 	client, release, err := c.acquire(u.Scheme + "://" + u.Host + "/" + connectionHost)
 	if err != nil {
 		return nil, err
@@ -181,17 +221,17 @@ func (c *Client) request(ctx context.Context, target scribe.Target, args []any, 
 	if int64(len(body)) > c.maxBodyBytes {
 		return nil, fmt.Errorf("HTTP response body exceeds %d bytes", c.maxBodyBytes)
 	}
-	headers := make(map[string]any, len(resp.Header))
+	responseHeaders := make(map[string]any, len(resp.Header))
 	for name, values := range resp.Header {
 		copyValues := make([]any, len(values))
 		for i, value := range values {
 			copyValues[i] = value
 		}
-		headers[strings.ToLower(name)] = copyValues
+		responseHeaders[strings.ToLower(name)] = copyValues
 	}
 	return map[string]any{
 		"status":  int64(resp.StatusCode),
-		"headers": headers,
+		"headers": responseHeaders,
 		"body":    string(body),
 	}, nil
 }

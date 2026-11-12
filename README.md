@@ -609,3 +609,11 @@ pingpp.Run regression requires zero reads and zero result callbacks. Existing
 nonempty selection, cancellation and verdict semantics remain authoritative.
 No public API change or throughput claim. Live consumer persistence remains
 separate; Phase 3 stays paused.
+
+HTTP scripts may supply explicit request headers with either capability:
+`sirius.call("http.get", "/status", {["X-Probe"] = "marker"})` (also
+`http.head`). Headers are invocation-local string values, limited to 64 entries
+and 8 KiB combined names/values. Invalid names, control characters, duplicate
+case-insensitive names and authority/framing/proxy headers fail before network
+I/O. The existing fixed endpoint, verified TLS, response limits and redirect
+policy apply. Responses remain evidence; scripts must explicitly decide verdicts.
