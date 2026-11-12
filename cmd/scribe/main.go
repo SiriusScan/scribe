@@ -21,6 +21,7 @@ import (
 	"github.com/SiriusScan/scribe/adapter/pingpp"
 	"github.com/SiriusScan/scribe/capability/httpcap"
 	"github.com/SiriusScan/scribe/capability/tcpcap"
+	"github.com/SiriusScan/scribe/capability/udpcap"
 	"github.com/SiriusScan/scribe/runtime/lua54"
 )
 
@@ -348,7 +349,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	defer httpClient.Close()
 	options := lua54.Options{
 		Limits:    lua54.Limits{CPU: *cpu, Memory: *memory, Timeout: *timeout},
-		Functions: map[string]scribe.Function{"http.get": httpClient.Function, "tcp.exchange": tcpcap.Function},
+		Functions: map[string]scribe.Function{"http.get": httpClient.Function, "tcp.exchange": tcpcap.Function, "udp.exchange": udpcap.Function},
 	}
 	var runtime scribe.Runtime
 	if *dialect == string(scribe.Sirius) {

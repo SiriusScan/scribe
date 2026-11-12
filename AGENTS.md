@@ -426,3 +426,15 @@ responses. Empty EOF succeeds with eof=true; replies above 64 KiB and transport
 errors fail without partial output. The existing verified TLS/session path and
 shared five-second deadline apply. Local socket evidence is separate from live
 consumer persistence acceptance. Phase 3 stays paused.
+
+
+v1.67.0 adds `udp.exchange` through the existing native capability registry and
+CLI/POST runner: `sirius.call("udp.exchange", "REQUEST")` sends one datagram and
+returns `{data=...}` from the connected explicit UDP endpoint. Payload and reply
+are bounded to 65507 bytes, with one five-second deadline tightened by context.
+Empty datagrams are valid; transport errors produce no successful output.
+Scripts must validate protocol correlation and explicitly decide verdicts. SDK
+users opt in with capability/udpcap.Function and exact udp.exchange grants.
+This closes the native UDP transport gap; it adds no discovery or retries.
+Local socket evidence is separate from live consumer persistence acceptance.
+Phase 3 stays paused.

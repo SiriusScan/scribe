@@ -397,6 +397,8 @@ capability/localcap: func New(directory string) (map[string]scribe.Function, fun
 
 capability/tcpcap: func Function(ctx context.Context, target scribe.Target, args []any) (any, error)
 
+capability/udpcap: func Function(ctx context.Context, target scribe.Target, args []any) (any, error)
+
 compat: const (
 	Pass Status = "pass"
 

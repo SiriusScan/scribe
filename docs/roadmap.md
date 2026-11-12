@@ -2088,3 +2088,23 @@ Validation: make check passed (race suite, external SDK acceptance, Windows/Darw
 cross-compilation, vet and CGO-disabled CLI build). Focused loopback tests cover
 empty EOF, fragmented-sized replies, exactly 64 KiB and overflow; an injected
 transport failure verifies that partial bytes are discarded. No throughput claim.
+
+## v1.67.0 — bounded native UDP exchanges
+
+
+v1.67.0 adds `udp.exchange` through the existing native capability registry and
+CLI/POST runner: `sirius.call("udp.exchange", "REQUEST")` sends one datagram and
+returns `{data=...}` from the connected explicit UDP endpoint. Payload and reply
+are bounded to 65507 bytes, with one five-second deadline tightened by context.
+Empty datagrams are valid; transport errors produce no successful output.
+Scripts must validate protocol correlation and explicitly decide verdicts. SDK
+users opt in with capability/udpcap.Function and exact udp.exchange grants.
+This closes the native UDP transport gap; it adds no discovery or retries.
+Local socket evidence is separate from live consumer persistence acceptance.
+Phase 3 stays paused.
+
+Validation: make check passed (/tmp/scribe167-check.log), including race,
+external SDK, vet, static CLI and platform cross-builds. Loopback fixtures cover
+binary and empty datagrams, invalid inputs, cancellation and Lua error verdict
+conservatism. The additive udpcap.Function public declaration was reviewed and
+pinned. Deployment smoke is operational evidence only.
