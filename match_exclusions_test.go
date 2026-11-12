@@ -19,7 +19,7 @@ func TestExcludedVersions(t *testing.T) {
 				t.Fatalf("%q: %v/%v", v, ok, id)
 			}
 			if !want {
-				reason := "declarative match: version identification mismatched"
+				reason := "declarative match: version explicitly excluded"
 				if v == "" {
 					reason = "declarative match: version identification missing"
 				}
@@ -60,10 +60,34 @@ func TestExcludedVersionExecution(t *testing.T) {
 					t.Fatalf("%+v", r)
 				}
 			} else {
+				if !exhaustive && v == "1.5.0" && r.Output.SkipReason != "declarative match: version explicitly excluded" {
+					t.Fatalf("excluded execution: %+v", r)
+				}
 				if r.Verdict != Unknown || (!exhaustive && r.Output.SkipReason == "") {
 					t.Fatalf("%+v", r)
 				}
 			}
 		}
+	}
+}
+
+func TestExcludedVersionAlternativeReasons(t *testing.T) {
+	excluded := Match{ExcludeVersions: []string{"1.5.0"}}
+	target := Target{Version: "1.5.0"}
+	for _, m := range []Match{excluded, {AllOf: []Match{excluded}}, {AnyOf: []Match{excluded, excluded}}} {
+		if got := m.skipReason(target); got != "declarative match: version explicitly excluded" {
+			t.Fatal(got)
+		}
+		if ok, id := m.evaluate(target); ok || id || m.missing(target) {
+			t.Fatal("excluded version eligible")
+		}
+	}
+	mixed := Match{AnyOf: []Match{excluded, {Services: []string{"ssh"}}}}
+	if got := mixed.skipReason(target); got != "declarative match: required identification facts missing or mismatched" {
+		t.Fatal(got)
+	}
+	outside := Match{MaxVersion: "1.0.0"}
+	if got := outside.skipReason(target); got != "declarative match: version identification mismatched" {
+		t.Fatal(got)
 	}
 }

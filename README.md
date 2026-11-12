@@ -641,3 +641,8 @@ Phase 3 stays paused.
 v1.99.0 adds native `http.put` with the same path, body and optional header
 arguments as `http.post`. SDK users register `Client.PutFunction` with exact
 `http.put` grants. Requests and responses retain the shared finite HTTP limits.
+
+Planner skip diagnostics distinguish patched releases selected by
+`exclude_versions` ("declarative match: version explicitly excluded") from
+ordinary version-range mismatches. Nested alternatives preserve a specific
+reason only when their failures agree. Missing version facts remain inconclusive.

@@ -688,3 +688,7 @@ guards. Phase 3 stays paused; no throughput or live consumer acceptance claim.
 v1.103.0 releases pingpp Reader scanner/input storage at terminal EOF or failure.
 Repeated terminal results remain stable; caller cancellation retains resumable
 pending input. No throughput claim; Phase 3 stays paused.
+
+v1.104.0 distinguishes explicitly excluded patched releases in planner skip
+diagnostics. Preserve nested reason agreement, ordinary range mismatch reasons,
+missing-version probes and exhaustive false-clean guards. Phase 3 stays paused.

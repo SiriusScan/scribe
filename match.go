@@ -223,6 +223,9 @@ func (m Match) skipReason(t Target) string {
 		{"banner", m.BannerRegex != "", t.Banner == "", m.matchesBanner(t.Banner)},
 	} {
 		if field.required && !field.matches {
+			if field.name == "version" && t.Version != "" && m.excludesVersion(t.Version) {
+				return "declarative match: version explicitly excluded"
+			}
 			state := "mismatched"
 			if field.missing {
 				state = "missing"

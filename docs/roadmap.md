@@ -2633,3 +2633,18 @@ separate; Phase 3 stays paused.
 Validation: make check evidence in /tmp/scribe1103-check.log; bounded adapter
 race fuzz evidence in /tmp/scribe1103-fuzz.log. Service reinstall and HTTP smoke
 are local operational evidence only.
+
+## v1.104.0 — explicit patched-release skip diagnostics
+
+Planner records now distinguish an explicitly excluded semantic version from
+an ordinary version-range mismatch: "declarative match: version explicitly excluded".
+Required nested branches and agreeing alternatives preserve that reason; mixed
+alternative failures retain the general diagnostic. Build metadata follows existing
+semantic equality. Missing versions remain missing, probe eligibility is unchanged,
+and exhaustive execution retains the unknown verdict guard. No public API change
+or throughput claim. Live consumer persistence remains separate; Phase 3 paused.
+
+Validation: make check evidence in /tmp/scribe1104-check.log; bounded planner race
+fuzz in /tmp/scribe1104-fuzz.log. Service smoke is local operational evidence only.
+The finite fuzz campaign passed 185/806 baseline seeds within its budget;
+mutations did not begin. Focused exclusion race tests also passed.

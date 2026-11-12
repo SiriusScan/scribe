@@ -150,3 +150,8 @@ emitter-to-Lua execution. These establish repository/local transport evidence.
 Real Sirius/vGPT cancellation and persisted report acceptance remain unfinished;
 Phase 3 remains paused. Shared-host benchmark evidence and its v1.2.0 waiver
 remain recorded above; this change makes no throughput claim.
+
+## v1.104.0 — 2026-11-12
+
+- Distinguish explicitly excluded patched releases in shared planner skip diagnostics.
+- Pin nested reason agreement, mixed failures and ordinary range mismatch behavior.
