@@ -268,3 +268,30 @@ func TestH2OIdentity(t *testing.T) {
 		}
 	}
 }
+
+// Original observations pin LiteSpeed identity boundaries, not upstream compatibility.
+func TestLiteSpeedIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"LiteSpeed/3.0.5", "3.0.5", true},
+		{"litespeed/2.9.12", "2.9.12", true},
+		{"LiteSpeed", "", true},
+		{"LiteSpeed/3.0.5 proxy", "3.0.5", true},
+		{"LiteSpeedish", "", false},
+		{"proxy LiteSpeed/3.0.5", "", false},
+		{"LiteSpeed/3.0.5evil", "", false},
+		{"LiteSpeed/", "", false},
+		{"LiteSpeed/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "LiteSpeed", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}

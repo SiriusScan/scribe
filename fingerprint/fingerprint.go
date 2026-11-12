@@ -44,6 +44,7 @@ var defaultMatcher = New(
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Squid(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Squid"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Traefik(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Traefik"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^H2O(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "H2O"},
+	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^LiteSpeed(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "LiteSpeed"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^HAProxy(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "HAProxy"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Caddy(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "Caddy"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^openresty(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "OpenResty"},

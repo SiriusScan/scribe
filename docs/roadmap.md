@@ -1909,3 +1909,18 @@ Validation: make check logged in /tmp/scribe154-check.log. Bounded race planner
 fuzz passed with 216/796 baseline seeds covered in six seconds; mutations did
 not begin (/tmp/scribe154-fuzz.log). Service reinstall and complete POST /run
 smoke provide operational evidence only, separate from live workflow acceptance.
+
+## v1.55.0 — LiteSpeed planner identity (2026-11-12)
+
+Extends the common HTTP product identification backlog with original pinned
+LiteSpeed Server observations and CPE hints through the shared mapper. Versionless
+headers retain unknown versions; misleading prefixes and malformed versions are
+rejected. Reuses the shared selection policy matrix for caller authority, exact
+missing/mismatched product skip reasons and the CPE-only false-clean guard.
+No public API change or throughput claim. Live consumer persistence remains
+separate; Phase 3 stays paused.
+
+Validation: make check logged in /tmp/scribe155-check.log. Bounded race planner
+fuzz passed with 287/796 baseline seeds covered in six seconds; mutations did
+not begin (/tmp/scribe155-fuzz.log). Service reinstall and complete POST /run
+smoke provide operational evidence only, separate from live workflow acceptance.

@@ -348,3 +348,9 @@ existing fingerprint/planner mapper. Preserve strict identity boundaries, unknow
 missing versions, caller authority, exact product skip reasons and CPE-only
 false-clean guards. No throughput claim; live consumer persistence remains
 separate and Phase 3 stays paused.
+
+v1.55.0 adds original pinned LiteSpeed HTTP Server identity and CPE hints through
+the existing fingerprint/planner mapper. Preserve strict identity boundaries,
+unknown missing versions, caller authority, exact product skip reasons and
+CPE-only false-clean guards. No throughput claim; live consumer persistence
+remains separate and Phase 3 stays paused.
