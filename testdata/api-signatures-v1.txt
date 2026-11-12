@@ -327,6 +327,8 @@ adapter/pingpp: func (r *Reader) Next(ctx context.Context) (scribe.Target, bool,
 
 adapter/pingpp: func NewReader(r io.Reader) *Reader
 
+adapter/pingpp: func Run(ctx context.Context, engine *scribe.Engine, index *scribe.Index, input io.Reader, sink func(scribe.Result) error) error
+
 adapter/pingpp: func Targets(d Document) ([]scribe.Target, error)
 
 adapter/pingpp: type Claim struct {

@@ -630,3 +630,8 @@ product/CPE evidence. Shared selection regressions preserve versionless identity
 caller authority, product skip reasons and CPE-only false-clean guards. No public
 API change or throughput claim; live consumer persistence remains separate.
 Phase 3 stays paused.
+
+v1.93.0 adds adapter/pingpp.Run, a Go library entrypoint connecting bounded
+pingpp.scan/v1 input directly to the existing planner stream. Preserve caller
+input ownership, sink errors and late stream failures; partial records never
+establish complete acceptance. No new mapper or identity parsing. Phase 3 paused.

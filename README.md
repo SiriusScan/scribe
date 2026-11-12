@@ -593,3 +593,10 @@ The native `http.head` capability accepts an origin-form path, for example
 `sirius.call("http.head", "/status")`, and returns the same status/header shape
 as `http.get` with an empty body. Redirects are not followed. SDK users register
 `Client.HeadFunction` under the exact `http.head` grant.
+
+For a single library call from ping++ JSONL into the planner, use
+`pingpp.Run(ctx, engine, index, input, sink)`. It reuses the bounded reader and
+`Engine.RunTargetStream`; register Lua runtimes/capabilities on the engine as
+usual. The caller owns interruption of blocking input. Require a nil returned
+error and complete terminal records before assessing explicit verdicts: results
+from earlier documents can precede a later input or sink failure.

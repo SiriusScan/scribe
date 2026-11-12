@@ -2470,3 +2470,20 @@ cross-builds, vet and CGO-disabled CLI build), /tmp/scribe192-check.log.
 Focused planner tests passed. Bounded race planner fuzz passed with 109/806
 baseline seeds; mutations did not begin (/tmp/scribe192-fuzz.log).
 Deployment POST smoke is operational evidence, separate from live consumer acceptance.
+
+## v1.93.0 — ping++ library planner entrypoint
+
+Adds adapter/pingpp.Run for consumers passing pingpp.scan/v1 JSONL directly to
+an engine and script index with a result sink. Reuses NewReader and
+RunTargetStream, including bounded ingestion, selection and backpressure.
+Additive API reviewed: no existing signatures change. Tests cover complete
+planner records, empty/malformed input, late failures and sink propagation.
+Caller owns blocking input interruption. Live consumer persistence remains
+separate; Phase 3 stays paused. No throughput claim.
+
+Validation: make check passed (race suite, external SDK acceptance,
+Windows/Darwin cross-builds, vet and CGO-disabled CLI build),
+/tmp/scribe193-check.log. Focused entrypoint race tests passed after adding real
+Lua execution assertions. Bounded Reader race fuzz passed with all 154 baseline
+seeds and 195 executions (/tmp/scribe193-fuzz.log). Service reinstall and POST
+smoke are local operational evidence, not live consumer persistence acceptance.
