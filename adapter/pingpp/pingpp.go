@@ -170,7 +170,11 @@ func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 		}
 		if len(r.pending) > 0 {
 			t := r.pending[0]
+			r.pending[0] = scribe.Target{}
 			r.pending = r.pending[1:]
+			if len(r.pending) == 0 {
+				r.pending = nil
+			}
 			return t, true, nil
 		}
 		if !r.scan.Scan() {

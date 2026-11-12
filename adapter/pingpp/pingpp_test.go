@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/SiriusScan/scribe"
 )
 
 func TestReader(t *testing.T) {
@@ -134,5 +136,25 @@ func TestEndpointClaimIsolation(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got[0], original[0]) || got[1].Product != "isolated" || got[1].Version != "2" || got[1].Service != "" || got[1].TLS {
 		t.Fatalf("claims crossed endpoints: %+v", got)
+	}
+}
+
+func TestReaderReleasesConsumedTargets(t *testing.T) {
+	first := scribe.Target{Host: "192.0.2.1", Port: 80}
+	second := scribe.Target{Host: "192.0.2.2", Port: 443}
+	backing := []scribe.Target{first, second}
+	r := NewReader(strings.NewReader(""))
+	r.pending = backing
+	for i, want := range []scribe.Target{first, second} {
+		got, ok, err := r.Next(context.Background())
+		if err != nil || !ok || !reflect.DeepEqual(got, want) {
+			t.Fatalf("target %d: %+v %v %v", i, got, ok, err)
+		}
+		if !reflect.DeepEqual(backing[i], scribe.Target{}) {
+			t.Fatalf("consumed slot %d retained target", i)
+		}
+	}
+	if r.pending != nil {
+		t.Fatal("drained queue retains backing array")
 	}
 }

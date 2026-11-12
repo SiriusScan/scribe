@@ -212,3 +212,8 @@ v1.26.0 indexes pingpp.scan/v1 claims by exact endpoint subject per document.
 Preserve endpoint isolation, confidence/contradiction filtering and conservative
 identity conflicts; reuse the existing adapter. No throughput claim without
 executed measurements. Live consumer persistence remains separate; Phase 3 paused.
+
+v1.27.0 clears consumed pingpp Reader target slots and releases drained pending
+arrays. Preserve target order and returned facts; keep reader memory bounded by
+its current document. This is retention hardening, with no throughput claim.
+Phase 3 stays paused.

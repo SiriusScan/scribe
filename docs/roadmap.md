@@ -1270,3 +1270,16 @@ No public API or wire schema changes; no measured throughput claim.
 Validation: make check and make acceptance-local. This is local adapter/build
 acceptance; live consumer cancellation and durable persistence remain blocked.
 Phase 3 stays paused. Service reinstall and POST smoke are operational evidence.
+
+## v1.27.0 — ping++ reader queue retention (2026-11-12)
+
+The existing pingpp.scan/v1 reader now clears each consumed pending target and
+releases the backing array when drained. This closes a memory-retention gap in
+the streaming adapter without changing wire mapping, endpoint order or public
+API. A focused regression retains the backing slice and verifies slots are
+cleared while returned target facts and order remain intact.
+
+Validation: make check and make acceptance-local. This is local adapter/build
+acceptance, with no measured throughput claim. Live consumer cancellation and
+durable persistence remain blocked on the consumer contract. Phase 3 stays paused.
+Service reinstall and complete POST smoke are separate operational evidence.
