@@ -2,6 +2,7 @@
 package tcpcap
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -86,9 +87,13 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 		result["tls"] = map[string]any{"version": int(state.Version), "cipher_suite": tls.CipherSuiteName(state.CipherSuite), "subject": cert.Subject.String(), "issuer": cert.Issuer.String(), "not_before": cert.NotBefore.Format(time.RFC3339), "not_after": cert.NotAfter.Format(time.RFC3339)}
 		stream = secure
 	}
+	buffered := struct {
+		io.Reader
+		io.Writer
+	}{bufio.NewReaderSize(stream, 4096), stream}
 	replies := make([]any, 0, len(steps))
 	for _, step := range steps {
-		reply, e := exchange(stream, step)
+		reply, e := exchange(buffered, step)
 		if e != nil {
 			return nil, e
 		}
@@ -109,7 +114,7 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 	return result, nil
 }
 
-func exchange(stream net.Conn, args []any) (any, error) {
+func exchange(stream io.ReadWriter, args []any) (any, error) {
 	payload := ""
 	readBytes := 0
 	delimiter := ""

@@ -2002,3 +2002,17 @@ throughput claim; live consumer persistence remains separate. Phase 3 stays paus
 Continues the unfinished expanded fingerprint coverage item. Validation: make check
 (race suite, external SDK, vet, static build and platform cross-builds). Service
 reinstall and complete POST /run smoke are operational evidence only.
+
+## v1.61.0 — buffered TCP session framing (2026-11-12)
+
+v1.61.0 uses one invocation-owned 4 KiB read buffer per TCP/verified TLS
+connection. Delimiter reads retain subsequent frames for later exact-length,
+delimiter or default reads. Existing reply limits, session validation, deadline
+and all-or-error results remain intact. A deterministic coalesced-frame regression
+checks ordered mixed framing and one underlying read for a 3 KiB reply sequence.
+This removes per-byte socket reads; no end-to-end throughput claim is made.
+Local transport evidence is separate from live consumer persistence. Phase 3 stays paused.
+
+Validation: make check passed (/tmp/scribe161-check.log): race suite, external
+SDK, Windows/Darwin cross-builds, vet and CGO-disabled CLI build. The existing
+TCP/TLS socket corpus passed with the buffered path.

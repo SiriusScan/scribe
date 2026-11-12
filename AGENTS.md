@@ -384,3 +384,11 @@ the shared fingerprint/planner mapper. Boundary tests reject misleading prefixes
 and malformed versions; versionless identity retains an unknown version. Shared
 selection tests preserve caller authority and conservative clean gates. No
 throughput claim; live consumer persistence remains separate. Phase 3 stays paused.
+
+v1.61.0 uses one invocation-owned 4 KiB read buffer per TCP/verified TLS
+connection. Delimiter reads retain subsequent frames for later exact-length,
+delimiter or default reads. Existing reply limits, session validation, deadline
+and all-or-error results remain intact. A deterministic coalesced-frame regression
+checks ordered mixed framing and one underlying read for a 3 KiB reply sequence.
+This removes per-byte socket reads; no end-to-end throughput claim is made.
+Local transport evidence is separate from live consumer persistence. Phase 3 stays paused.
