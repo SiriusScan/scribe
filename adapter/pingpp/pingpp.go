@@ -85,10 +85,11 @@ func Targets(d Document) ([]scribe.Target, error) {
 		return nil, fmt.Errorf("ping++ document exceeds endpoint (65536) or claim (262144) limit")
 	}
 	// Index once so multi-endpoint documents do not repeatedly scan all claims.
-	claims := make(map[string][]Claim)
-	for _, c := range d.Asset.Claims {
+	claims := make(map[string][]int)
+	for i := range d.Asset.Claims {
+		c := &d.Asset.Claims[i]
 		if key, ok := canonicalSubject(c.Subject); ok {
-			claims[key] = append(claims[key], c)
+			claims[key] = append(claims[key], i)
 		}
 	}
 	var out []scribe.Target
@@ -118,7 +119,8 @@ func Targets(d Document) ([]scribe.Target, error) {
 		conflict := false
 		productConfidence := 0.0
 		cpes := map[string]bool{}
-		for _, c := range claims[key] {
+		for _, claimIndex := range claims[key] {
+			c := &d.Asset.Claims[claimIndex]
 			if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
 				continue
 			}

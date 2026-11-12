@@ -2601,3 +2601,21 @@ Validation evidence: /tmp/scribe1101-check.log (make check); deployment smoke
 is local operational evidence only.
 Bounded race planner fuzz passed 128/806 baseline seeds within its budget;
 mutations did not begin (/tmp/scribe1101-fuzz.log).
+
+## v1.102.0 — compact pingpp endpoint claim index
+
+The existing pingpp.scan/v1 adapter now indexes document-local claim positions
+instead of copying full Claim structs into endpoint buckets. This addresses the
+unfinished allocation/throughput work while preserving endpoint order, accepted
+claim filtering and conservative product/version conflicts. A 128-endpoint,
+2,048-interleaved-claim regression includes a late isolated product conflict.
+No public API change. Phase 3 stays paused.
+
+Raw Linux amd64 i9-13900H samples in benchmarks/v1.102.0 show approximately
+906 KB/op before and 367 KB/op after. Timing overlapped validation work; these
+samples establish allocation reduction only, not engine throughput speedup.
+Validation: final make check log /tmp/scribe1102-check-final.log. Service reinstall
+and smoke evidence is local operational evidence, separate from live consumer
+cancellation and durable persistence acceptance.
+Bounded adapter race fuzz passed with 1,717 executions
+(/tmp/scribe1102-fuzz.log).
