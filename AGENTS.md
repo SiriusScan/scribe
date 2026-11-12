@@ -207,3 +207,8 @@ v1.25.0 makes missing-fact detection branch-aware: a satisfied any_of alternativ
 needs no sibling identification probe; unresolved alternatives and required
 all_of facts retain probing. Preserve explicit product clean gates and caller
 identity authority. Phase 3 stays paused.
+
+v1.26.0 indexes pingpp.scan/v1 claims by exact endpoint subject per document.
+Preserve endpoint isolation, confidence/contradiction filtering and conservative
+identity conflicts; reuse the existing adapter. No throughput claim without
+executed measurements. Live consumer persistence remains separate; Phase 3 paused.

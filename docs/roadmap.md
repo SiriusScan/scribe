@@ -1257,3 +1257,16 @@ Both required targets passed. Sequential make fuzz-long FUZZ_TIME=15s passed;
 planner budget covered partial baseline replay, mixed failures reached 1997
 executions. An earlier five-second mixed-failure attempt exhausted its deadline
 during baseline replay; the longer retry passed. No throughput claim.
+
+## v1.26.0 — endpoint-indexed ping++ identity claims (2026-11-12)
+
+The next adapter throughput slice indexes pingpp.scan/v1 claims by exact endpoint
+subject once per document. Endpoint conversion now visits only that endpoint's
+claims instead of rescanning the full claim collection for every endpoint.
+Existing confidence, contradiction, product conflict and TLS rules are reused.
+A focused regression pins endpoint isolation and preserves original fixture facts.
+No public API or wire schema changes; no measured throughput claim.
+
+Validation: make check and make acceptance-local. This is local adapter/build
+acceptance; live consumer cancellation and durable persistence remain blocked.
+Phase 3 stays paused. Service reinstall and POST smoke are operational evidence.

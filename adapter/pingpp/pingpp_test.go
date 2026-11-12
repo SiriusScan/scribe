@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -107,5 +108,31 @@ func TestConflictingVersionOrder(t *testing.T) {
 		if got.Product != "" || got.Version != "" || got.Service != "http" || !got.TLS {
 			t.Fatalf("conflicting identity: %+v", got)
 		}
+	}
+}
+
+func TestEndpointClaimIsolation(t *testing.T) {
+	data, err := os.ReadFile("testdata/scan.jsonl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var d Document
+	if err := json.Unmarshal(data, &d); err != nil {
+		t.Fatal(err)
+	}
+	original, err := Targets(d)
+	if err != nil || len(original) != 1 {
+		t.Fatalf("fixture: %v %v", original, err)
+	}
+	second := d.Asset.Endpoints[0]
+	second.Port = 8443
+	d.Asset.Endpoints = append(d.Asset.Endpoints, second)
+	d.Asset.Claims = append(d.Asset.Claims, Claim{Subject: "192.0.2.1/tcp/8443", Kind: "product", Product: "isolated", Version: "2", Confidence: "exact"})
+	got, err := Targets(d)
+	if err != nil || len(got) != 2 {
+		t.Fatalf("targets: %v %v", got, err)
+	}
+	if !reflect.DeepEqual(got[0], original[0]) || got[1].Product != "isolated" || got[1].Version != "2" || got[1].Service != "" || got[1].TLS {
+		t.Fatalf("claims crossed endpoints: %+v", got)
 	}
 }

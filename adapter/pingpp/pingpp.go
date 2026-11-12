@@ -76,6 +76,11 @@ func Targets(d Document) ([]scribe.Target, error) {
 	if d.Asset == nil {
 		return nil, fmt.Errorf("ping++ document missing asset")
 	}
+	// Index once so multi-endpoint documents do not repeatedly scan all claims.
+	claims := make(map[string][]Claim)
+	for _, c := range d.Asset.Claims {
+		claims[c.Subject] = append(claims[c.Subject], c)
+	}
 	var out []scribe.Target
 	for _, e := range d.Asset.Endpoints {
 		if net.ParseIP(e.Address) == nil || e.Port == 0 || (e.Transport != "tcp" && e.Transport != "udp") {
@@ -94,8 +99,8 @@ func Targets(d Document) ([]scribe.Target, error) {
 		services := map[string]bool{}
 		products := map[string]string{}
 		conflict := false
-		for _, c := range d.Asset.Claims {
-			if c.Subject != key || (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
+		for _, c := range claims[key] {
+			if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
 				continue
 			}
 			v := c.Value
