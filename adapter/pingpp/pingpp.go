@@ -84,12 +84,12 @@ func Targets(d Document) ([]scribe.Target, error) {
 	var out []scribe.Target
 	for _, e := range d.Asset.Endpoints {
 		if net.ParseIP(e.Address) == nil || e.Port == 0 || (e.Transport != "tcp" && e.Transport != "udp") {
-			return nil, fmt.Errorf("invalid ping++ endpoint %+v", e)
+			return nil, fmt.Errorf("invalid ping++ endpoint address=%q port=%d transport=%q", boundedDiagnostic(e.Address), e.Port, boundedDiagnostic(e.Transport))
 		}
 		switch e.State {
 		case "open", "closed", "filtered", "responsive", "unknown":
 		default:
-			return nil, fmt.Errorf("invalid ping++ endpoint state %q", e.State)
+			return nil, fmt.Errorf("invalid ping++ endpoint state %q", boundedDiagnostic(e.State))
 		}
 		if e.State != "open" || e.Execution != "attempted" {
 			continue

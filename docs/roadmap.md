@@ -1536,3 +1536,19 @@ mutation campaign. Service reinstall and HTTP smoke are operational evidence,
 separate from live consumer durable persistence/cancellation acceptance.
 Phase 3 stays paused. Follow-ups retain measured engine scheduling and existing
 pingpp.scan/v1 adapter priorities; no NSE expansion.
+
+## v1.34.0 — bounded invalid-endpoint adapter diagnostics (2026-11-12)
+
+The existing pingpp.scan/v1 adapter now reuses boundedDiagnostic for invalid
+endpoint addresses, transports and states, bounding each untrusted field before
+quoted formatting. Invalid endpoints no longer dump the entire endpoint struct.
+Focused reader regressions use oversized quote-heavy values for all three fields,
+require explicit truncation and bounded errors, and preserve terminal failures
+with zero emitted targets. Public APIs, selection and false-clean policy are
+unchanged. No throughput claim or NSE expansion. Phase 3 stays paused.
+
+Validation: make check (race suite, external SDK acceptance, vet, CGO-disabled
+CLI build and Windows/Darwin cross-builds), log /tmp/scribe134-check.log.
+Service reinstall and POST /run smoke are operational evidence only; live
+consumer cancellation and durable persistence remain separate and blocked on
+the consumer contract.

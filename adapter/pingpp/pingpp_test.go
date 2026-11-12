@@ -211,3 +211,25 @@ func TestSchemaDiagnosticBound(t *testing.T) {
 		t.Fatal("schema failure must remain terminal")
 	}
 }
+
+func TestInvalidEndpointDiagnosticsBounded(t *testing.T) {
+	for _, field := range []string{"address", "transport", "state"} {
+		t.Run(field, func(t *testing.T) {
+			endpoint := map[string]any{"address": "127.0.0.1", "port": 80, "transport": "tcp", "state": "open", "execution": "attempted"}
+			endpoint[field] = strings.Repeat("\"", 100000)
+			wire, err := json.Marshal(map[string]any{"schema_version": SchemaVersion, "asset": map[string]any{"endpoints": []any{endpoint}}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			r := NewReader(strings.NewReader(string(wire) + "\n"))
+			_, ok, first := r.Next(context.Background())
+			if ok || first == nil || len(first.Error()) > 5000 || !strings.Contains(first.Error(), "... (truncated)") {
+				t.Fatalf("ok=%v error length/content: %v", ok, first)
+			}
+			_, ok, next := r.Next(context.Background())
+			if ok || next != first {
+				t.Fatalf("reader failure not terminal: %v %v", ok, next)
+			}
+		})
+	}
+}
