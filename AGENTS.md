@@ -232,3 +232,8 @@ v1.30.0 shares bounded pingpp diagnostic detail formatting for upstream errors
 and unsupported schema strings. Bound before quoted formatting; preserve explicit
 truncation, terminal reader failures and zero targets on errors. No performance
 claim. Live consumer persistence remains separate; Phase 3 stays paused.
+
+v1.31.0 measures the verified executed-Lua matrix across 1/2/4/8 workers,
+module limits 0/1 and both selection paths. Preserve action output and terminal
+count checks; report raw samples and distinguish batch latency from actions/s.
+Shared-host scaling is not a before/after speedup claim. Phase 3 stays paused.
