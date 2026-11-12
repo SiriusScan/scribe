@@ -71,28 +71,37 @@ func FuzzParallelPlanner(f *testing.F) {
 func FuzzMixedFailures(f *testing.F) {
 	f.Add(uint8(0), false)
 	f.Add(uint8(3), true)
+	f.Add(uint8(4), false)
 	f.Fuzz(func(t *testing.T, mode uint8, sinkFails bool) {
-		r, _ := NewNative(Options{Functions: map[string]scribe.Function{"read": func(context.Context, scribe.Target, []any) (any, error) { return 42, nil }}})
+		r, _ := NewNative(Options{Functions: map[string]scribe.Function{"read": func(context.Context, scribe.Target, []any) (any, error) {
+			return 42, nil
+		}}})
 		input := task(scribe.Sirius, `return {api_version=1,action=function() return {data=sirius.call("read")} end}`)
 		input.Capabilities = []string{"read"}
-		switch mode % 3 {
+		switch mode % 4 {
 		case 1:
 			input.Capabilities = []string{}
+		case 3:
+			input.Capabilities = []string{"reader"}
 		case 2:
 			input.Script.Source = []byte(`return {api_version=1,action=function() error("mixed failure") end}`)
 		}
 		_, err := r.Execute(context.Background(), input)
-		if (err != nil) != (mode%3 != 0) {
+		if (err != nil) != (mode%4 != 0) {
 			t.Fatalf("mode=%d err=%v", mode, err)
 		}
 		e, _ := scribe.New(scribe.Options{Concurrency: 4}, r)
-		idx, err := scribe.NewIndex([]scribe.Script{input.Script})
-		if err != nil {
-			t.Fatal(err)
+		tasks := make([]scribe.Task, 8)
+		for i := range tasks {
+			tasks[i] = input
+			if i%2 == 0 {
+				tasks[i].Capabilities = []string{"read"}
+			}
 		}
+
 		sinkErr := errors.New("sink failure")
 		calls := 0
-		err = e.RunSelected(context.Background(), idx, []scribe.Target{input.Target}, func(result scribe.Result) error {
+		err = e.Run(context.Background(), tasks, func(result scribe.Result) error {
 			calls++
 			if result.Verdict != scribe.Unknown {
 				t.Fatal("failure promoted to verdict")
@@ -102,7 +111,7 @@ func FuzzMixedFailures(f *testing.F) {
 			}
 			return nil
 		})
-		if calls != 1 {
+		if (!sinkFails && calls != len(tasks)) || (sinkFails && calls < 1) {
 			t.Fatalf("calls=%d", calls)
 		}
 		if sinkFails && !errors.Is(err, sinkErr) {
@@ -114,8 +123,8 @@ func FuzzMixedFailures(f *testing.F) {
 func TestTableLibraryInvocationIsolation(t *testing.T) {
 	r, _ := NewNative(Options{})
 	for _, source := range []string{
-		`return {api_version=1,action=function() table.insert=nil;table.extra=42; return {} end}`,
-		`return {api_version=1,action=function() assert(type(table.insert)=="function");assert(table.extra==nil);local x={};table.insert(x,42);return {data=x[1]} end}`,
+		`return {api_version=1,action=function() table.insert=nil;table.extra=42;utf8.len=nil;utf8.extra=42; return {} end}`,
+		`return {api_version=1,action=function() assert(utf8.len("hello")==5);assert(utf8.extra==nil);assert(type(table.insert)=="function");assert(table.extra==nil);local x={};table.insert(x,42);return {data=x[1]} end}`,
 	} {
 		if _, err := r.Execute(context.Background(), task(scribe.Sirius, source)); err != nil {
 			t.Fatal(err)

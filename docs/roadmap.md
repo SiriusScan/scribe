@@ -1090,3 +1090,33 @@ BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     762	   1
 PASS
 ok  	github.com/SiriusScan/scribe/runtime/lua54	8.065s
 ```
+
+## v1.19.0 — bounded failure batches and UTF-8 initialization (2026-11-12)
+
+Allocation sampling of the verified planner benchmark attributed 46.70% of bytes
+cumulatively to loadLibraries and 31.55% to SetEnvGoFunc. UTF-8's five immutable,
+capture-free Go functions and constant charpattern now follow the table builtin
+pattern. Mutable tables remain invocation-owned, populated with accounted SetEnv;
+no VM pooling or public API change. Mutation/reexecution checks cover UTF-8.
+
+FuzzMixedFailures now exercises eight-task concurrent engine batches, mixed exact
+grants and near-match denials, Lua errors and sink failures. Ten-second bounded
+race campaigns passed 5993 mixed-failure and 10352 planner executions. These are
+finite local campaigns; longer scheduled campaigns remain follow-up work.
+
+Original SHA-256-pinned TCP/TLS POP3 USER fixtures extend the shared corpus matrix.
+Only exact controlled login/authentication-required responses establish verdicts;
+missing TLS evidence, unexpected replies and mismatched products stay inconclusive.
+This is registered-response policy evidence, not POP3 socket or CVE acceptance.
+
+One-iteration before/after benchmark samples were exploratory and included cold
+initialization; they establish no throughput claim. Profile and raw samples are
+retained in /tmp/scribe-before.mem and /tmp/scribe-{before,after}.txt for this run.
+Phase 3 stays paused. Live consumer cancellation and durable report persistence,
+broader socket corpus and longer fuzz campaigns remain unfinished.
+
+Validation: make check and make acceptance-local passed, including race tests,
+vet, CGO-disabled build, cross-builds and local persistence/socket gates.
+A repeated planner fuzz run spent its budget processing 347 accumulated seeds
+and passed; it does not represent 347 new mutations. Shared-host benchmark
+timings remain unsuitable for a speedup claim.
