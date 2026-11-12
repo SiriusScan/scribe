@@ -13,7 +13,9 @@ import (
 )
 
 // Function connects to the supplied endpoint, optionally sends one string, and
-// receives one chunk (at most 64 KiB). No arguments performs a banner grab.
+// receives one chunk (at most 64 KiB). An optional second integer argument
+// requests exactly that many bytes (1..65536); premature EOF is an error.
+// No arguments performs a banner grab.
 // The exchange has a five-second ceiling, tightened by the context deadline.
 // Returned data is text (empty on EOF); eof is a boolean. TLS version is a
 // numeric protocol identifier, certificate dates are RFC3339 strings.
@@ -29,15 +31,23 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 		return nil, fmt.Errorf("explicit TCP endpoint required")
 	}
 	payload := ""
-	if len(args) > 1 {
-		return nil, fmt.Errorf("tcp.exchange accepts at most one string")
+	readBytes := 0
+	if len(args) > 2 {
+		return nil, fmt.Errorf("tcp.exchange accepts a payload and optional byte count")
 	}
-	if len(args) == 1 {
+	if len(args) >= 1 {
 		var ok bool
 		payload, ok = args[0].(string)
 		if !ok {
 			return nil, fmt.Errorf("payload must be a string")
 		}
+	}
+	if len(args) == 2 {
+		n, ok := args[1].(int64)
+		if !ok || n < 1 || n > 65536 {
+			return nil, fmt.Errorf("read byte count must be an integer from 1 to 65536")
+		}
+		readBytes = int(n)
 	}
 	if len(payload) > 65536 {
 		return nil, fmt.Errorf("payload exceeds 64 KiB")
@@ -82,8 +92,13 @@ func Function(ctx context.Context, target scribe.Target, args []any) (any, error
 		payload = payload[n:]
 	}
 	buffer := make([]byte, 65536)
-	n, err := stream.Read(buffer)
-	if err != nil && err != io.EOF {
+	var n int
+	if readBytes > 0 {
+		n, err = io.ReadFull(stream, buffer[:readBytes])
+	} else {
+		n, err = stream.Read(buffer)
+	}
+	if err != nil && (readBytes > 0 || err != io.EOF) {
 		return nil, err
 	}
 	if err := ctx.Err(); err != nil {

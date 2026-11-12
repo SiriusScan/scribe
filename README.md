@@ -371,3 +371,10 @@ Since v1.56.0, `--pingpp-jsonl` also preserves upstream `cpe` hints from accepte
 strong/exact endpoint product claims. Hints are sorted and deduplicated, and
 product or version conflicts suppress them. Existing CPE planner constraints can
 select these enumeration facts; CPEs never establish a vulnerability verdict.
+
+tcp.exchange(payload, byte_count) optionally reads exactly 1–65536 bytes across
+fragmented TCP/TLS records. The second argument is a Lua integer. Omitting it
+retains single-chunk reads. The existing five-second/context deadline covers the
+whole exchange; premature EOF fails without returning partial successful data.
+This supports fixed-length protocol replies without treating socket read
+boundaries as message boundaries.

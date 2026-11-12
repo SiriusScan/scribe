@@ -1945,3 +1945,18 @@ streams and conservative conflict/filter behavior. Service reinstall and POST
 separate. Phase 3 stays paused.
 Bounded race FuzzReader also passed: 5,730 executions in seven seconds
 (/tmp/scribe156-fuzz.log).
+
+## v1.57.0 — bounded fixed-length TCP/TLS replies (2026-11-12)
+
+Selected the raw transport capability gap: tcp.exchange now optionally accepts a
+second integer byte count, reading across fragmented replies through the existing
+TCP/verified-TLS stream. Reuses connection setup, cancellation and the shared
+five-second deadline; reads remain bounded at 64 KiB. Default single-chunk
+semantics remain compatible. Premature EOF returns an error without partial
+successful output. Focused loopback tests cover fragmented completion, truncated
+responses and invalid bounds/types. No public Go signature change. Multi-exchange
+sessions remain follow-up work; Phase 3 stays paused. Local protocol evidence
+does not establish live consumer persistence or general protocol acceptance.
+
+Validation: make check logged in /tmp/scribe157-check.log. Deployment and complete
+POST /run smoke are operational evidence only, separate from workflow acceptance.

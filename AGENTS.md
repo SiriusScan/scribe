@@ -359,3 +359,8 @@ v1.56.0 consumes upstream pingpp.scan/v1 product CPE hints through the existing
 adapter. Accept only strong/exact uncontradicted endpoint product claims; omit
 CPEs when product or version evidence conflicts. Sort and deduplicate hints.
 CPE evidence never establishes a vulnerability verdict. Phase 3 stays paused.
+
+v1.57.0 adds optional exact-length tcp.exchange reads (1..65536 bytes).
+Preserve the default single-chunk behavior, verified TLS and shared five-second
+deadline. Premature EOF is an execution error with no partial successful result.
+Phase 3 stays paused.
