@@ -950,3 +950,44 @@ change or NSE expansion. Phase 3 remains paused.
 
 Validation: make check and make acceptance-local passed. Release operations
 reinstall the tagged systemd service and smoke the trusted POST :18081/run path.
+
+## v1.15.0 — configuration corpus and deadline isolation (2026-11-12)
+
+Three original MIT SHA-256-pinned fixtures extend the shared normal/exhaustive,
+matching/missing/conflicting product and three-verdict matrix: FTP anonymous USER
+policy response, legacy TLS version observation, and HTTP directory-index response.
+The FTP fixture observes the USER policy response, not successful anonymous login;
+the HTTP fixture recognizes an exact index title, not arbitrary directory listings.
+These registered responses establish Lua bridge and conservative verdict behavior,
+not general protocol interoperability or CVE coverage. Existing trusted/untrusted
+TLS and TCP socket corpus acceptance remains in place. Broader practical socket
+corpus growth remains open. No NSE expansion; Phase 3 stays paused.
+
+A focused engine regression requires invocation deadline isolation, aggregated
+execution error, unknown timeout verdict and complete sibling terminal delivery.
+Existing cancellation/drain, sink-error and fake-store completeness gates are reused.
+make check and make acceptance-local passed. BenchmarkPlannerExecution ran after
+these gates without overlapping Scribe fuzz/load work; it verifies 512 terminal
+records, 512 unfiltered or 64 selected actions (448 skips), with module limits 0/1.
+Single shared-host samples are sanity evidence and support no speedup claim.
+
+Consumer audit: apps01 has running Sirius API/UI and storage containers; the local
+vGPT services/agent-api.py references the trusted Scribe HTTP endpoint. This does
+not establish a reachable controlled correlated job/report retrieval contract.
+Live Sirius/vGPT cancellation and persisted-report acceptance remains open; no new
+infrastructure was introduced. Local fake-store evidence is separate.
+
+Benchmark raw sample (linux/amd64, Go toolchain on apps01, i9-13900H, four workers):
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	     116	   9710503 ns/op	     52726 actions/s	15982138 B/op	  158611 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     854	   1329825 ns/op	     48127 actions/s	 2212370 B/op	   21861 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	     100	  10507545 ns/op	     48727 actions/s	15974506 B/op	  158414 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     772	   1762090 ns/op	     36321 actions/s	 2212493 B/op	   21862 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	5.873s
+```

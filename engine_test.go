@@ -252,3 +252,26 @@ func TestEngineSupportsConcurrentRuns(t *testing.T) {
 		t.Fatalf("executions=%d, want %d", executions.Load(), runs*count)
 	}
 }
+
+func TestInvocationDeadlineDoesNotCancelSibling(t *testing.T) {
+	engine, err := scribe.New(scribe.Options{Concurrency: 2, ScriptTimeout: 20 * time.Millisecond}, testRuntime{execute: func(ctx context.Context, task scribe.Task) (scribe.Output, error) {
+		if task.Script.ID == "0" {
+			<-ctx.Done()
+			return scribe.Output{}, ctx.Err()
+		}
+		return scribe.Output{}, nil
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]scribe.Result{}
+	if err := engine.Run(context.Background(), tasks(2), func(r scribe.Result) error { seen[r.ScriptID] = r; return nil }); err == nil {
+		t.Fatal("expected aggregated deadline error")
+	}
+	if len(seen) != 2 {
+		t.Fatalf("missing terminal records: %+v", seen)
+	}
+	if seen["0"].Status == scribe.Completed || seen["0"].Verdict != scribe.Unknown || seen["1"].Status != scribe.Completed {
+		t.Fatalf("deadline leaked or became verdict: %+v", seen)
+	}
+}
