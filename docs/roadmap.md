@@ -2303,3 +2303,17 @@ vet and static CLI build), /tmp/scribe181-check.log. Focused admission race
 regression passed. Bounded planner race fuzz passed with 152/796 baseline seeds;
 mutations did not begin (/tmp/scribe181-fuzz.log). Deployment smoke is
 operational evidence only, separate from live consumer workflow acceptance.
+
+
+v1.82.0 removes pending-window shifts when dispatch selects the queue head.
+Consumed references are cleared before advancing the slice; non-head dispatch
+retains stable ordering and host-spray fairness. A 4096-action regression pins
+ordered completed/unknown output alongside existing cancellation completeness
+coverage. This reduces queue movement; no measured throughput claim is made.
+Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+cross-builds, vet and CGO-disabled build), /tmp/scribe182-check.log. Focused queue
+race tests passed. Bounded planner race fuzz passed with 156/796 baseline seeds;
+mutations did not begin (/tmp/scribe182-fuzz.log). Service POST smoke is operational
+evidence only, separate from live consumer persistence acceptance.

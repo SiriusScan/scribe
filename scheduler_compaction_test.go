@@ -40,3 +40,29 @@ func TestLargePendingCancellationOrder(t *testing.T) {
 		t.Fatalf("records=%d err=%v", len(seen), err)
 	}
 }
+
+func TestLargePendingOrderedExecution(t *testing.T) {
+	const count = 4096
+	next := 0
+	e, err := scribe.New(scribe.Options{Concurrency: 1, Window: count, Strategy: scribe.ScriptSpray}, testRuntime{execute: func(_ context.Context, task scribe.Task) (scribe.Output, error) {
+		if task.Script.ID != fmt.Sprint(next) {
+			return scribe.Output{}, fmt.Errorf("action %s, want %d", task.Script.ID, next)
+		}
+		next++
+		return scribe.Output{Data: task.Script.ID}, nil
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	records := 0
+	err = e.Run(context.Background(), tasks(count), func(r scribe.Result) error {
+		if r.Status != scribe.Completed || r.Verdict != scribe.Unknown || r.Output.Data != fmt.Sprint(records) {
+			t.Errorf("record %d: %+v", records, r)
+		}
+		records++
+		return nil
+	})
+	if err != nil || records != count || next != count {
+		t.Fatalf("err=%v records=%d actions=%d", err, records, next)
+	}
+}

@@ -566,3 +566,11 @@ gates. Regression coverage runs twenty endpoints with one host slot, requiring
 complete skipped/unknown records and the one eligible action. No public API
 change or measured throughput claim. Live consumer persistence remains separate;
 Phase 3 stays paused.
+
+
+v1.82.0 removes pending-window shifts when dispatch selects the queue head.
+Consumed references are cleared before advancing the slice; non-head dispatch
+retains stable ordering and host-spray fairness. A 4096-action regression pins
+ordered completed/unknown output alongside existing cancellation completeness
+coverage. This reduces queue movement; no measured throughput claim is made.
+Live consumer persistence remains separate; Phase 3 stays paused.

@@ -222,9 +222,15 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				break
 			}
 			p := pending[chosen]
-			copy(pending[chosen:], pending[chosen+1:])
-			pending[len(pending)-1] = scheduledTask{}
-			pending = pending[:len(pending)-1]
+			if chosen == 0 {
+				// Release the consumed task without shifting the remaining window.
+				pending[0] = scheduledTask{}
+				pending = pending[1:]
+			} else {
+				copy(pending[chosen:], pending[chosen+1:])
+				pending[len(pending)-1] = scheduledTask{}
+				pending = pending[:len(pending)-1]
+			}
 			if e.options.ModuleInterval > 0 {
 				if _, exists := moduleNext[keyFor(p.task)]; !exists && len(moduleNext) >= e.options.MaxHosts {
 					emit(terminal(p.task, Failed, "module pacing accounting limit exceeded"))
