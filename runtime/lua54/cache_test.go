@@ -107,3 +107,18 @@ func TestTinyCacheDoesNotRetainOversizedPlan(t *testing.T) {
 		t.Fatal("retained entry above byte ceiling")
 	}
 }
+
+func TestLibraryKeySnapshotsRemainInvocationOwned(t *testing.T) {
+	r, _ := newRuntime(scribe.Sirius, Options{})
+	for range 3 {
+		input := task(scribe.Sirius, `return {api_version=1,action=function()
+ assert(math.abs(-7)==7 and string.upper('ok')=='OK' and table.concat({'a','b'})=='ab')
+ assert(math.random==nil and string.dump==nil and math.changed==nil)
+ math.changed=true; string.upper=nil; table.concat=nil
+ return {data=true}
+ end}`)
+		if _, err := r.Execute(context.Background(), input); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

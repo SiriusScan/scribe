@@ -2404,3 +2404,27 @@ latency and actions/s is 512 divided by batch seconds. One worker: 15.49–21.39
 Three single-batch samples per setting, module limit zero, unfiltered path, taken
 after checks and fuzzing finished. Short shared-host samples show no scaling gain
 and have no pre-change control; no throughput improvement is established.
+
+
+v1.89.0 reuses immutable Lua string keys in builtin library snapshots, avoiding
+per-invocation key boxing. Tables and string metatables remain invocation-owned;
+SetTable preserves the exact CPU/memory accounting used by SetEnv. Never share
+mutable Lua state. Behavioral tests pin library operations, disabled APIs and
+mutation isolation. Short CPU profiles implicate allocation/initialization costs,
+not a demonstrated dominant cache lock. No scaling speedup claim; live consumer
+persistence remains separate and Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin builds,
+vet and CGO-disabled CLI build), /tmp/scribe189-check.log. Bounded race planner
+fuzz passed with 610/806 baseline seeds; mutations did not begin. Raw samples and
+CPU/mutex summaries are in benchmarks/v1.89.0. Go 1.26.10, Linux amd64,
+i9-13900H, GOMAXPROCS=4. Two five-batch samples per one/eight-worker setting,
+module limit zero, unfiltered, with all 512 action outputs verified each batch.
+Before samples include profiling; after.txt does not, after-profiled.txt does.
+Allocation counts fall from roughly 117k to 77k per one-worker batch (about 34%).
+Unprofiled after samples: one worker 15.62–17.37 ms (29,469–32,770 actions/s),
+eight workers 6.54–12.91 ms (39,650–78,308 actions/s). Short shared-host timings
+and profiling overhead preclude a throughput speedup claim. CPU profile has
+mallocgc at 23.21% cumulative; cache locking is not established as dominant.
+State pooling remains deferred to preserve isolation. Deployment smoke is local
+operational evidence, separate from live consumer workflow persistence.

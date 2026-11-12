@@ -216,23 +216,25 @@ func setFunction(vm *rt.Runtime, table *rt.Table, name string, fn rt.GoFunctionF
 }
 
 var baseOnce sync.Once
-var baseValues map[string]rt.Value
-var tableValues map[string]rt.Value
-var utf8Values map[string]rt.Value
-var mathValues, stringValues, stringMetaValues map[string]rt.Value
+var baseValues map[rt.Value]rt.Value
+var tableValues map[rt.Value]rt.Value
+var utf8Values map[rt.Value]rt.Value
+var mathValues, stringValues, stringMetaValues map[rt.Value]rt.Value
 
-func libraryValues(table *rt.Table) map[string]rt.Value {
-	values := make(map[string]rt.Value)
+func libraryValues(table *rt.Table) map[rt.Value]rt.Value {
+	values := make(map[rt.Value]rt.Value)
 	for k, v, ok := table.Next(rt.NilValue); ok && !k.IsNil(); k, v, ok = table.Next(k) {
-		values[k.AsString()] = v
+		values[k] = v
 	}
 	return values
 }
 
-func populateLibrary(vm *rt.Runtime, values map[string]rt.Value) *rt.Table {
+// Keys and builtin values are immutable snapshots; SetTable is the same
+// accounted insertion used by SetEnv, without boxing each string key again.
+func populateLibrary(vm *rt.Runtime, values map[rt.Value]rt.Value) *rt.Table {
 	table := rt.NewTableWithHashCapacity(len(values) + 1)
 	for name, value := range values {
-		vm.SetEnv(table, name, value)
+		vm.SetTable(table, name, value)
 	}
 	return table
 }
@@ -251,20 +253,20 @@ func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 		mathModule, _ := mathlib.LibLoader.Load(prototype)
 		mathValues = libraryValues(mathModule.AsTable())
 		// These APIs mutate process-global PRNG state.
-		delete(mathValues, "random")
-		delete(mathValues, "randomseed")
+		delete(mathValues, rt.StringValue("random"))
+		delete(mathValues, rt.StringValue("randomseed"))
 		stringModule, _ := stringlib.LibLoader.Load(prototype)
 		stringValues = libraryValues(stringModule.AsTable())
-		delete(stringValues, "dump")
+		delete(stringValues, rt.StringValue("dump"))
 		stringMetaValues = libraryValues(prototype.RawMetatable(rt.StringValue("")))
-		delete(stringMetaValues, "__index")
-		baseValues = make(map[string]rt.Value)
+		delete(stringMetaValues, rt.StringValue("__index"))
+		baseValues = make(map[rt.Value]rt.Value)
 		for _, name := range []string{"assert", "error", "ipairs", "next", "pairs", "pcall", "rawequal", "rawget", "rawlen", "rawset", "select", "tonumber", "tostring", "type", "xpcall", "_VERSION"} {
-			baseValues[name] = prototype.GlobalEnv().Get(rt.StringValue(name))
+			baseValues[rt.StringValue(name)] = prototype.GlobalEnv().Get(rt.StringValue(name))
 		}
 	})
 	for name, value := range baseValues {
-		vm.SetEnv(vm.GlobalEnv(), name, value)
+		vm.SetTable(vm.GlobalEnv(), name, value)
 	}
 	vm.SetEnv(vm.GlobalEnv(), "_G", rt.TableValue(vm.GlobalEnv()))
 	// Builtins are immutable Go functions with no invocation captures.
@@ -275,7 +277,7 @@ func loadLibraries(vm *rt.Runtime) map[string]rt.Value {
 	utf8Table := populateLibrary(vm, utf8Values)
 	modules["utf8"] = rt.TableValue(utf8Table)
 	vm.SetEnv(vm.GlobalEnv(), "utf8", modules["utf8"])
-	for name, values := range map[string]map[string]rt.Value{"string": stringValues, "math": mathValues} {
+	for name, values := range map[string]map[rt.Value]rt.Value{"string": stringValues, "math": mathValues} {
 		value := rt.TableValue(populateLibrary(vm, values))
 		modules[name] = value
 		vm.SetEnv(vm.GlobalEnv(), name, value)

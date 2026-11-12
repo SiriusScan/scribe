@@ -1,0 +1,225 @@
+File: lua54.test
+Build ID: 4c0406427cef451bed5e61dfb2c5e1b0169c23e1
+Type: cpu
+Time: 2026-11-12 22:44:06 UTC
+Duration: 315.90ms, Total samples = 560ms (177.27%)
+Showing nodes accounting for 560ms, 100% of 560ms total
+      flat  flat%   sum%        cum   cum%
+      30ms  5.36%  5.36%       60ms 10.71%  github.com/SiriusScan/scribe.(*Engine).run
+      30ms  5.36% 10.71%       50ms  8.93%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*LuaCont).RunInThread
+      30ms  5.36% 16.07%       30ms  5.36%  runtime.(*mspan).writeHeapBitsSmall
+      20ms  3.57% 19.64%       50ms  8.93%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.StringValue (inline)
+      20ms  3.57% 23.21%       20ms  3.57%  runtime.futex
+      20ms  3.57% 26.79%      130ms 23.21%  runtime.mallocgc
+      20ms  3.57% 30.36%       30ms  5.36%  runtime.wbBufFlush1
+      20ms  3.57% 33.93%       20ms  3.57%  sync.(*Pool).pin
+      10ms  1.79% 35.71%       10ms  1.79%  crypto/internal/fips140/sha256.(*Digest).Write
+      10ms  1.79% 37.50%       70ms 12.50%  github.com/SiriusScan/scribe.(*Engine).Run
+      10ms  1.79% 39.29%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).ExpList
+      10ms  1.79% 41.07%       70ms 12.50%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).SetTable
+      10ms  1.79% 42.86%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*runtimeContextManager).requireCPU
+      10ms  1.79% 44.64%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.Value.Hash
+      10ms  1.79% 46.43%       30ms  5.36%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.insertNewKeyValue
+      10ms  1.79% 48.21%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.updateNextFree (inline)
+      10ms  1.79% 50.00%      320ms 57.14%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).Execute.func4
+      10ms  1.79% 51.79%       10ms  1.79%  internal/abi.Name.IsExported (inline)
+      10ms  1.79% 53.57%       10ms  1.79%  internal/runtime/atomic.(*Uint64).Add (inline)
+      10ms  1.79% 55.36%       10ms  1.79%  internal/runtime/atomic.(*Uint64).CompareAndSwap (inline)
+      10ms  1.79% 57.14%       10ms  1.79%  internal/runtime/maps.(*Iter).Next
+      10ms  1.79% 58.93%       10ms  1.79%  reflect.Value.Index
+      10ms  1.79% 60.71%       10ms  1.79%  reflect.unpackEface (inline)
+      10ms  1.79% 62.50%       10ms  1.79%  runtime.(*activeSweep).end
+      10ms  1.79% 64.29%       10ms  1.79%  runtime.(*gcBitsArena).tryAlloc (inline)
+      10ms  1.79% 66.07%       10ms  1.79%  runtime.(*timer).stop
+      10ms  1.79% 67.86%       20ms  3.57%  runtime.SetFinalizer
+      10ms  1.79% 69.64%       10ms  1.79%  runtime.acquirem (inline)
+      10ms  1.79% 71.43%       10ms  1.79%  runtime.adjustpointers
+      10ms  1.79% 73.21%       30ms  5.36%  runtime.bulkBarrierPreWrite
+      10ms  1.79% 75.00%       10ms  1.79%  runtime.convT
+      10ms  1.79% 76.79%       30ms  5.36%  runtime.convTstring
+      10ms  1.79% 78.57%       10ms  1.79%  runtime.findObject
+      10ms  1.79% 80.36%       10ms  1.79%  runtime.funcMaxSPDelta
+      10ms  1.79% 82.14%       20ms  3.57%  runtime.gcMarkTermination
+      10ms  1.79% 83.93%       10ms  1.79%  runtime.gcmarknewobject
+      10ms  1.79% 85.71%       20ms  3.57%  runtime.lock2
+      10ms  1.79% 87.50%       10ms  1.79%  runtime.madvise
+      10ms  1.79% 89.29%       30ms  5.36%  runtime.makeslice
+      10ms  1.79% 91.07%       90ms 16.07%  runtime.mallocgcSmallScanNoHeader
+      10ms  1.79% 92.86%       10ms  1.79%  runtime.scanObject
+      10ms  1.79% 94.64%       10ms  1.79%  runtime.tryDeferToSpanScan
+      10ms  1.79% 96.43%       10ms  1.79%  runtime.unlock2
+      10ms  1.79% 98.21%       10ms  1.79%  runtime.usleep
+      10ms  1.79%   100%       10ms  1.79%  unicode/utf8.ValidString
+         0     0%   100%       20ms  3.57%  context.(*timerCtx).cancel
+         0     0%   100%       20ms  3.57%  context.WithDeadlineCause.func3
+         0     0%   100%       10ms  1.79%  context.removeChild
+         0     0%   100%       10ms  1.79%  crypto/internal/fips140/sha256.(*Digest).Sum
+         0     0%   100%       10ms  1.79%  crypto/internal/fips140/sha256.(*Digest).checkSum
+         0     0%   100%       10ms  1.79%  crypto/sha256.Sum256
+         0     0%   100%       20ms  3.57%  encoding/json.(*encodeState).marshal
+         0     0%   100%       20ms  3.57%  encoding/json.(*encodeState).reflectValue
+         0     0%   100%       30ms  5.36%  encoding/json.Marshal
+         0     0%   100%       10ms  1.79%  encoding/json.interfaceEncoder
+         0     0%   100%       20ms  3.57%  encoding/json.structEncoder.encode
+         0     0%   100%       10ms  1.79%  fmt.(*pp).doPrintf
+         0     0%   100%       10ms  1.79%  fmt.(*pp).free
+         0     0%   100%       10ms  1.79%  fmt.(*pp).printArg
+         0     0%   100%       10ms  1.79%  fmt.(*pp).printValue
+         0     0%   100%       10ms  1.79%  fmt.Sprint
+         0     0%   100%       10ms  1.79%  fmt.Sprintf
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe.(*Engine).Run.func1
+         0     0%   100%      400ms 71.43%  github.com/SiriusScan/scribe.(*Engine).execute
+         0     0%   100%      410ms 73.21%  github.com/SiriusScan/scribe.(*Engine).run.func2
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe.(*Engine).run.func4
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe.(*Engine).run.func6 (inline)
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.CompileLuaChunk
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/code.(*Builder).Emit (inline)
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ir.(*CodeBuilder).DeclareLocal (inline)
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ir.Code.ProcessConstant
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ir.SetIndex.ProcessInstr
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ir.lexicalContext.addToTop (inline)
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ircomp.(*ConstantCompiler).CompileQueue
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ircomp.(*ConstantCompiler).ProcessCode
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ircomp.(*ConstantCompiler).compileConstant (inline)
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ircomp.instrCompiler.Emit (inline)
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ircomp.instrCompiler.ProcessSetIndexInstr
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).Block
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).Exp
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).Field
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).For
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).FunctionDef
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).Local
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).PrefixExp
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).Return
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).Scan
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).ShortExp
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).Stat
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.(*Parser).TableConstructor
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/parsing.ParseChunk
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).Close
+         0     0%   100%       50ms  8.93%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).CompileLuaChunk
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).ParseLuaChunk
+         0     0%   100%      110ms 19.64%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).SetEnv
+         0     0%   100%       30ms  5.36%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).compileLuaStat
+         0     0%   100%       60ms 10.71%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Table).Set
+         0     0%   100%      320ms 57.14%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).CallContext
+         0     0%   100%       50ms  8.93%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).RunContinuation
+         0     0%   100%       50ms  8.93%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).call
+         0     0%   100%       30ms  5.36%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*hashTable).grow
+         0     0%   100%       30ms  5.36%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*hashTable).set
+         0     0%   100%       30ms  5.36%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*mixedTable).grow
+         0     0%   100%       60ms 10.71%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*mixedTable).insert
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*runtimeContextManager).RequireCPU (inline)
+         0     0%   100%       50ms  8.93%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.Call
+         0     0%   100%       50ms  8.93%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.Call1
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.New
+         0     0%   100%       30ms  5.36%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewTable (inline)
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewTableWithHashCapacity (inline)
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewThread
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.SetIndex
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.copyItems
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.setKeyValue
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/internal/thirdparty/golua/scanner.(*Scanner).Scan
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/runtime/lua54.(*conversion).string
+         0     0%   100%       20ms  3.57%  github.com/SiriusScan/scribe/runtime/lua54.(*conversion).toLua
+         0     0%   100%      390ms 69.64%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).Execute
+         0     0%   100%       50ms  8.93%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).load
+         0     0%   100%       70ms 12.50%  github.com/SiriusScan/scribe/runtime/lua54.benchmarkPlannerExecution.func1
+         0     0%   100%       10ms  1.79%  github.com/SiriusScan/scribe/runtime/lua54.benchmarkPlannerExecution.func1.1
+         0     0%   100%       30ms  5.36%  github.com/SiriusScan/scribe/runtime/lua54.checkOutputSize
+         0     0%   100%      150ms 26.79%  github.com/SiriusScan/scribe/runtime/lua54.loadLibraries
+         0     0%   100%       30ms  5.36%  github.com/SiriusScan/scribe/runtime/lua54.nativeOutput
+         0     0%   100%       90ms 16.07%  github.com/SiriusScan/scribe/runtime/lua54.populateLibrary
+         0     0%   100%      100ms 17.86%  github.com/SiriusScan/scribe/runtime/lua54.runNative
+         0     0%   100%       10ms  1.79%  internal/runtime/maps.(*Map).Delete
+         0     0%   100%       10ms  1.79%  internal/runtime/maps.(*Map).deleteSmall
+         0     0%   100%       20ms  3.57%  internal/runtime/maps.(*Map).growToSmall
+         0     0%   100%       20ms  3.57%  internal/runtime/maps.newGroups (inline)
+         0     0%   100%       20ms  3.57%  internal/runtime/maps.newarray
+         0     0%   100%       10ms  1.79%  internal/runtime/maps.typedmemclr
+         0     0%   100%       10ms  1.79%  reflect.Value.Elem
+         0     0%   100%       10ms  1.79%  reflect.Value.Field
+         0     0%   100%       10ms  1.79%  runtime.(*atomicHeadTailIndex).cas (inline)
+         0     0%   100%       10ms  1.79%  runtime.(*gcControllerState).update
+         0     0%   100%       40ms  7.14%  runtime.(*mcache).nextFree
+         0     0%   100%       40ms  7.14%  runtime.(*mcache).refill
+         0     0%   100%       30ms  5.36%  runtime.(*mcentral).cacheSpan
+         0     0%   100%       10ms  1.79%  runtime.(*mheap).freeSpan (inline)
+         0     0%   100%       10ms  1.79%  runtime.(*pageAlloc).scavenge
+         0     0%   100%       10ms  1.79%  runtime.(*pageAlloc).scavenge.func1
+         0     0%   100%       10ms  1.79%  runtime.(*pageAlloc).scavengeOne
+         0     0%   100%       10ms  1.79%  runtime.(*scavengerState).init.func2
+         0     0%   100%       10ms  1.79%  runtime.(*scavengerState).run
+         0     0%   100%       10ms  1.79%  runtime.(*spanSet).pop
+         0     0%   100%       20ms  3.57%  runtime.(*sweepLocked).sweep
+         0     0%   100%       10ms  1.79%  runtime.(*sweepLocked).sweep.(*mheap).freeSpan.func2
+         0     0%   100%       20ms  3.57%  runtime.(*wbBuf).get2 (inline)
+         0     0%   100%       10ms  1.79%  runtime.SetFinalizer.func1
+         0     0%   100%       10ms  1.79%  runtime.adjustframe
+         0     0%   100%       10ms  1.79%  runtime.bgscavenge
+         0     0%   100%       10ms  1.79%  runtime.chanrecv
+         0     0%   100%       10ms  1.79%  runtime.copystack
+         0     0%   100%       10ms  1.79%  runtime.deductAssistCredit
+         0     0%   100%       20ms  3.57%  runtime.deductSweepCredit
+         0     0%   100%       10ms  1.79%  runtime.empty
+         0     0%   100%       20ms  3.57%  runtime.findRunnable
+         0     0%   100%       10ms  1.79%  runtime.forEachP (inline)
+         0     0%   100%       10ms  1.79%  runtime.forEachPInternal
+         0     0%   100%       20ms  3.57%  runtime.futexsleep
+         0     0%   100%       10ms  1.79%  runtime.gcAssistAlloc
+         0     0%   100%       10ms  1.79%  runtime.gcAssistAlloc.func2
+         0     0%   100%       10ms  1.79%  runtime.gcAssistAlloc1
+         0     0%   100%       50ms  8.93%  runtime.gcBgMarkWorker
+         0     0%   100%       10ms  1.79%  runtime.gcBgMarkWorker.func2
+         0     0%   100%       10ms  1.79%  runtime.gcDrain
+         0     0%   100%       10ms  1.79%  runtime.gcDrainMarkWorkerDedicated (inline)
+         0     0%   100%       10ms  1.79%  runtime.gcDrainN
+         0     0%   100%       40ms  7.14%  runtime.gcMarkDone
+         0     0%   100%       10ms  1.79%  runtime.gcMarkDone.forEachP.func5
+         0     0%   100%       10ms  1.79%  runtime.gcMarkDone.func3
+         0     0%   100%       10ms  1.79%  runtime.goschedImpl
+         0     0%   100%       10ms  1.79%  runtime.gosched_m
+         0     0%   100%       10ms  1.79%  runtime.growslice
+         0     0%   100%       30ms  5.36%  runtime.heapSetTypeNoHeader (inline)
+         0     0%   100%       20ms  3.57%  runtime.lock (partial-inline)
+         0     0%   100%       20ms  3.57%  runtime.lockWithRank (inline)
+         0     0%   100%       10ms  1.79%  runtime.mPark (inline)
+         0     0%   100%       10ms  1.79%  runtime.makechan
+         0     0%   100%       10ms  1.79%  runtime.mallocgcSmallNoscan
+         0     0%   100%       10ms  1.79%  runtime.mapIterNext
+         0     0%   100%       20ms  3.57%  runtime.mapassign_faststr
+         0     0%   100%       10ms  1.79%  runtime.mapdelete
+         0     0%   100%       20ms  3.57%  runtime.mcall
+         0     0%   100%       10ms  1.79%  runtime.newMarkBits
+         0     0%   100%       20ms  3.57%  runtime.newarray
+         0     0%   100%       50ms  8.93%  runtime.newobject
+         0     0%   100%       20ms  3.57%  runtime.newstack
+         0     0%   100%       10ms  1.79%  runtime.notesleep
+         0     0%   100%       10ms  1.79%  runtime.park_m
+         0     0%   100%       10ms  1.79%  runtime.removefinalizer
+         0     0%   100%       10ms  1.79%  runtime.removespecial
+         0     0%   100%       10ms  1.79%  runtime.runqgrab
+         0     0%   100%       10ms  1.79%  runtime.runqsteal
+         0     0%   100%       10ms  1.79%  runtime.scanObjectsSmall
+         0     0%   100%       10ms  1.79%  runtime.scanSpan
+         0     0%   100%       20ms  3.57%  runtime.schedule
+         0     0%   100%       10ms  1.79%  runtime.selectnbrecv
+         0     0%   100%       10ms  1.79%  runtime.semasleep
+         0     0%   100%       10ms  1.79%  runtime.stealWork
+         0     0%   100%       10ms  1.79%  runtime.stopm
+         0     0%   100%       20ms  3.57%  runtime.sweepone
+         0     0%   100%       10ms  1.79%  runtime.sysUnused (inline)
+         0     0%   100%       10ms  1.79%  runtime.sysUnusedOS
+         0     0%   100%       90ms 16.07%  runtime.systemstack
+         0     0%   100%       10ms  1.79%  runtime.typedmemclr
+         0     0%   100%       10ms  1.79%  runtime.unlock (inline)
+         0     0%   100%       10ms  1.79%  runtime.unlockWithRank (inline)
+         0     0%   100%       20ms  3.57%  runtime.wbBufFlush
+         0     0%   100%       20ms  3.57%  runtime.wbBufFlush.func1
+         0     0%   100%       20ms  3.57%  runtime.wbMove
+         0     0%   100%       20ms  3.57%  sync.(*Pool).Put
+         0     0%   100%       60ms 10.71%  testing.(*B).launch
+         0     0%   100%       10ms  1.79%  testing.(*B).run1.func1
+         0     0%   100%       70ms 12.50%  testing.(*B).runN
+         0     0%   100%       10ms  1.79%  time.(*Timer).Stop (inline)
+         0     0%   100%       10ms  1.79%  time.stopTimer

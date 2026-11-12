@@ -1,0 +1,94 @@
+File: lua54.test
+Build ID: 4c0406427cef451bed5e61dfb2c5e1b0169c23e1
+Type: delay
+Time: 2026-11-12 22:44:06 UTC
+Showing nodes accounting for 4.58ms, 100% of 4.58ms total
+Dropped 121 nodes (cum <= 0.02ms)
+      flat  flat%   sum%        cum   cum%
+    4.01ms 87.48% 87.48%     4.01ms 87.48%  sync.(*Mutex).Unlock (partial-inline)
+    0.53ms 11.65% 99.13%     0.53ms 11.65%  runtime.unlock (partial-inline)
+    0.04ms  0.87%   100%     0.04ms  0.87%  runtime._LostContendedRuntimeLock
+         0     0%   100%     0.43ms  9.35%  context.(*cancelCtx).Done
+         0     0%   100%     0.44ms  9.68%  context.(*cancelCtx).propagateCancel
+         0     0%   100%     0.12ms  2.57%  context.(*timerCtx).cancel
+         0     0%   100%     0.44ms  9.68%  context.WithDeadline (inline)
+         0     0%   100%     0.44ms  9.68%  context.WithDeadlineCause
+         0     0%   100%     0.12ms  2.57%  context.WithDeadlineCause.func3
+         0     0%   100%     0.44ms  9.68%  context.WithTimeout
+         0     0%   100%     0.12ms  2.57%  context.removeChild
+         0     0%   100%     0.03ms  0.59%  fmt.Sprintf
+         0     0%   100%     4.20ms 91.81%  github.com/SiriusScan/scribe.(*Engine).execute
+         0     0%   100%     4.20ms 91.82%  github.com/SiriusScan/scribe.(*Engine).run.func2
+         0     0%   100%     0.02ms   0.5%  github.com/SiriusScan/scribe/internal/thirdparty/golua/ast.TableConstructor.ProcessExp
+         0     0%   100%     0.02ms  0.51%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*compiler).compileBlock
+         0     0%   100%     0.02ms  0.51%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*compiler).compileBlockNoPop
+         0     0%   100%     0.02ms   0.5%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*compiler).compileExp (inline)
+         0     0%   100%     0.02ms  0.51%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*compiler).compileExpNoDestHint
+         0     0%   100%     0.02ms  0.51%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*compiler).compileFunctionBody
+         0     0%   100%     0.02ms  0.51%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*compiler).compilePushArgs
+         0     0%   100%     0.02ms   0.5%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*expCompiler).CompileExp (inline)
+         0     0%   100%     0.02ms   0.5%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.(*expCompiler).ProcessTableConstructorExp
+         0     0%   100%     0.02ms  0.53%  github.com/SiriusScan/scribe/internal/thirdparty/golua/astcomp.CompileLuaChunk
+         0     0%   100%     0.02ms  0.54%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Closure).Continuation
+         0     0%   100%     0.03ms  0.72%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).CompileLuaChunk
+         0     0%   100%     0.03ms  0.64%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).SetEnv
+         0     0%   100%     0.03ms  0.64%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).SetTable
+         0     0%   100%     0.03ms  0.69%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Runtime).compileLuaStat
+         0     0%   100%     0.03ms  0.64%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Table).Set
+         0     0%   100%     1.64ms 35.76%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).CallContext
+         0     0%   100%     0.02ms  0.54%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*Thread).call
+         0     0%   100%     0.03ms  0.64%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*hashTable).grow
+         0     0%   100%     0.03ms  0.64%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*mixedTable).grow
+         0     0%   100%     0.03ms  0.64%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*mixedTable).insert
+         0     0%   100%     0.02ms  0.54%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.(*valuePool).get (inline)
+         0     0%   100%     0.02ms  0.54%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.Call
+         0     0%   100%     0.02ms  0.54%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.Call1
+         0     0%   100%     0.03ms   0.6%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.New
+         0     0%   100%     0.02ms  0.54%  github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime.NewLuaCont
+         0     0%   100%     0.02ms  0.54%  github.com/SiriusScan/scribe/runtime/lua54.(*conversion).fromLua
+         0     0%   100%     0.16ms  3.47%  github.com/SiriusScan/scribe/runtime/lua54.(*programCache).put
+         0     0%   100%     4.16ms 90.94%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).Execute
+         0     0%   100%     1.64ms 35.75%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).Execute.func4
+         0     0%   100%     1.54ms 33.62%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).load
+         0     0%   100%     1.94ms 42.33%  github.com/SiriusScan/scribe/runtime/lua54.(*runtime).plan
+         0     0%   100%     0.03ms  0.58%  github.com/SiriusScan/scribe/runtime/lua54.loadLibraries
+         0     0%   100%     0.03ms  0.55%  github.com/SiriusScan/scribe/runtime/lua54.nativeOutput
+         0     0%   100%     0.04ms  0.96%  github.com/SiriusScan/scribe/runtime/lua54.runNative
+         0     0%   100%     0.03ms   0.6%  internal/runtime/maps.newGroups (inline)
+         0     0%   100%     0.03ms   0.6%  internal/runtime/maps.newarray
+         0     0%   100%     0.20ms  4.29%  runtime.(*mcache).nextFree
+         0     0%   100%     0.20ms  4.29%  runtime.(*mcache).refill
+         0     0%   100%     0.20ms  4.29%  runtime.(*mcentral).cacheSpan
+         0     0%   100%     0.21ms  4.60%  runtime.(*mheap).freeSpan (inline)
+         0     0%   100%     0.21ms  4.60%  runtime.(*sweepLocked).sweep
+         0     0%   100%     0.21ms  4.60%  runtime.(*sweepLocked).sweep.(*mheap).freeSpan.func2
+         0     0%   100%     0.20ms  4.29%  runtime.deductSweepCredit
+         0     0%   100%     0.12ms  2.57%  runtime.deferreturn
+         0     0%   100%     0.04ms   0.9%  runtime.findRunnable
+         0     0%   100%     0.12ms  2.68%  runtime.forEachP (inline)
+         0     0%   100%     0.12ms  2.68%  runtime.forEachPInternal
+         0     0%   100%     0.24ms  5.20%  runtime.gcBgMarkWorker
+         0     0%   100%     0.25ms  5.45%  runtime.gcMarkDone
+         0     0%   100%     0.23ms  5.08%  runtime.gcMarkTermination
+         0     0%   100%     0.11ms  2.31%  runtime.gcMarkTermination.forEachP.func7
+         0     0%   100%     0.12ms  2.69%  runtime.gcMarkTermination.func3
+         0     0%   100%     0.04ms  0.88%  runtime.gopreempt_m (inline)
+         0     0%   100%     0.04ms  0.88%  runtime.goschedImpl
+         0     0%   100%     0.03ms  0.63%  runtime.growslice
+         0     0%   100%     0.07ms  1.61%  runtime.makeslice
+         0     0%   100%     0.21ms  4.58%  runtime.mallocgc
+         0     0%   100%     0.06ms  1.28%  runtime.mallocgcSmallNoscan
+         0     0%   100%     0.03ms  0.69%  runtime.mallocgcSmallScanHeader
+         0     0%   100%     0.10ms  2.26%  runtime.mallocgcSmallScanNoHeader
+         0     0%   100%     0.03ms   0.7%  runtime.mcall
+         0     0%   100%     0.04ms  0.88%  runtime.morestack
+         0     0%   100%     0.03ms   0.6%  runtime.newarray
+         0     0%   100%     0.03ms   0.6%  runtime.newobject
+         0     0%   100%     0.04ms  0.88%  runtime.newstack
+         0     0%   100%     0.03ms   0.7%  runtime.park_m
+         0     0%   100%     0.04ms  0.86%  runtime.runSafePointFn
+         0     0%   100%     0.04ms  0.92%  runtime.schedule
+         0     0%   100%     0.03ms  0.74%  runtime.slicebytetostring
+         0     0%   100%     0.12ms  2.69%  runtime.startTheWorldWithSema
+         0     0%   100%     0.21ms  4.56%  runtime.sweepone
+         0     0%   100%     0.46ms 10.07%  runtime.systemstack

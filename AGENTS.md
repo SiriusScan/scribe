@@ -595,3 +595,12 @@ join before Run returns; Lua states remain invocation-owned. Repeated-window
 behavioral tests cover one/eight workers and successive runs. No public API
 change or throughput speedup claim. Live consumer persistence remains separate;
 Phase 3 stays paused.
+
+
+v1.89.0 reuses immutable Lua string keys in builtin library snapshots, avoiding
+per-invocation key boxing. Tables and string metatables remain invocation-owned;
+SetTable preserves the exact CPU/memory accounting used by SetEnv. Never share
+mutable Lua state. Behavioral tests pin library operations, disabled APIs and
+mutation isolation. Short CPU profiles implicate allocation/initialization costs,
+not a demonstrated dominant cache lock. No scaling speedup claim; live consumer
+persistence remains separate and Phase 3 stays paused.
