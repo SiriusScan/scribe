@@ -295,3 +295,30 @@ func TestLiteSpeedIdentity(t *testing.T) {
 		}
 	}
 }
+
+// Original observations pin Cherokee identity boundaries, not upstream compatibility.
+func TestCherokeeIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"Cherokee/3.0.5", "3.0.5", true},
+		{"cherokee/2.9.12", "2.9.12", true},
+		{"Cherokee", "", true},
+		{"Cherokee/3.0.5 proxy", "3.0.5", true},
+		{"Cherokeeish", "", false},
+		{"proxy Cherokee/3.0.5", "", false},
+		{"Cherokee/3.0.5evil", "", false},
+		{"Cherokee/", "", false},
+		{"Cherokee/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "Cherokee", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}

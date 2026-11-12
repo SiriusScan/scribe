@@ -1988,3 +1988,17 @@ separate and Phase 3 stays paused.
 
 Validation: make check recorded in /tmp/scribe159-check.log; service smoke in
 /tmp/scribe159-smoke.log provides operational evidence only.
+
+
+## v1.60.0 — Cherokee planner identity (2026-11-12)
+
+
+v1.60.0 adds original pinned Cherokee HTTP Server identity and CPE hints through
+the shared fingerprint/planner mapper. Boundary tests reject misleading prefixes
+and malformed versions; versionless identity retains an unknown version. Shared
+selection tests preserve caller authority and conservative clean gates. No
+throughput claim; live consumer persistence remains separate. Phase 3 stays paused.
+
+Continues the unfinished expanded fingerprint coverage item. Validation: make check
+(race suite, external SDK, vet, static build and platform cross-builds). Service
+reinstall and complete POST /run smoke are operational evidence only.

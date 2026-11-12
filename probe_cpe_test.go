@@ -13,6 +13,8 @@ func TestProductCPESelection(t *testing.T) {
 		{"Varnish", "", "Varnish", "cpe:/a:varnish-cache:varnish:*"},
 		{"Squid/7.6.1", "", "Squid", "cpe:/a:squid-cache:squid:7.6.1"},
 		{"LiteSpeed/7.6.1", "", "LiteSpeed", "cpe:/a:litespeedtech:litespeed_web_server:7.6.1"},
+		{"Cherokee/7.6.1", "", "Cherokee", "cpe:/a:cherokee-project:cherokee:7.6.1"},
+		{"Cherokee", "", "Cherokee", "cpe:/a:cherokee-project:cherokee:*"},
 		{"LiteSpeed", "", "LiteSpeed", "cpe:/a:litespeedtech:litespeed_web_server:*"},
 		{"H2O/7.6.1", "", "H2O", "cpe:/a:h2o_project:h2o:7.6.1"},
 		{"H2O", "", "H2O", "cpe:/a:h2o_project:h2o:*"},

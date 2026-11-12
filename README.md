@@ -399,3 +399,10 @@ each using the existing optional byte-count/delimiter selector and 64 KiB bounds
 All steps share one five-second deadline and verified TLS setup. Any failed step
 returns an execution error without partial successful output. Missing verdicts
 remain unknown.
+
+
+v1.60.0 adds original pinned Cherokee HTTP Server identity and CPE hints through
+the shared fingerprint/planner mapper. Boundary tests reject misleading prefixes
+and malformed versions; versionless identity retains an unknown version. Shared
+selection tests preserve caller authority and conservative clean gates. No
+throughput claim; live consumer persistence remains separate. Phase 3 stays paused.

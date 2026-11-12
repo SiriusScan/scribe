@@ -377,3 +377,10 @@ v1.59.0 adds bounded tcp.exchange sessions: one array of 1..16 argument arrays
 runs on a single TCP/verified TLS connection with one five-second deadline.
 Validate all steps before dialing; any failed step discards all successful output.
 Phase 3 stays paused; local socket evidence is separate from consumer acceptance.
+
+
+v1.60.0 adds original pinned Cherokee HTTP Server identity and CPE hints through
+the shared fingerprint/planner mapper. Boundary tests reject misleading prefixes
+and malformed versions; versionless identity retains an unknown version. Shared
+selection tests preserve caller authority and conservative clean gates. No
+throughput claim; live consumer persistence remains separate. Phase 3 stays paused.
