@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -35,7 +36,7 @@ func NewIndex(scripts []Script) (*Index, error) {
 		}
 		var h selectionHints
 		found := false
-		for _, line := range strings.Split(string(s.Source), "\n") {
+		for line := range strings.Lines(string(s.Source)) {
 			line = strings.TrimSpace(line)
 			if strings.HasPrefix(line, "-- scribe:") {
 				if found {
@@ -46,6 +47,9 @@ func NewIndex(scripts []Script) (*Index, error) {
 				dec.DisallowUnknownFields()
 				if err := dec.Decode(&h); err != nil {
 					return nil, fmt.Errorf("%s: %w", s.ID, err)
+				}
+				if err := dec.Decode(new(any)); err != io.EOF {
+					return nil, fmt.Errorf("%s: metadata must contain exactly one JSON object", s.ID)
 				}
 			}
 		}

@@ -2144,3 +2144,22 @@ Validation: make check passed (race suite, external SDK checks, Windows/Darwin
 cross-builds, vet and CGO-disabled CLI build), /tmp/scribe170-check.log.
 Focused UDP race tests also passed after adding the session ceiling assertion.
 Deployment smoke is operational evidence only, separate from consumer acceptance.
+
+
+v1.71.0 requires each selection metadata declaration to contain exactly one JSON
+value; trailing objects, values and malformed text fail index construction.
+Index construction scans source lines incrementally instead of allocating a full
+line slice. Behavioral fixtures retain product selection for large sources and
+LF/CRLF/unterminated final lines. No public API change or throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: focused metadata race regressions passed. A bounded race planner
+fuzz run passed after covering 237/796 baseline seeds in six seconds; mutations
+did not begin (/tmp/scribe171-fuzz.log). The large-source index benchmark raw
+sample is retained in benchmarks/v1.71.0/index.txt; it is a baseline, not a
+before/after or executed-Lua throughput measurement.
+
+make check passed: race suite, external SDK acceptance, Windows/Darwin builds,
+vet and CGO-disabled CLI build (/tmp/scribe171-check.log). Service reinstall
+and POST /run smoke are operational evidence only, separate from live consumer
+workflow acceptance.

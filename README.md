@@ -480,3 +480,11 @@ sentinel detects truncation. Defaults, exact grants, source-port stability and t
 shared context-bounded five-second deadline remain intact. This extends bounded
 raw protocol execution without discovery or retries. Local socket evidence is
 separate from live consumer persistence acceptance. Phase 3 stays paused.
+
+
+v1.71.0 requires each selection metadata declaration to contain exactly one JSON
+value; trailing objects, values and malformed text fail index construction.
+Index construction scans source lines incrementally instead of allocating a full
+line slice. Behavioral fixtures retain product selection for large sources and
+LF/CRLF/unterminated final lines. No public API change or throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.

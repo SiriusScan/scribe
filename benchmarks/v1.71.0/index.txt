@@ -1,0 +1,7 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkIndexLargeSource-4   	     614	    199288 ns/op	1204.51 MB/s	  493996 B/op	      30 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe	0.126s
