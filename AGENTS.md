@@ -473,3 +473,13 @@ Index construction scans source lines incrementally instead of allocating a full
 line slice. Behavioral fixtures retain product selection for large sources and
 LF/CRLF/unterminated final lines. No public API change or throughput claim.
 Live consumer persistence remains separate; Phase 3 stays paused.
+
+
+
+v1.72.0 makes planner probe eligibility respect observed contradictions before
+requesting missing facts. Required branches and impossible alternatives suppress
+unnecessary probes; viable alternatives and improvable confidence retain them.
+Probes never replace caller facts or establish clean verdicts. Behavioral tests
+cover nested branches and missing product evidence. No public API change or
+measured throughput claim. Live consumer persistence remains separate; Phase 3
+stays paused.

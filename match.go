@@ -152,6 +152,10 @@ func (m Match) evaluate(t Target) (bool, bool) {
 }
 
 func (m Match) missing(t Target) bool {
+	// Probes fill absent facts; they cannot repair observed contradictions.
+	if !m.probePossible(t) {
+		return false
+	}
 	if len(m.CPE) > 0 && len(t.CPE) == 0 || t.Confidence < m.Confidence {
 		return true
 	}
@@ -269,6 +273,33 @@ func (m Match) partialMatch(t Target) bool {
 	if len(any) > 0 {
 		for _, child := range any {
 			if child.partialMatch(t) {
+				return true
+			}
+		}
+		return false
+	}
+	return true
+}
+
+// probePossible retains observed constraints while allowing missing identity facts.
+func (m Match) probePossible(t Target) bool {
+	local := m
+	local.AllOf, local.AnyOf = nil, nil
+	local.Confidence = 0
+	if len(t.CPE) == 0 {
+		local.CPE = nil
+	}
+	if !local.partialMatch(t) {
+		return false
+	}
+	for _, child := range m.AllOf {
+		if !child.probePossible(t) {
+			return false
+		}
+	}
+	if len(m.AnyOf) > 0 {
+		for _, child := range m.AnyOf {
+			if child.probePossible(t) {
 				return true
 			}
 		}

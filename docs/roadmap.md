@@ -2163,3 +2163,19 @@ make check passed: race suite, external SDK acceptance, Windows/Darwin builds,
 vet and CGO-disabled CLI build (/tmp/scribe171-check.log). Service reinstall
 and POST /run smoke are operational evidence only, separate from live consumer
 workflow acceptance.
+
+
+
+v1.72.0 makes planner probe eligibility respect observed contradictions before
+requesting missing facts. Required branches and impossible alternatives suppress
+unnecessary probes; viable alternatives and improvable confidence retain them.
+Probes never replace caller facts or establish clean verdicts. Behavioral tests
+cover nested branches and missing product evidence. No public API change or
+measured throughput claim. Live consumer persistence remains separate; Phase 3
+stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin
+cross-builds, vet and static CLI build), /tmp/scribe172-check.log.
+Bounded race planner fuzz passed with 172/796 baseline seeds covered; mutations
+did not begin (/tmp/scribe172-fuzz.log). Service reinstall and complete POST /run
+smoke are operational evidence, separate from live consumer workflow acceptance.

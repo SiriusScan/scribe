@@ -45,3 +45,28 @@ func TestAlternativeProductEvidence(t *testing.T) {
 		})
 	}
 }
+
+func TestProbeNeedsRespectContradictions(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		match Match
+		want  bool
+	}{
+		{"missing product", Match{Products: []string{"nginx"}}, true},
+		{"wrong service", Match{Services: []string{"ssh"}, Products: []string{"nginx"}}, false},
+		{"required contradiction", Match{AllOf: []Match{{Services: []string{"ssh"}}, {Products: []string{"nginx"}}}}, false},
+		{"impossible alternatives", Match{AnyOf: []Match{{Services: []string{"ssh"}, Products: []string{"nginx"}}, {Protocols: []string{"udp"}, Products: []string{"Apache"}}}}, false},
+		{"viable alternative", Match{AnyOf: []Match{{Services: []string{"ssh"}}, {Products: []string{"nginx"}}}}, true},
+		{"confidence improvable", Match{Confidence: .8, Products: []string{"nginx"}}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			target := Target{Service: "http", Protocol: "tcp"}
+			if got := tc.match.missing(target); got != tc.want {
+				t.Fatalf("probe needed=%v want %v", got, tc.want)
+			}
+			if _, identified := tc.match.evaluate(target); identified {
+				t.Fatal("missing product identified")
+			}
+		})
+	}
+}
