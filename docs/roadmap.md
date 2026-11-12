@@ -2513,3 +2513,16 @@ methods and require zero requests for rejected headers. No public signature
 change or throughput claim. Live consumer persistence remains separate; Phase 3
 stays paused. Validation: make check evidence in /tmp/scribe195-check.log;
 deployment POST smoke is local operational evidence only.
+
+
+v1.96.0 bounds pingpp.scan/v1 document admission to 65,536 endpoints and
+262,144 claims before indexing or target conversion, including direct SDK calls.
+Oversized documents fail atomically with zero targets; JSONL byte limits remain
+in force. Behavioral tests cover both SDK ceilings. No public API change or
+throughput claim. Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe196-check-final.log.
+Focused adapter race tests passed. Bounded Reader race fuzz passed with 1,704
+executions (/tmp/scribe196-fuzz.log). Deployment smoke is local operational
+ evidence, separate from live consumer persistence acceptance.

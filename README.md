@@ -617,3 +617,10 @@ and 8 KiB combined names/values. Invalid names, control characters, duplicate
 case-insensitive names and authority/framing/proxy headers fail before network
 I/O. The existing fixed endpoint, verified TLS, response limits and redirect
 policy apply. Responses remain evidence; scripts must explicitly decide verdicts.
+
+
+v1.96.0 bounds pingpp.scan/v1 document admission to 65,536 endpoints and
+262,144 claims before indexing or target conversion, including direct SDK calls.
+Oversized documents fail atomically with zero targets; JSONL byte limits remain
+in force. Behavioral tests cover both SDK ceilings. No public API change or
+throughput claim. Live consumer persistence remains separate; Phase 3 stays paused.

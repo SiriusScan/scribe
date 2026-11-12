@@ -649,3 +649,10 @@ v1.95.0 adds optional explicit request headers to existing http.get/http.head.
 Validate all headers before I/O; bound to 64 entries and 8 KiB, reject ambiguous
 names and reserved authority/framing/proxy headers. Keep headers invocation-owned,
 endpoint confinement and verdict semantics intact. Phase 3 stays paused.
+
+
+v1.96.0 bounds pingpp.scan/v1 document admission to 65,536 endpoints and
+262,144 claims before indexing or target conversion, including direct SDK calls.
+Oversized documents fail atomically with zero targets; JSONL byte limits remain
+in force. Behavioral tests cover both SDK ceilings. No public API change or
+throughput claim. Live consumer persistence remains separate; Phase 3 stays paused.

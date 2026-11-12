@@ -2,6 +2,7 @@ package pingpp
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -80,5 +81,23 @@ func TestRunEmptyPlanDoesNotRead(t *testing.T) {
 	})
 	if err == nil || !strings.Contains(err.Error(), "index must contain scripts") {
 		t.Fatalf("error=%v", err)
+	}
+}
+
+func TestTargetsBoundsSDKDocuments(t *testing.T) {
+	for _, claims := range []bool{false, true} {
+		var d Document
+		if err := json.Unmarshal([]byte(`{"schema_version":"pingpp.scan/v1","asset":{}}`), &d); err != nil {
+			t.Fatal(err)
+		}
+		if claims {
+			d.Asset.Claims = make([]Claim, 262145)
+		} else {
+			d.Asset.Endpoints = make([]Endpoint, 65537)
+		}
+		targets, err := Targets(d)
+		if err == nil || len(targets) != 0 || !strings.Contains(err.Error(), "limit") {
+			t.Fatalf("targets=%d err=%v", len(targets), err)
+		}
 	}
 }

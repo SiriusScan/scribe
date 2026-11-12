@@ -81,6 +81,9 @@ func Targets(d Document) ([]scribe.Target, error) {
 	if d.Asset == nil {
 		return nil, fmt.Errorf("ping++ document missing asset")
 	}
+	if len(d.Asset.Endpoints) > 65536 || len(d.Asset.Claims) > 262144 {
+		return nil, fmt.Errorf("ping++ document exceeds endpoint (65536) or claim (262144) limit")
+	}
 	// Index once so multi-endpoint documents do not repeatedly scan all claims.
 	claims := make(map[string][]Claim)
 	for _, c := range d.Asset.Claims {
