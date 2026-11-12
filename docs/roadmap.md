@@ -2330,3 +2330,15 @@ Validation: make check passed (race suite, external SDK, Windows/Darwin
 cross-builds, vet and static CLI build), /tmp/scribe183-check.log. Focused
 exclusive-bound tests passed. Bounded planner race fuzz passed with 239/796
 baseline seeds covered; mutations did not begin (/tmp/scribe183-fuzz.log).
+
+v1.84.0 adds unambiguous pingpp.scan/v1 wire ingestion. Before typed decoding,
+the existing bounded JSONL reader rejects duplicate object keys at every level,
+including escaped-equivalent names and unused evidence. Independent objects may
+reuse names. Nesting is limited to 128; failures are terminal and emit no targets
+from the rejected document. This prevents last-field-wins identity/execution
+interpretation before planner scheduling. No public API change or throughput
+claim. Phase 3 stays paused; live consumer persistence remains separate.
+
+Validation: make check log /tmp/scribe184-check.log; focused adapter tests and
+bounded race Reader fuzz log /tmp/scribe184-fuzz.log. Service POST smoke provides
+operational evidence only, separate from live consumer acceptance.

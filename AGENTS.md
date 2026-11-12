@@ -568,3 +568,8 @@ metadata validation. Existing bounds remain inclusive by default. Exclusive
 boundaries share nested selection, probe eligibility and version skip diagnostics;
 missing versions never establish clean identification. No throughput claim.
 Live consumer persistence remains separate; Phase 3 stays paused.
+
+v1.84.0 rejects duplicate JSON object fields throughout pingpp.scan/v1 wire
+input before typed decoding, including escaped-equivalent keys. Keep independent
+object scopes, bounded nesting and terminal reader errors with zero targets from
+rejected documents. Phase 3 stays paused; no throughput claim.

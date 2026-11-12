@@ -249,7 +249,10 @@ func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 			continue
 		}
 		var d Document
-		err := json.Unmarshal(r.scan.Bytes(), &d)
+		err := validateWire(r.scan.Bytes())
+		if err == nil {
+			err = json.Unmarshal(r.scan.Bytes(), &d)
+		}
 		if err == nil {
 			r.pending, err = Targets(d)
 		}
