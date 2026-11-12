@@ -127,6 +127,8 @@
 
 	Protocols []string `json:"protocols,omitempty"`
 
+	ExcludeVersions []string `json:"exclude_versions,omitempty"`
+
 	MinVersion string `json:"min_version,omitempty"`
 
 	MaxVersion string `json:"max_version,omitempty"`

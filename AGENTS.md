@@ -680,3 +680,7 @@ Reuse POST body validation and shared HTTP execution; retain endpoint confinemen
 verified TLS and non-2xx evidence. SDK registration uses Client.PutFunction and
 exact http.put grants. Phase 3 stays paused; local deployment is separate from
 live consumer persistence acceptance.
+
+v1.101.0 adds bounded exclude_versions match alternatives for patched releases.
+Preserve semantic equality, nested skip/probe policy and missing-version clean
+guards. Phase 3 stays paused; no throughput or live consumer acceptance claim.

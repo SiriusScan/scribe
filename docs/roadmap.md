@@ -2586,3 +2586,18 @@ external SDK, Windows/Darwin cross-builds, vet and static CLI build). Bounded ra
 planner fuzz passed with 555/806 baseline seeds; mutations did not begin
 (/tmp/scribe1100-fuzz.log). Service reinstall and smoke are local operational
 evidence only.
+
+## v1.101.0 — declarative patched-release exclusions
+
+Adds bounded exclude_versions semantic-version alternatives to match blocks.
+Scripts can select an affected range while omitting up to 64 patched releases.
+Semantic equality ignores build metadata. Nested matching, version skip reasons
+and demand-driven probes share the existing predicates: excluded observations
+never trigger repair probes, while absent versions remain eligible. on_unknown
+run never turns missing versions into positive product identification.
+The additive Match field was compatibility-reviewed and the API fixture updated.
+No throughput claim; live consumer persistence remains separate. Phase 3 paused.
+Validation evidence: /tmp/scribe1101-check.log (make check); deployment smoke
+is local operational evidence only.
+Bounded race planner fuzz passed 128/806 baseline seeds within its budget;
+mutations did not begin (/tmp/scribe1101-fuzz.log).
