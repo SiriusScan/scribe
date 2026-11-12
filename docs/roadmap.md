@@ -1052,3 +1052,41 @@ Validation: make check and make acceptance-local passed, including race, vet,
 CGO-disabled build and platform cross-build gates. Service release smoke is
 separate from consumer acceptance. No NSE expansion or performance claim;
 Phase 3 stays paused.
+
+
+## v1.18.0 — Redis TCP/TLS authentication policy corpus (2026-11-12)
+
+Two original MIT SHA-256-pinned fixtures send a Redis RESP PING request.
+Exact PONG indicates unauthenticated command access; exact NOAUTH indicates
+authentication is required for this command. Other responses remain unknown.
+The TLS variant requires TLS response evidence before either explicit verdict.
+These registered-response checks establish Lua bridge and policy behavior, not
+Redis socket interoperability, comprehensive authorization security or CVE coverage.
+
+The shared corpus harness retains normal/exhaustive product matching, missing
+and conflicting identity skips, exact skip reasons and unknown skipped verdicts.
+New cases assert the exact outbound request and missing TLS evidence false-clean
+guard. No runtime API, dependency or NSE expansion. Broader practical socket
+corpus and consumer-side persistence/cancellation work remain open; Phase 3 stays
+paused.
+
+Validation: make check and make acceptance-local passed. BenchmarkPlannerExecution
+ran sequentially afterward without overlapping Scribe fuzz/load work, Go 1.26.10
+linux/amd64, shared apps01 i9-13900H, four workers. Each batch verifies 512 terminal
+records, 512 unfiltered actions or 64 selected actions with 448 skips; module
+limits are 0/1. Raw single samples below support no speedup claim.
+
+Command: go test ./runtime/lua54 -run '^$' -bench '^BenchmarkPlannerExecution$' -benchmem -count=1
+
+```text
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerExecution/module_limit=0/selected=false-4         	     123	   9395141 ns/op	     54496 actions/s	15980772 B/op	  158586 allocs/op
+BenchmarkPlannerExecution/module_limit=0/selected=true-4          	     706	   1654508 ns/op	     38682 actions/s	 2212473 B/op	   21863 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=false-4         	     123	  12262802 ns/op	     41752 actions/s	15974280 B/op	  158399 allocs/op
+BenchmarkPlannerExecution/module_limit=1/selected=true-4          	     762	   1420527 ns/op	     45054 actions/s	 2212378 B/op	   21860 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	8.065s
+```
