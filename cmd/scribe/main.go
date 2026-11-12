@@ -349,7 +349,7 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	defer httpClient.Close()
 	options := lua54.Options{
 		Limits:    lua54.Limits{CPU: *cpu, Memory: *memory, Timeout: *timeout},
-		Functions: map[string]scribe.Function{"http.get": httpClient.Function, "http.head": httpClient.HeadFunction, "tcp.exchange": tcpcap.Function, "udp.exchange": udpcap.Function},
+		Functions: map[string]scribe.Function{"http.get": httpClient.Function, "http.head": httpClient.HeadFunction, "http.post": httpClient.PostFunction, "tcp.exchange": tcpcap.Function, "udp.exchange": udpcap.Function},
 	}
 	var runtime scribe.Runtime
 	if *dialect == string(scribe.Sirius) {

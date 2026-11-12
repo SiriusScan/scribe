@@ -624,3 +624,16 @@ v1.96.0 bounds pingpp.scan/v1 document admission to 65,536 endpoints and
 Oversized documents fail atomically with zero targets; JSONL byte limits remain
 in force. Behavioral tests cover both SDK ceilings. No public API change or
 throughput claim. Live consumer persistence remains separate; Phase 3 stays paused.
+
+
+v1.97.0 adds native http.post for body-dependent HTTP probes through the shared
+HTTP client and CLI/POST runner. Use
+`sirius.call("http.post", "/probe", "marker=value", {["Content-Type"]="application/x-www-form-urlencoded"})`.
+The string request body is limited to 1 MiB; optional headers follow GET/HEAD
+policy. Endpoint confinement, verified TLS, redirects-as-evidence and response
+limits share the existing path. SDK callers register Client.PostFunction with
+the exact http.post grant. The additive method preserves existing signatures;
+the API fixture was reviewed and updated. Behavioral loopback and real Lua CLI
+tests require response evidence, including non-2xx responses. Missing verdicts
+remain unknown. No throughput claim; live consumer persistence remains separate.
+Phase 3 stays paused.

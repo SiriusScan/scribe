@@ -2526,3 +2526,19 @@ cross-builds, vet and CGO-disabled CLI build), /tmp/scribe196-check-final.log.
 Focused adapter race tests passed. Bounded Reader race fuzz passed with 1,704
 executions (/tmp/scribe196-fuzz.log). Deployment smoke is local operational
  evidence, separate from live consumer persistence acceptance.
+
+
+v1.97.0 adds native http.post for body-dependent HTTP probes through the shared
+HTTP client and CLI/POST runner. Use
+`sirius.call("http.post", "/probe", "marker=value", {["Content-Type"]="application/x-www-form-urlencoded"})`.
+The string request body is limited to 1 MiB; optional headers follow GET/HEAD
+policy. Endpoint confinement, verified TLS, redirects-as-evidence and response
+limits share the existing path. SDK callers register Client.PostFunction with
+the exact http.post grant. The additive method preserves existing signatures;
+the API fixture was reviewed and updated. Behavioral loopback and real Lua CLI
+tests require response evidence, including non-2xx responses. Missing verdicts
+remain unknown. No throughput claim; live consumer persistence remains separate.
+Phase 3 stays paused.
+
+Validation: final make check passed (full race suite, external SDK acceptance,
+Windows/Darwin cross-builds, vet and CGO-disabled CLI build).

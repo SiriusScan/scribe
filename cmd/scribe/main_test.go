@@ -220,3 +220,41 @@ func TestCLIRegistersHEADForTheKnownEndpoint(t *testing.T) {
 		t.Fatalf("requests=%d host=%v", requests.Load(), receivedHost.Load())
 	}
 }
+
+func TestCLIRegistersPOSTForTheKnownEndpoint(t *testing.T) {
+	var requests atomic.Int32
+	var receivedHost atomic.Value
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		if r.Header.Get("X-Probe") != "marker" {
+			t.Error("missing Lua request header")
+		}
+		receivedHost.Store(r.Host)
+		fmt.Fprint(w, "local fixture")
+	}))
+	defer server.Close()
+	ip, port, err := net.SplitHostPort(strings.TrimPrefix(server.URL, "http://"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := scriptFile(t, `return {
+  api_version = 1,
+  action = function()
+    local response = sirius.call("http.post", "/fixture", "probe=marker", {["X-Probe"] = "marker"})
+    return {data = {status = response.status, body = response.body}}
+  end
+}`)
+	var stdout, stderr bytes.Buffer
+	code := run(context.Background(), []string{"--script", path, "--dialect", "sirius", "--host", "virtual.internal", "--ip", ip, "--port", port}, &stdout, &stderr)
+	var result scribe.Result
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		t.Fatalf("missing result: %v; stderr=%s", err, stderr.String())
+	}
+	data, ok := result.Output.Data.(map[string]any)
+	if code != 0 || result.Status != scribe.Completed || !ok || data["status"] != float64(200) || data["body"] != "local fixture" {
+		t.Fatalf("code=%d result=%+v stderr=%s", code, result, stderr.String())
+	}
+	if requests.Load() != 1 || receivedHost.Load() != net.JoinHostPort("virtual.internal", port) {
+		t.Fatalf("requests=%d host=%v", requests.Load(), receivedHost.Load())
+	}
+}

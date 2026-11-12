@@ -32,7 +32,7 @@ type Options struct {
 	DisableReuse bool
 }
 
-// Client grants GET and HEAD requests only to the endpoint supplied by the caller.
+// Client grants GET, HEAD and POST requests only to the endpoint supplied by the caller.
 // Reusable connections are partitioned by logical authority, fixed IP and TLS.
 // The zero Client is not usable; initialize it with New and close it after use.
 type Client struct {
@@ -127,7 +127,28 @@ func (c *Client) HeadFunction(ctx context.Context, target scribe.Target, args []
 	return c.request(ctx, target, args, http.MethodHead)
 }
 
+// PostFunction implements exact http.post with path, string body and optional
+// headers. It shares endpoint confinement, verified TLS and response limits.
+func (c *Client) PostFunction(ctx context.Context, target scribe.Target, args []any) (any, error) {
+	if len(args) < 2 || len(args) > 3 {
+		return nil, fmt.Errorf("http.post requires path, body and optional headers")
+	}
+	body, ok := args[1].(string)
+	if !ok || len(body) > 1<<20 {
+		return nil, fmt.Errorf("http.post body must be a string of at most 1 MiB")
+	}
+	requestArgs := []any{args[0]}
+	if len(args) == 3 {
+		requestArgs = append(requestArgs, args[2])
+	}
+	return c.requestBody(ctx, target, requestArgs, http.MethodPost, body)
+}
+
 func (c *Client) request(ctx context.Context, target scribe.Target, args []any, method string) (any, error) {
+	return c.requestBody(ctx, target, args, method, "")
+}
+
+func (c *Client) requestBody(ctx context.Context, target scribe.Target, args []any, method, requestBody string) (any, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("HTTP context is required")
 	}
@@ -199,7 +220,7 @@ func (c *Client) request(ctx context.Context, target scribe.Target, args []any, 
 		connectionHost = target.IP
 	}
 	ctx = context.WithValue(ctx, dialAddressKey{}, net.JoinHostPort(connectionHost, port))
-	req, err := http.NewRequestWithContext(ctx, method, u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), strings.NewReader(requestBody))
 	if err != nil {
 		return nil, fmt.Errorf("create HTTP request: %w", err)
 	}
