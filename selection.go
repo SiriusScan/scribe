@@ -178,9 +178,9 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 		if len(idx.entries) == 0 {
 			return Task{}, false, fmt.Errorf("index must contain scripts")
 		}
-		entry := idx.entries[pos]
+		entry := &idx.entries[pos]
 		pos++
-		t := Task{Script: entry.script, Target: target}
+		t := Task{Script: entry.script, Target: target, preparedHints: &entry.hints}
 		if !entry.hints.matches(target) {
 			t.plannerExcluded = true
 			if !e.options.Exhaustive {

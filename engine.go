@@ -177,11 +177,19 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 		defer cancel()
 	}
 	start := time.Now()
-	idx, planErr := NewIndex([]Script{task.Script})
-	if planErr == nil && idx.entries[0].hints.Match != nil {
-		ok, _ := idx.entries[0].hints.Match.evaluate(task.Target)
+	hints := task.preparedHints
+	var planErr error
+	if hints == nil {
+		var idx *Index
+		idx, planErr = NewIndex([]Script{task.Script})
+		if planErr == nil {
+			hints = &idx.entries[0].hints
+		}
+	}
+	if planErr == nil && hints.Match != nil {
+		ok, _ := hints.Match.evaluate(task.Target)
 		if !ok && !e.options.Exhaustive {
-			task.planSkip = idx.entries[0].hints.Match.skipReason(task.Target)
+			task.planSkip = hints.Match.skipReason(task.Target)
 		}
 	}
 	var output Output
@@ -210,8 +218,8 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 		switch output.Verdict {
 		case Vulnerable, NotVulnerable:
 			result.Verdict = output.Verdict
-			if output.Verdict == NotVulnerable && (idx.entries[0].hints.Match != nil || e.options.StrictIdentification) {
-				h := idx.entries[0].hints
+			if output.Verdict == NotVulnerable && (hints.Match != nil || e.options.StrictIdentification) {
+				h := hints
 				identified := task.Target.Product != "" && contains(h.Products, task.Target.Product)
 				if h.Match != nil {
 					_, identified = h.Match.evaluate(task.Target)

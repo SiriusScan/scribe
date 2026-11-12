@@ -266,3 +266,7 @@ parallel selection. Keep direct Match evaluation safe for invalid expressions
 and preserve banner-only unknown identification. Match now has private cache
 state: external literals must use keyed fields. No measured speedup claim;
 live consumer persistence remains separate and Phase 3 stays paused.
+
+v1.40.0 reuses index-owned immutable selection metadata during selected engine
+execution. Direct tasks retain metadata validation; evaluate endpoint matches and
+clean gates per invocation. No measured throughput claim. Phase 3 stays paused.

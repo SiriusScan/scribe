@@ -117,6 +117,7 @@ func (e *CapabilityDeniedError) Error() string {
 
 // Task is one script invocation against one known endpoint.
 type Task struct {
+	preparedHints   *selectionHints
 	planSkip        string
 	plannerExcluded bool
 	// Nil preserves legacy SDK authority; a non-nil empty list denies all calls.

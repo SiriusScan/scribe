@@ -1634,3 +1634,18 @@ Validation: make check (/tmp/scribe139-check.log) and bounded race planner fuzz
 (/tmp/scribe139-fuzz.log; 233/796 cached baseline seeds, no mutations). Service reinstall and complete POST /run smoke are
 operational evidence only. Live consumer persistence remains separate; Phase 3
 stays paused.
+
+## v1.40.0 — reuse prepared selection metadata (2026-11-12)
+
+Selected engine tasks now retain their index-owned immutable hints, avoiding
+per-endpoint metadata JSON parsing and banner regex compilation. Direct SDK tasks
+retain the existing validation path. Endpoint matching and explicit product clean
+gates still run per invocation; exhaustive regression coverage pins matching,
+mismatched and absent products with complete terminal delivery. Private Task
+state already prevented external unkeyed literals; exported API stays unchanged.
+No measured throughput claim. Phase 3 stays paused; live consumer persistence
+remains separate.
+
+Validation: make check (/tmp/scribe140-check.log), plus bounded race planner fuzz
+(/tmp/scribe140-fuzz.log; 259/796 baseline seeds, no mutations). Service reinstall and complete POST /run smoke provide
+operational evidence only.
