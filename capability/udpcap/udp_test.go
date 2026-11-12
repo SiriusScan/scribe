@@ -2,9 +2,11 @@ package udpcap
 
 import (
 	"context"
+	"fmt"
 	"github.com/SiriusScan/scribe"
 	"github.com/SiriusScan/scribe/runtime/lua54"
 	"net"
+	"strings"
 	"testing"
 	"time"
 )
@@ -83,5 +85,70 @@ func TestLuaInvalidPayload(t *testing.T) {
 	})
 	if count != 1 {
 		t.Fatal(count)
+	}
+}
+
+func TestSession(t *testing.T) {
+	c, err := net.ListenPacket("udp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	c.SetDeadline(time.Now().Add(2 * time.Second))
+	done := make(chan error, 1)
+	go func() {
+		var peer string
+		for _, want := range []string{"first", "", "last"} {
+			b := make([]byte, 32)
+			n, a, e := c.ReadFrom(b)
+			if e != nil {
+				done <- e
+				return
+			}
+			if string(b[:n]) != want || (peer != "" && peer != a.String()) {
+				done <- fmt.Errorf("request or peer mismatch")
+				return
+			}
+			peer = a.String()
+			if _, e = c.WriteTo([]byte(want), a); e != nil {
+				done <- e
+				return
+			}
+		}
+		done <- nil
+	}()
+	target := scribe.Target{Host: "127.0.0.1", Protocol: "udp", Port: uint16(c.LocalAddr().(*net.UDPAddr).Port)}
+	got, err := Function(context.Background(), target, []any{[]any{"first", "", "last"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, want := range []string{"first", "", "last"} {
+		if got.([]any)[i].(map[string]any)["data"] != want {
+			t.Fatal(got)
+		}
+	}
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	// A later timeout must discard the first successful reply.
+	go func() {
+		b := make([]byte, 32)
+		_, a, e := c.ReadFrom(b)
+		if e == nil {
+			c.WriteTo([]byte("ok"), a)
+		}
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	if got, err := Function(ctx, target, []any{[]any{"one", "two"}}); err == nil || got != nil {
+		t.Fatalf("partial success: %v %v", got, err)
+	}
+}
+
+func TestSessionValidation(t *testing.T) {
+	for _, v := range []any{[]any{}, make([]any, 17), []any{"valid", 42}, []any{strings.Repeat("x", 65508)}} {
+		if _, _, err := parsePayloads([]any{v}); err == nil {
+			t.Fatalf("accepted %v", v)
+		}
 	}
 }

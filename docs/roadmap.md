@@ -2108,3 +2108,13 @@ external SDK, vet, static CLI and platform cross-builds. Loopback fixtures cover
 binary and empty datagrams, invalid inputs, cancellation and Lua error verdict
 conservatism. The additive udpcap.Function public declaration was reviewed and
 pinned. Deployment smoke is operational evidence only.
+
+
+v1.68.0 adds bounded UDP sessions: `sirius.call("udp.exchange", {"FIRST", "SECOND"})`
+sends 1..16 string datagrams sequentially on one connected endpoint and returns
+an ordered array of `{data=...}` replies. The source port remains stable. All
+payloads validate before dialing; one five-second context-bounded deadline covers
+the entire session. Any failed exchange discards all results. Single-string calls
+retain their existing result shape. Scripts remain responsible for correlation;
+no retries or discovery are added. Local socket evidence is separate from live
+consumer persistence acceptance. Phase 3 stays paused.
