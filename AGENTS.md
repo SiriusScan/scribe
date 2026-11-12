@@ -250,3 +250,8 @@ oversized numeric tokens. Live consumer acceptance remains separate; Phase 3 pau
 v1.36.0 retains TLS handshake observations when planner probes receive a banner.
 Keep transport and pinned banner identity together; certificate observations do
 not establish trust or vulnerability verdicts. Phase 3 stays paused.
+
+v1.37.0 supplies CPE hints for pinned Caddy/OpenResty HTTP fingerprints through
+the shared mapper. Preserve caller product authority, exact product skip reasons,
+version sanitization and the CPE-only false-clean guard. No throughput claim;
+live consumer persistence remains separate. Phase 3 stays paused.

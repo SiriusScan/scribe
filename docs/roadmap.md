@@ -1587,3 +1587,17 @@ Validation: make check passed (race suite, external SDK acceptance, vet,
 CGO-disabled CLI build and Windows/Darwin cross-builds), log
 /tmp/scribe136-check.log. Service reinstall and complete POST /run smoke remain
 operational evidence only; live consumer persistence/cancellation is separate.
+
+## v1.37.0 — CPE selection for pinned HTTP products (2026-11-12)
+
+Caddy and OpenResty probe fingerprints now supply CPE hints through the existing
+inferredCPE mapper, enabling CPE match rules for these already pinned products.
+Focused original header fixtures pin versioned and versionless CPEs, matching
+selection, exact missing/mismatched product skip reasons, caller identity
+conflicts and the CPE-only false-clean guard. Invalid version components remain
+rejected. No API change or throughput claim; Phase 3 stays paused.
+
+Validation: make check, log /tmp/scribe137-check.log. Bounded race planner fuzz
+passed with 283/796 baseline seeds in its five-second budget; no mutation campaign
+began (/tmp/scribe137-fuzz.log). Service reinstall and POST /run smoke are
+operational evidence only; live consumer persistence remains separate.
