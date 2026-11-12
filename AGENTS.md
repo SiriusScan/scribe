@@ -581,3 +581,8 @@ and conservative clean gates. No throughput claim; Phase 3 stays paused.
 v1.86.0 rejects duplicate declarative selection JSON fields through the shared
 bounded wire validator, including nested and escaped-equivalent names. Preserve
 independent object scopes and conservative preparation errors. Phase 3 paused.
+
+v1.87.0 adds original pinned Dovecot POP3 ready greeting identity and CPE hints.
+Preserve strict greeting boundaries, unknown absent versions, caller authority,
+product skip diagnostics and CPE-only false-clean guards. No throughput claim;
+live consumer persistence remains separate and Phase 3 stays paused.

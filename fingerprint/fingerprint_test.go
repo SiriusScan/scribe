@@ -347,3 +347,28 @@ func TestFileZillaIdentity(t *testing.T) {
 		}
 	}
 }
+
+func TestDovecotIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		banner, version string
+		match           bool
+	}{
+		{"+OK Dovecot 2.3.21 ready.\r\n", "2.3.21", true},
+		{"+OK Dovecot ready.", "", true},
+		{"+OK Dovecotish ready.", "", false},
+		{"+OK Dovecot 2..3 ready.", "", false},
+		{"+OK Dovecot 2.3evil ready.", "", false},
+		{"-ERR Dovecot ready.", "", false},
+		{"+OK proxy Dovecot ready.", "", false},
+		{"+OK Dovecot ready.\r\nother", "", false},
+	} {
+		got := Default().Match(tc.banner, nil)
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "pop3", Product: "Dovecot", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.banner, got, want)
+		}
+	}
+}

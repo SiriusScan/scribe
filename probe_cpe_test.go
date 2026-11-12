@@ -9,6 +9,8 @@ import (
 
 func TestProductCPESelection(t *testing.T) {
 	for _, tc := range []struct{ header, banner, product, cpe string }{
+		{"", "+OK Dovecot 2.3.21 ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:2.3.21"},
+		{"", "+OK Dovecot ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:*"},
 		{"", "220 FileZilla Server 1.9.4 ready\r\n", "FileZilla", "cpe:/a:filezilla-project:filezilla_server:1.9.4"},
 		{"", "220-FileZilla Server", "FileZilla", "cpe:/a:filezilla-project:filezilla_server:*"},
 		{"Varnish/7.6.1", "", "Varnish", "cpe:/a:varnish-cache:varnish:7.6.1"},

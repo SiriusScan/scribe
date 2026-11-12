@@ -2368,3 +2368,18 @@ claim; live consumer persistence remains separate. Phase 3 stays paused.
 Validation: make check log /tmp/scribe186-check.log; bounded planner race fuzz
 passed with 145/796 baseline seeds (no mutation campaign). Service POST smoke
 is operational evidence only.
+
+## v1.87.0 — Dovecot POP3 planner identity
+
+Extends unfinished planner fingerprint coverage with original pinned Dovecot POP3
+ready greetings through the existing immutable matcher and CPE mapper. Exact
+positive greeting boundaries reject misleading prefixes, malformed versions and
+trailing lines; versionless greetings retain unknown versions. Shared selection
+regressions pin caller authority, product missing/mismatched skip reasons and the
+CPE-only false-clean guard. No public API change or throughput claim. Phase 3
+stays paused; local deployment is separate from live consumer persistence.
+
+Validation: focused fingerprint/selection tests passed. Bounded race planner fuzz
+passed with 1,443 executions and ten new interesting inputs after completing all
+796 baseline seeds (/tmp/scribe187-fuzz-retry.log). An initial five-second attempt
+expired during startup. Full make check evidence: /tmp/scribe187-check.log.
