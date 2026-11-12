@@ -1022,3 +1022,33 @@ Broader practical TCP/TLS scripts remain open. No NSE expansion; Phase 3 stays p
 
 Validation: make check and make acceptance-local; release service smoke recorded
 separately from consumer acceptance. No performance claim.
+
+## v1.17.0 — concurrent local persistence and SMTP policy corpus (2026-11-12)
+
+Eight parallel independent SDK consumer stores reuse the existing pingpp → strict
+planner → Lua → report envelope round trip. Each syncs, closes and independently
+reopens its file to EOF and compares canonical evidence for completed, skipped
+and failed execution. This is concurrent store isolation and synced readback
+coverage, not shared-file transaction, crash recovery or power-loss durability.
+
+Two original MIT SHA-256-pinned TCP/TLS SMTP VRFY policy fixtures extend the shared
+three-verdict, product identity and exhaustive policy matrix. Exact `250 root`
+responses expose the controlled account; exact `502 Command not implemented`
+responses indicate disabled VRFY; other responses remain unknown. TLS requires
+TLS evidence. Registered responses establish API/verdict behavior, not SMTP socket
+interoperability, general account enumeration or CVE coverage. Broader practical
+socket corpus remains open; existing trusted/untrusted TLS socket gates are reused.
+
+Consumer source reinspection: vGPT services/agent-api.py still implements save_run
+as load/filter plus direct runs.json rewrite, without atomic replacement or a
+transaction. Its synchronous run-script route has no cancellation route. No live
+cancellation, restart durability or concurrent shared-store safety is claimed.
+Sirius report-envelope submission/correlation remains unestablished; the adjacent
+workspace's generic API/database acceptance does not establish Scribe report
+storage. Those consumer changes and live acceptance remain open rather than
+introducing storage into Scribe or another mapper.
+
+Validation: make check and make acceptance-local passed, including race, vet,
+CGO-disabled build and platform cross-build gates. Service release smoke is
+separate from consumer acceptance. No NSE expansion or performance claim;
+Phase 3 stays paused.

@@ -3,6 +3,7 @@ package lua54
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"reflect"
@@ -96,5 +97,16 @@ func TestMarkerCorpusPingppPersistence(t *testing.T) {
 		if e.Evidence.Status != scribe.Completed && (e.Assessment != "inconclusive" || e.Verdict != scribe.Unknown) {
 			t.Fatalf("false clean: %+v", e)
 		}
+	}
+}
+
+// Concurrent independent consumer stores must retain complete canonical evidence.
+// This exercises SDK/store isolation, not shared-file transaction safety.
+func TestMarkerCorpusConcurrentPersistence(t *testing.T) {
+	for i := 0; i < 8; i++ {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			t.Parallel()
+			TestMarkerCorpusPingppPersistence(t)
+		})
 	}
 }
