@@ -637,3 +637,7 @@ the API fixture was reviewed and updated. Behavioral loopback and real Lua CLI
 tests require response evidence, including non-2xx responses. Missing verdicts
 remain unknown. No throughput claim; live consumer persistence remains separate.
 Phase 3 stays paused.
+
+v1.99.0 adds native `http.put` with the same path, body and optional header
+arguments as `http.post`. SDK users register `Client.PutFunction` with exact
+`http.put` grants. Requests and responses retain the shared finite HTTP limits.

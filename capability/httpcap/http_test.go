@@ -377,3 +377,29 @@ func TestPostBodyEvidence(t *testing.T) {
 		}
 	}
 }
+
+func TestPutBodyEvidence(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		if r.Method != "PUT" || r.RequestURI != "/probe" || string(body) != "marker=original" || r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
+			t.Errorf("unexpected request: %s %s %q", r.Method, r.RequestURI, body)
+		}
+		w.WriteHeader(403)
+		w.Write([]byte("policy evidence"))
+	}))
+	defer srv.Close()
+	c := newClient(t, Options{})
+	result, err := c.PutFunction(context.Background(), fixtureTarget(t, srv.URL), []any{"/probe", "marker=original", map[string]any{"Content-Type": "application/x-www-form-urlencoded"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	evidence := result.(map[string]any)
+	if evidence["status"] != int64(403) || evidence["body"] != "policy evidence" {
+		t.Fatalf("%v", evidence)
+	}
+	for _, args := range [][]any{{"/probe"}, {"/probe", 42}, {"/probe", strings.Repeat("x", (1<<20)+1)}, {"/probe", "", map[string]any{"Host": "elsewhere"}}} {
+		if out, err := c.PutFunction(context.Background(), fixtureTarget(t, srv.URL), args); err == nil || out != nil {
+			t.Fatalf("accepted invalid PUT: %v", err)
+		}
+	}
+}

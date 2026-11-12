@@ -2552,3 +2552,21 @@ one-byte exact reply; this is allocation evidence, not executed-Lua throughput
 or live consumer acceptance. No public API change. Phase 3 stays paused.
 Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
 cross-builds, vet and CGO-disabled CLI build), /tmp/scribe198-check-final.log.
+
+## v1.99.0 — native HTTP PUT probes
+
+Adds exact http.put through the existing HTTP client and CLI/POST runner:
+sirius.call("http.put", "/probe", "marker", {["Content-Type"]="text/plain"}).
+PUT and POST share body/header validation and request execution. Bodies remain
+bounded to 1 MiB; endpoint confinement, verified TLS, response limits and
+redirect evidence retain the existing policy. SDK callers register PutFunction
+and grant exact http.put. The additive API fixture was reviewed.
+Loopback and real Lua CLI tests require PUT method, body, headers and non-2xx
+response evidence; invalid bodies and reserved headers fail without successful
+output. No throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
+
+Validation: final make check passed (race suite, external SDK acceptance,
+Windows/Darwin cross-builds, vet and CGO-disabled CLI build);
+evidence: /tmp/scribe199-check-final.log. Deployment smoke is local operational
+evidence, separate from live consumer persistence acceptance.

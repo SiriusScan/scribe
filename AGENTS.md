@@ -674,3 +674,9 @@ v1.98.0 sizes TCP exact-read buffers to the requested length and skips unused
 fixed buffers for EOF reads. Preserve framing, ceilings and all-or-error sessions.
 Raw capability allocation samples are not end-to-end throughput evidence.
 Phase 3 stays paused.
+
+v1.99.0 adds exact http.put with path, bounded string body and optional headers.
+Reuse POST body validation and shared HTTP execution; retain endpoint confinement,
+verified TLS and non-2xx evidence. SDK registration uses Client.PutFunction and
+exact http.put grants. Phase 3 stays paused; local deployment is separate from
+live consumer persistence acceptance.

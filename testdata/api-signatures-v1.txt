@@ -385,6 +385,8 @@ capability/httpcap: func (c *Client) HeadFunction(ctx context.Context, target sc
 
 capability/httpcap: func (c *Client) PostFunction(ctx context.Context, target scribe.Target, args []any) (any, error)
 
+capability/httpcap: func (c *Client) PutFunction(ctx context.Context, target scribe.Target, args []any) (any, error)
+
 capability/httpcap: func New(options Options) (*Client, error)
 
 capability/httpcap: type Client struct {

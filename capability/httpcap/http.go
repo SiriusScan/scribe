@@ -130,18 +130,27 @@ func (c *Client) HeadFunction(ctx context.Context, target scribe.Target, args []
 // PostFunction implements exact http.post with path, string body and optional
 // headers. It shares endpoint confinement, verified TLS and response limits.
 func (c *Client) PostFunction(ctx context.Context, target scribe.Target, args []any) (any, error) {
+	return c.bodyFunction(ctx, target, args, http.MethodPost)
+}
+
+// PutFunction implements exact http.put with the same bounded body and headers as POST.
+func (c *Client) PutFunction(ctx context.Context, target scribe.Target, args []any) (any, error) {
+	return c.bodyFunction(ctx, target, args, http.MethodPut)
+}
+
+func (c *Client) bodyFunction(ctx context.Context, target scribe.Target, args []any, method string) (any, error) {
 	if len(args) < 2 || len(args) > 3 {
-		return nil, fmt.Errorf("http.post requires path, body and optional headers")
+		return nil, fmt.Errorf("%s requires path, body and optional headers", method)
 	}
 	body, ok := args[1].(string)
 	if !ok || len(body) > 1<<20 {
-		return nil, fmt.Errorf("http.post body must be a string of at most 1 MiB")
+		return nil, fmt.Errorf("%s body must be a string of at most 1 MiB", method)
 	}
 	requestArgs := []any{args[0]}
 	if len(args) == 3 {
 		requestArgs = append(requestArgs, args[2])
 	}
-	return c.requestBody(ctx, target, requestArgs, http.MethodPost, body)
+	return c.requestBody(ctx, target, requestArgs, method, body)
 }
 
 func (c *Client) request(ctx context.Context, target scribe.Target, args []any, method string) (any, error) {
