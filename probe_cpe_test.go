@@ -9,6 +9,8 @@ import (
 
 func TestProductCPESelection(t *testing.T) {
 	for _, tc := range []struct{ header, banner, product, cpe string }{
+		{"nginx/1.26.2", "", "nginx", "cpe:/a:nginx:nginx:1.26.2"},
+		{"nginx", "", "nginx", "cpe:/a:nginx:nginx:*"},
 		{"", "+OK Dovecot 2.3.21 ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:2.3.21"},
 		{"", "+OK Dovecot ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:*"},
 		{"", "220 FileZilla Server 1.9.4 ready\r\n", "FileZilla", "cpe:/a:filezilla-project:filezilla_server:1.9.4"},
@@ -75,6 +77,25 @@ func TestApacheMisleadingIdentity(t *testing.T) {
 			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
 			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
 			m := Match{Products: []string{"Apache"}}
+			if ok, id := m.evaluate(observed); ok || id {
+				t.Fatalf("misleading identity accepted: %+v", observed)
+			}
+			if reason := m.skipReason(observed); reason != "declarative match: product identification missing" {
+				t.Fatal(reason)
+			}
+			if len(observed.CPE) != 0 {
+				t.Fatal(observed.CPE)
+			}
+		})
+	}
+}
+
+func TestNginxMisleadingIdentity(t *testing.T) {
+	for _, header := range []string{"nginxProxy", "nginxPlus/9.0", "nginx/2..4", "nginx/2.4evil", "nginx/", "nginx/2.4:injected"} {
+		t.Run(header, func(t *testing.T) {
+			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
+			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
+			m := Match{Products: []string{"nginx"}}
 			if ok, id := m.evaluate(observed); ok || id {
 				t.Fatalf("misleading identity accepted: %+v", observed)
 			}

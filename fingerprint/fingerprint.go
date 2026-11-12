@@ -67,7 +67,7 @@ var defaultMatcher = New(
 	Rule{Header: "", Pattern: regexp.MustCompile(`^SSH-\S+-dropbear_([0-9.]+)`), Service: "ssh", Product: "Dropbear"},
 
 	Rule{Pattern: regexp.MustCompile(`^SSH-\S+-OpenSSH_([^\s]+)`), Service: "ssh", Product: "OpenSSH"},
-	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^nginx(?:/([^\s]+))?(?:$|\s)`), Service: "http", Product: "nginx"},
+	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^nginx(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|[ \t])`), Service: "http", Product: "nginx"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Apache(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|[ \t])`), Service: "http", Product: "Apache"},
 )
 

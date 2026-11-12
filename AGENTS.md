@@ -622,3 +622,11 @@ supply product/CPE evidence. Original fixtures retain versionless and versioned
 Apache identities, caller authority, exact product skip diagnostics and CPE-only
 false-clean guards. No public API change or throughput claim; live consumer
 persistence remains separate. Phase 3 stays paused.
+
+
+v1.92.0 tightens nginx HTTP Server identity to bounded numeric version components
+and explicit header boundaries. Malformed versions no longer establish planner
+product/CPE evidence. Shared selection regressions preserve versionless identity,
+caller authority, product skip reasons and CPE-only false-clean guards. No public
+API change or throughput claim; live consumer persistence remains separate.
+Phase 3 stays paused.

@@ -2456,3 +2456,17 @@ Validation: make check passed (race suite, external SDK, Windows/Darwin
 cross-builds, vet and CGO-disabled CLI build), /tmp/scribe191-check.log.
 Bounded race planner fuzz passed with 124/806 baseline seeds; mutations did not
 begin (/tmp/scribe191-fuzz.log). Service smoke remains operational evidence.
+
+
+v1.92.0 tightens nginx HTTP Server identity to bounded numeric version components
+and explicit header boundaries. Malformed versions no longer establish planner
+product/CPE evidence. Shared selection regressions preserve versionless identity,
+caller authority, product skip reasons and CPE-only false-clean guards. No public
+API change or throughput claim; live consumer persistence remains separate.
+Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK acceptance, Windows/Darwin
+cross-builds, vet and CGO-disabled CLI build), /tmp/scribe192-check.log.
+Focused planner tests passed. Bounded race planner fuzz passed with 109/806
+baseline seeds; mutations did not begin (/tmp/scribe192-fuzz.log).
+Deployment POST smoke is operational evidence, separate from live consumer acceptance.
