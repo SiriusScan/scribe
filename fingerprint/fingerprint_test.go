@@ -160,3 +160,30 @@ func BenchmarkDefaultMatch(b *testing.B) {
 		}
 	}
 }
+
+// Original observations pin Varnish identity boundaries, not upstream compatibility.
+func TestVarnishIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"Varnish/3.0.5", "3.0.5", true},
+		{"varnish/2.9.12", "2.9.12", true},
+		{"Varnish", "", true},
+		{"Varnish/3.0.5 proxy", "3.0.5", true},
+		{"Varnishish", "", false},
+		{"proxy Varnish/3.0.5", "", false},
+		{"Varnish/3.0.5evil", "", false},
+		{"Varnish/", "", false},
+		{"Varnish/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "Varnish", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}

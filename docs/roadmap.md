@@ -1847,3 +1847,19 @@ Phase 3 stays paused; live consumer persistence remains separate.
 Validation: make check passed (race suite, external SDK checks, Windows/Darwin
 cross-builds, vet and static CLI build). Build evidence remains separate from
 Sirius integration acceptance.
+
+## v1.51.0 — Varnish planner identity (2026-11-12)
+
+Continues the expanded fingerprint capability backlog: original pinned Varnish
+HTTP Server observations now supply product/version and CPE hints through the
+existing planner mapper. Versionless headers retain unknown versions; misleading
+prefixes and malformed versions remain unknown. Shared selection fixtures preserve
+caller authority, exact missing/mismatched product skip reasons and the CPE-only
+false-clean guard. No public API change or throughput claim. Live consumer
+persistence remains separate; Phase 3 stays paused.
+
+Validation: make check (race suite, external SDK checks, platform cross-builds,
+vet and static CLI build), /tmp/scribe151-check.log. Bounded race planner fuzz
+passed with 220/796 baseline seeds covered in five seconds; mutations did not
+begin (/tmp/scribe151-fuzz.log). Service reinstall and complete POST /run smoke
+provide operational evidence only, separate from live workflow acceptance.

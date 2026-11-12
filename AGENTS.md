@@ -324,3 +324,9 @@ v1.50.0 reuses immutable compiled default fingerprint rules across planner probe
 Keep custom matcher rule slices independent and default rules read-only; preserve
 identity boundaries and conservative clean gates. Constructor microbenchmarks do
 not establish executed-Lua throughput. Phase 3 stays paused.
+
+v1.51.0 adds original pinned Varnish HTTP Server identity and CPE hints through
+the shared fingerprint/planner mapper. Preserve strict identity boundaries,
+unknown missing versions, caller authority, exact product skip reasons and
+CPE-only false-clean guards. No throughput claim; live consumer persistence
+remains separate and Phase 3 stays paused.
