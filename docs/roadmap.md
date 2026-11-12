@@ -1120,3 +1120,32 @@ vet, CGO-disabled build, cross-builds and local persistence/socket gates.
 A repeated planner fuzz run spent its budget processing 347 accumulated seeds
 and passed; it does not represent 347 new mutations. Shared-host benchmark
 timings remain unsuitable for a speedup claim.
+
+## v1.20.0 — bounded long fuzz target and socket false-clean guards (2026-11-12)
+
+`make fuzz-long` runs planner, mixed engine failure and pingpp reader campaigns
+sequentially under the race detector, defaulting to five minutes each and two
+workers. Override FUZZ_TIME and FUZZ_WORKERS for the available host budget.
+For a caller-owned nightly schedule, run `make fuzz-long` from this checkout
+and retain stdout/stderr and the exit status. No scheduler is installed by this
+release. Go retains discovered failures in testdata/fuzz; review and commit useful
+regressions. Avoid overlapping campaigns with throughput measurements.
+
+The existing real TCP and isolated trusted TLS marker matrix now includes trailing
+clean-like data, uppercase CLEAN and empty responses alongside all three verdicts.
+These must complete with unknown verdicts, including exhaustive selection. Missing
+and conflicting product facts still skip; untrusted TLS still fails unknown.
+This extends original marker socket evidence, not real POP3/Redis/SMTP coverage.
+
+Local vGPT source reinspection still finds load/filter/direct runs.json rewrite
+in services/agent-api.py save_run, without atomic replacement or sync, and no
+cancellation endpoint. Live cancellation and durable consumer report acceptance
+remain infeasible without consumer changes; local fake-store acceptance remains
+separate evidence. No consumer repository was modified. Phase 3 stays paused.
+
+Validation: make check and make acceptance-local passed, plus explicit
+CGO_ENABLED=0 go build ./cmd/scribe. make fuzz-long FUZZ_TIME=60s passed all
+three sequential race campaigns with two workers (including baseline replay).
+Logs for this host run: /tmp/scribe120-{check,acceptance,fuzz}.log.
+The new cases exposed an unanchored trusted-TLS child test selector; anchoring
+each path component prevents prefix matches from sharing cached certificate roots.

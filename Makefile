@@ -52,3 +52,12 @@ acceptance-local: acceptance
 	go test -race -count=1 ./cmd/scribe -run 'Test(PingppSelection|RealEmitterExecution)$$'
 
 	go test -count=1 -v ./adapter/pingpp -run TestRealEmitter
+
+.PHONY: fuzz-long
+# Sequential, finite race campaigns; suitable for a caller-owned schedule.
+FUZZ_TIME ?= 5m
+FUZZ_WORKERS ?= 2
+fuzz-long:
+	go test -race ./runtime/lua54 -run '^$$' -fuzz '^FuzzParallelPlanner$$' -fuzztime=$(FUZZ_TIME) -parallel=$(FUZZ_WORKERS)
+	go test -race ./runtime/lua54 -run '^$$' -fuzz '^FuzzMixedFailures$$' -fuzztime=$(FUZZ_TIME) -parallel=$(FUZZ_WORKERS)
+	go test -race ./adapter/pingpp -run '^$$' -fuzz '^FuzzReader$$' -fuzztime=$(FUZZ_TIME) -parallel=$(FUZZ_WORKERS)

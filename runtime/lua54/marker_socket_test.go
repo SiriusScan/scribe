@@ -31,10 +31,10 @@ func TestMarkerCorpusSockets(t *testing.T) {
 	for _, protocol := range []string{"http", "tcp", "tls", "trusted-tls"} {
 		for _, product := range []string{"Scribe fixture", "", "Other"} {
 			for _, exhaustive := range []bool{false, true} {
-				for _, marker := range []string{"vulnerable", "clean", "unrecognized"} {
+				for _, marker := range []string{"vulnerable", "clean", "unrecognized", "clean-trailing", "CLEAN", "empty"} {
 					t.Run(fmt.Sprintf("%s/%s/product=%s/exhaustive=%t", protocol, marker, product, exhaustive), func(t *testing.T) {
 						if protocol == "trusted-tls" && os.Getenv("SCRIBE_TLS_CHILD") == "" {
-							cmd := exec.Command(os.Args[0], "-test.run=^TestMarkerCorpusSockets/trusted-tls/"+marker+"/product="+product+"/exhaustive="+fmt.Sprint(exhaustive)+"$")
+							cmd := exec.Command(os.Args[0], "-test.run=^TestMarkerCorpusSockets$/^trusted-tls$/^"+marker+"$/^product="+product+"$/^exhaustive="+fmt.Sprint(exhaustive)+"$")
 							cmd.Env = append(os.Environ(), "SCRIBE_TLS_CHILD=1")
 							if out, err := cmd.CombinedOutput(); err != nil {
 								t.Fatalf("trusted TLS child: %v\n%s", err, out)
@@ -97,7 +97,9 @@ func TestMarkerCorpusSockets(t *testing.T) {
 								c.SetDeadline(time.Now().Add(time.Second))
 								b := make([]byte, 8)
 								if _, e = io.ReadFull(c, b); e == nil {
-									io.WriteString(c, marker)
+									if marker != "empty" {
+										io.WriteString(c, marker)
+									}
 								}
 							}()
 							defer func() { listener.Close(); <-done }()
