@@ -1166,3 +1166,20 @@ POP3/SMTP socket coverage remains open. Phase 3 stays paused.
 
 Validation: make check and make acceptance-local; release installation and POST
 :18081/run smoke are separate operational evidence. No throughput claim.
+
+## v1.22.0 — POP3 socket policy acceptance (2026-11-12)
+
+The existing socket matrix now executes the original pinned POP3 USER scripts
+over loopback TCP and certificate-verified TLS. Protocol parameters share one
+request/response matrix with the existing fixtures, avoiding a second runner.
+Exact USER root requests, three verdicts, trailing clean-like data, uppercase
+and empty replies retain conservative results. Missing/conflicting products
+skip under normal and exhaustive selection with exact reasons.
+
+This closes the POP3 socket gap identified above. It is controlled USER-response
+policy evidence, not full POP3 session/login interoperability or CVE coverage.
+SMTP socket coverage, live consumer cancellation and durable report persistence
+remain unfinished. Phase 3 stays paused. No production API or dependency changes.
+
+Validation: make check and make acceptance-local; service reinstall and POST
+:18081/run smoke are separate operational evidence.

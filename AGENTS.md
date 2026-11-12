@@ -185,3 +185,8 @@ v1.21.0 reuses the socket corpus matrix for pinned Redis TCP/trusted TLS scripts
 Retain exact RESP request assertions, product skip policy and unknown malformed
 responses. Controlled command-policy evidence is not general Redis authorization
 acceptance. Phase 3 stays paused.
+
+v1.22.0 parameterizes the shared socket matrix for original POP3 TCP/trusted TLS
+USER fixtures. Preserve exact requests, malformed-response unknown verdicts and
+normal/exhaustive product gates. Controlled USER responses do not establish full
+POP3 login/session acceptance. SMTP socket coverage remains open; Phase 3 stays paused.
