@@ -1735,3 +1735,16 @@ or retained-heap claim. Further VM allocation work remains open.
 Validation: make check (race suite, external SDK, cross-builds, vet and static
 CLI build). Service reinstall and complete POST /run smoke are operational
 evidence only. Live consumer persistence remains separate; Phase 3 stays paused.
+
+## v1.44.0 — retain agreed adapter product identity (2026-11-12)
+
+The existing pingpp.scan/v1 mapper now preserves an agreed product when accepted
+endpoint claims disagree only about its version. Version remains unknown; a later
+repeated version cannot erase the conflict. Different product claims still leave
+identity unknown. This enables product selection without asserting a disputed
+version. Order regressions cover both directions and repeated claims. No wire or
+public API change, throughput claim, or live consumer acceptance. Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe144-check.log); bounded race FuzzReader passed
+with 2,591 executions (/tmp/scribe144-fuzz.log). Service reinstall and POST /run
+smoke are operational evidence, separate from live consumer persistence.

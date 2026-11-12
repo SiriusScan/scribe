@@ -108,7 +108,7 @@ func TestConflictingVersionOrder(t *testing.T) {
 			t.Fatalf("targets=%+v err=%v", targets, err)
 		}
 		got := targets[0]
-		if got.Product != "" || got.Version != "" || got.Service != "http" || !got.TLS {
+		if got.Product != "nginx" || got.Version != "" || got.Service != "http" || !got.TLS {
 			t.Fatalf("conflicting identity: %+v", got)
 		}
 	}
@@ -245,5 +245,30 @@ func TestReaderBoundsDecoderDiagnostics(t *testing.T) {
 	_, ok, again := r.Next(context.Background())
 	if ok || again != err {
 		t.Fatalf("terminal error changed: %v", again)
+	}
+}
+
+func TestProductAgreementWithVersionConflict(t *testing.T) {
+	data, err := os.ReadFile("testdata/scan.jsonl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, reverse := range []bool{false, true} {
+		var d Document
+		if err := json.Unmarshal(data, &d); err != nil {
+			t.Fatal(err)
+		}
+		d.Asset.Claims = []Claim{
+			{Subject: "192.0.2.1/tcp/443", Kind: "product", Product: "nginx", Version: "1.24", Confidence: "strong"},
+			{Subject: "192.0.2.1/tcp/443", Kind: "product", Product: "nginx", Version: "1.25", Confidence: "exact"},
+			{Subject: "192.0.2.1/tcp/443", Kind: "product", Product: "nginx", Version: "1.25", Confidence: "strong"},
+		}
+		if reverse {
+			d.Asset.Claims[0], d.Asset.Claims[2] = d.Asset.Claims[2], d.Asset.Claims[0]
+		}
+		targets, err := Targets(d)
+		if err != nil || len(targets) != 1 || targets[0].Product != "nginx" || targets[0].Version != "" {
+			t.Fatalf("reverse=%v: %+v %v", reverse, targets, err)
+		}
 	}
 }

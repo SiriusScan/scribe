@@ -128,10 +128,13 @@ func Targets(d Document) ([]scribe.Target, error) {
 				t.Service = s
 			}
 		}
-		if len(products) == 1 && !conflict {
+		// Version disagreements do not contradict an otherwise agreed product.
+		if len(products) == 1 {
 			for p, v := range products {
 				t.Product = p
-				t.Version = v
+				if !conflict {
+					t.Version = v
+				}
 			}
 		}
 		if err := t.Validate(); err != nil {

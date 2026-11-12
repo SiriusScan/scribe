@@ -289,3 +289,7 @@ Keep SetEnv accounting, invocation-owned mutable tables, normal growth and
 third-party notices. Raw executed-Lua before/after samples under benchmarks/
 establish allocation reduction only; no throughput speedup claim. Live consumer
 persistence remains separate and Phase 3 stays paused.
+
+v1.44.0 retains agreed pingpp product identity when accepted claims disagree
+only on version; the version stays unknown regardless of claim order.
+Different products remain unknown. Phase 3 stays paused.
