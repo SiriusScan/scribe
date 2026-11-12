@@ -171,6 +171,9 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 	if ctx == nil || idx == nil || next == nil || sink == nil {
 		return fmt.Errorf("context, index, target producer and sink are required")
 	}
+	if len(idx.entries) == 0 {
+		return fmt.Errorf("index must contain scripts")
+	}
 	cache := make(probeCache)
 	var target Target
 	pos := len(idx.entries)
@@ -191,9 +194,6 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 			}
 			target = t
 			pos = 0
-		}
-		if len(idx.entries) == 0 {
-			return Task{}, false, fmt.Errorf("index must contain scripts")
 		}
 		entry := &idx.entries[pos]
 		pos++

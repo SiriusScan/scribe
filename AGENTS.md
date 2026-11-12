@@ -635,3 +635,12 @@ v1.93.0 adds adapter/pingpp.Run, a Go library entrypoint connecting bounded
 pingpp.scan/v1 input directly to the existing planner stream. Preserve caller
 input ownership, sink errors and late stream failures; partial records never
 establish complete acceptance. No new mapper or identity parsing. Phase 3 paused.
+
+
+v1.94.0 rejects empty script indexes before requesting streaming targets. This
+prevents an invalid plan from blocking on caller-owned ping++ input or triggering
+producer I/O. Shared planner tests cover streaming and draining paths; the
+pingpp.Run regression requires zero reads and zero result callbacks. Existing
+nonempty selection, cancellation and verdict semantics remain authoritative.
+No public API change or throughput claim. Live consumer persistence remains
+separate; Phase 3 stays paused.

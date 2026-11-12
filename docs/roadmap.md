@@ -2487,3 +2487,20 @@ Windows/Darwin cross-builds, vet and CGO-disabled CLI build),
 Lua execution assertions. Bounded Reader race fuzz passed with all 154 baseline
 seeds and 195 executions (/tmp/scribe193-fuzz.log). Service reinstall and POST
 smoke are local operational evidence, not live consumer persistence acceptance.
+
+
+v1.94.0 rejects empty script indexes before requesting streaming targets. This
+prevents an invalid plan from blocking on caller-owned ping++ input or triggering
+producer I/O. Shared planner tests cover streaming and draining paths; the
+pingpp.Run regression requires zero reads and zero result callbacks. Existing
+nonempty selection, cancellation and verdict semantics remain authoritative.
+No public API change or throughput claim. Live consumer persistence remains
+separate; Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK acceptance,
+Windows/Darwin cross-builds, vet and CGO-disabled CLI build),
+/tmp/scribe194-check.log. The final added planner regression also passed in a
+separate full race suite (/tmp/scribe194-race.log). Focused planner/adapter race
+regressions passed. Bounded planner race fuzz passed with 90/806 baseline seeds;
+mutations did not begin (/tmp/scribe194-fuzz.log). Deployment POST smoke is
+local operational evidence, separate from live consumer persistence acceptance.

@@ -600,3 +600,12 @@ For a single library call from ping++ JSONL into the planner, use
 usual. The caller owns interruption of blocking input. Require a nil returned
 error and complete terminal records before assessing explicit verdicts: results
 from earlier documents can precede a later input or sink failure.
+
+
+v1.94.0 rejects empty script indexes before requesting streaming targets. This
+prevents an invalid plan from blocking on caller-owned ping++ input or triggering
+producer I/O. Shared planner tests cover streaming and draining paths; the
+pingpp.Run regression requires zero reads and zero result callbacks. Existing
+nonempty selection, cancellation and verdict semantics remain authoritative.
+No public API change or throughput claim. Live consumer persistence remains
+separate; Phase 3 stays paused.

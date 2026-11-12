@@ -57,3 +57,28 @@ return {api_version=1, action=function() return {verdict="unknown", data="adapte
 		t.Fatalf("sink error=%v", err)
 	}
 }
+
+type unreadableInput struct{ t *testing.T }
+
+func (r unreadableInput) Read([]byte) (int, error) {
+	r.t.Fatal("empty plan read upstream input")
+	return 0, errors.New("unexpected read")
+}
+
+func TestRunEmptyPlanDoesNotRead(t *testing.T) {
+	runtime, err := lua54.NewNative(lua54.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	engine, err := scribe.New(scribe.Options{}, runtime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = Run(context.Background(), engine, &scribe.Index{}, unreadableInput{t}, func(scribe.Result) error {
+		t.Fatal("empty plan emitted a result")
+		return nil
+	})
+	if err == nil || !strings.Contains(err.Error(), "index must contain scripts") {
+		t.Fatalf("error=%v", err)
+	}
+}
