@@ -303,3 +303,8 @@ v1.46.0 adds original pinned HAProxy HTTP Server identity and CPE hints through
 existing fingerprint/planner paths. Preserve strict header boundaries, unknown
 missing versions, caller identity authority and CPE-only false-clean guards.
 No throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+v1.47.0 makes on_unknown run respect observed contradictions across declarative
+fields and nested all_of/any_of branches. Missing facts may allow execution but
+never establish product identification or a clean verdict. Confidence/CPE gates
+remain conservative. Phase 3 stays paused.

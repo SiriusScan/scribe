@@ -1778,3 +1778,21 @@ claim. Phase 3 stays paused; live consumer persistence remains separate.
 Validation: make check (/tmp/scribe146-check.log) and bounded race planner fuzz
 (/tmp/scribe146-fuzz.log; 288/796 baseline seeds, no mutations). Service reinstall and complete POST /run smoke are
 operational evidence only, not live workflow acceptance.
+
+## v1.47.0 — partial-fact declarative selection (2026-11-12)
+
+The planner's on_unknown run policy now evaluates known facts before admitting
+partially identified endpoints. A missing version no longer bypasses a known
+product mismatch. The shared evaluator reuses existing field predicates and
+recurses through required and alternative branches: every required branch must
+remain possible, and at least one alternative must remain possible. Missing facts
+permit execution without positive product identification. Confidence and CPE
+gates retain their existing conservative behavior. No public API or wire change,
+throughput claim or live consumer acceptance. Phase 3 stays paused.
+
+Validation: focused partial-fact policy regressions and make check (race suite,
+external SDK, vet, static CLI and platform cross-builds), logged in
+/tmp/scribe147-check.log; bounded race planner fuzz in /tmp/scribe147-fuzz.log (310/796 cached baseline
+seeds covered in five seconds; mutations did not begin).
+Service reinstall and complete POST /run smoke are operational evidence only;
+live consumer persistence remains separate.

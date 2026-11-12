@@ -99,7 +99,7 @@ func (m Match) evaluate(t Target) (bool, bool) {
 		}
 	}
 	if m.OnUnknown == "run" && m.missing(t) {
-		return true, false
+		return m.partialMatch(t), false
 	}
 	identified := len(m.Products) > 0 && t.Product != "" && contains(m.Products, t.Product)
 	for _, pair := range []struct {
@@ -221,4 +221,44 @@ func (m Match) matchesBanner(banner string) bool {
 		}
 	}
 	return p.MatchString(banner)
+}
+
+// partialMatch permits absent facts, but never overrides observed contradictions.
+// Evaluate the same field predicates after removing only unavailable facts.
+func (m Match) partialMatch(t Target) bool {
+	m.OnUnknown = ""
+	if t.Service == "" {
+		m.Services = nil
+	}
+	if t.Product == "" {
+		m.Products = nil
+	}
+	if t.Protocol == "" {
+		m.Protocols = nil
+	}
+	if t.Version == "" {
+		m.MinVersion, m.MaxVersion = "", ""
+	}
+	if t.Banner == "" {
+		m.BannerRegex = ""
+	}
+	all, any := m.AllOf, m.AnyOf
+	m.AllOf, m.AnyOf = nil, nil
+	if ok, _ := m.evaluate(t); !ok {
+		return false
+	}
+	for _, child := range all {
+		if !child.partialMatch(t) {
+			return false
+		}
+	}
+	if len(any) > 0 {
+		for _, child := range any {
+			if child.partialMatch(t) {
+				return true
+			}
+		}
+		return false
+	}
+	return true
 }
