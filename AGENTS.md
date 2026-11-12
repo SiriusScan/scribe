@@ -577,3 +577,7 @@ rejected documents. Phase 3 stays paused; no throughput claim.
 v1.85.0 adds original pinned FileZilla FTP greeting identity and CPE hints.
 Preserve strict greeting boundaries, unknown absent versions, caller authority
 and conservative clean gates. No throughput claim; Phase 3 stays paused.
+
+v1.86.0 rejects duplicate declarative selection JSON fields through the shared
+bounded wire validator, including nested and escaped-equivalent names. Preserve
+independent object scopes and conservative preparation errors. Phase 3 paused.

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/SiriusScan/scribe/internal/jsonwire"
 )
 
 // selectionHints are optional selection alternatives. Protocol constrains all alternatives.
@@ -48,7 +50,11 @@ func newIndex(scripts []Script, snapshot bool) (*Index, error) {
 					return nil, fmt.Errorf("duplicate metadata: %s", s.ID)
 				}
 				found = true
-				dec := json.NewDecoder(strings.NewReader(strings.TrimSpace(strings.TrimPrefix(line, "-- scribe:"))))
+				metadata := strings.TrimSpace(strings.TrimPrefix(line, "-- scribe:"))
+				if err := jsonwire.Validate([]byte(metadata)); err != nil {
+					return nil, fmt.Errorf("%s: %w", s.ID, err)
+				}
+				dec := json.NewDecoder(strings.NewReader(metadata))
 				dec.DisallowUnknownFields()
 				if err := dec.Decode(&h); err != nil {
 					return nil, fmt.Errorf("%s: %w", s.ID, err)

@@ -2354,3 +2354,17 @@ Phase 3 stays paused; local service smoke is separate from live consumer persist
 
 Validation: make check (race suite, external SDK, cross-builds, vet and static
 CLI build), /tmp/scribe185-check.log.
+
+## v1.86.0 — Unambiguous declarative planner constraints
+
+Selection metadata now rejects duplicate JSON fields before typed decoding,
+including escaped-equivalent keys in nested matcher branches. Independent
+alternatives retain independent field scopes. The bounded JSON validator is
+shared with pingpp ingestion. Ambiguous declarations fail preparation rather
+than silently replacing product constraints. Behavioral tests pin rejection and
+valid repeated names across independent branches. No public API or throughput
+claim; live consumer persistence remains separate. Phase 3 stays paused.
+
+Validation: make check log /tmp/scribe186-check.log; bounded planner race fuzz
+passed with 145/796 baseline seeds (no mutation campaign). Service POST smoke
+is operational evidence only.
