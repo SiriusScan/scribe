@@ -168,6 +168,8 @@
 
 	Concurrency int
 
+	ModuleInterval time.Duration
+
 	ModuleConcurrency int
 
 	HostConcurrency int

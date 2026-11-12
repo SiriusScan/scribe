@@ -224,3 +224,46 @@ func TestModuleConcurrency(t *testing.T) {
 		t.Fatalf("peak %d", peak)
 	}
 }
+
+func TestModuleInterval(t *testing.T) {
+	const interval = 30 * time.Millisecond
+	var starts []time.Time
+	var ids []string
+	e, err := scribe.New(scribe.Options{Concurrency: 1, ModuleInterval: interval}, testRuntime{execute: func(ctx context.Context, task scribe.Task) (scribe.Output, error) {
+		starts = append(starts, time.Now())
+		ids = append(ids, task.Script.ID)
+		return scribe.Output{}, nil
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := tasks(3)
+	ts[0].Script.ID = "paced"
+	ts[1].Script.ID = "paced"
+	ts[2].Script.ID = "independent"
+	if err := e.Run(context.Background(), ts, func(scribe.Result) error { return nil }); err != nil {
+		t.Fatal(err)
+	}
+	if len(starts) != 3 || ids[1] != "independent" || starts[2].Sub(starts[0]) < interval {
+		t.Fatalf("starts %v ids %v", starts, ids)
+	}
+	if _, err := scribe.New(scribe.Options{ModuleInterval: -1}, testRuntime{}); err == nil {
+		t.Fatal("negative interval accepted")
+	}
+}
+
+func TestModuleIntervalAccountingBound(t *testing.T) {
+	e, err := scribe.New(scribe.Options{Concurrency: 1, MaxHosts: 1, ModuleInterval: time.Hour}, testRuntime{execute: func(context.Context, scribe.Task) (scribe.Output, error) { return scribe.Output{}, nil }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := tasks(2)
+	ts[1].Target = ts[0].Target
+	ts[0].Script.ID = "one"
+	ts[1].Script.ID = "two"
+	var results []scribe.Result
+	err = e.Run(context.Background(), ts, func(r scribe.Result) error { results = append(results, r); return nil })
+	if err == nil || len(results) != 2 || results[1].Status != scribe.Failed || results[1].Verdict != scribe.Unknown {
+		t.Fatalf("results %+v error %v", results, err)
+	}
+}

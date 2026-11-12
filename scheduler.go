@@ -57,6 +57,7 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 		id      string
 	}
 	modules := map[moduleKey]int{}
+	moduleNext := map[moduleKey]time.Time{}
 	keyFor := func(t Task) moduleKey { return moduleKey{t.Script.Dialect, t.Script.ID} }
 	pending := make([]scheduledTask, 0, e.options.Window)
 	done := make(chan completion, e.workers)
@@ -179,6 +180,11 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 		clear(pending[len(retained):])
 		pending = retained
 		now := time.Now()
+		for k, deadline := range moduleNext {
+			if !now.Before(deadline) {
+				delete(moduleNext, k)
+			}
+		}
 		var wake time.Time
 		for active < e.workers && runCtx.Err() == nil {
 			if now.Before(globalNext) {
@@ -187,6 +193,12 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 			chosen := -1
 			for i, p := range pending {
+				if next := moduleNext[keyFor(p.task)]; now.Before(next) {
+					if wake.IsZero() || next.Before(wake) {
+						wake = next
+					}
+					continue
+				}
 				if modules[keyFor(p.task)] >= e.options.ModuleConcurrency {
 					continue
 				}
@@ -213,8 +225,17 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			copy(pending[chosen:], pending[chosen+1:])
 			pending[len(pending)-1] = scheduledTask{}
 			pending = pending[:len(pending)-1]
+			if e.options.ModuleInterval > 0 {
+				if _, exists := moduleNext[keyFor(p.task)]; !exists && len(moduleNext) >= e.options.MaxHosts {
+					emit(terminal(p.task, Failed, "module pacing accounting limit exceeded"))
+					continue
+				}
+			}
 			globalNext = time.Now().Add(e.options.GlobalInterval)
 			modules[keyFor(p.task)]++
+			if e.options.ModuleInterval > 0 {
+				moduleNext[keyFor(p.task)] = time.Now().Add(e.options.ModuleInterval)
+			}
 			p.host.active++
 			p.host.starts++
 			p.host.next = time.Now().Add(e.options.HostInterval)

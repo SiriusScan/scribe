@@ -33,6 +33,9 @@ type Options struct {
 	Exhaustive bool
 	// Concurrency is the worker count, 1–256; zero selects four, negative is invalid.
 	Concurrency int
+	// ModuleInterval spaces starts sharing an exact dialect and script ID per run; zero disables pacing.
+	// Unexpired module pacing entries are bounded by MaxHosts; excess tasks fail.
+	ModuleInterval time.Duration
 	// ModuleConcurrency caps active invocations sharing a dialect and script ID per run; zero uses Concurrency.
 	ModuleConcurrency int
 	// HostConcurrency counts active tasks per host across ports; zero uses Concurrency.
@@ -62,8 +65,8 @@ type Engine struct {
 
 // New validates options and registers one runtime per explicit dialect.
 func New(options Options, runtimes ...Runtime) (*Engine, error) {
-	if options.ScriptTimeout < 0 || options.GlobalInterval < 0 {
-		return nil, errors.New("timeout and global interval cannot be negative")
+	if options.ScriptTimeout < 0 || options.GlobalInterval < 0 || options.ModuleInterval < 0 {
+		return nil, errors.New("timeout and pacing intervals cannot be negative")
 	}
 	if len(options.SNMPCommunity) > 255 {
 		return nil, fmt.Errorf("SNMP community exceeds 255 bytes")

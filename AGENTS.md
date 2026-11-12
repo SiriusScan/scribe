@@ -397,3 +397,9 @@ v1.62.0 makes nested planner skip reasons branch-aware. Failed required branches
 supply their own reasons; failed alternatives supply a specific reason only when
 all agree. Satisfied alternatives never contribute failure reasons. Preserve
 applicability, product clean gates and unknown verdicts. Phase 3 stays paused.
+
+v1.63.0 adds SDK ModuleInterval start pacing by exact dialect/script ID per run.
+Zero disables it; negative intervals fail construction. Unrelated modules remain
+eligible under existing host/global/concurrency policy. Expire pacing entries;
+preserve cancellation terminal records and unknown verdicts. No throughput claim.
+Phase 3 stays paused; local deployment is separate from consumer acceptance.

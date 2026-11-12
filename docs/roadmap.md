@@ -2033,3 +2033,19 @@ Validation: make check in /tmp/scribe162-check.log covers the race suite,
 external SDK, Windows/Darwin cross-builds, vet and CGO-disabled CLI build.
 Service reinstall and complete POST /run smoke in /tmp/scribe162-smoke.log
 provide operational evidence only, separate from live workflow acceptance.
+
+## v1.63.0 — per-module engine start pacing (2026-11-12)
+
+Extends the parallel engine scheduling capability: SDK Options.ModuleInterval
+spaces starts by exact dialect and script ID independently of global and host
+pacing. This lets rate-sensitive modules run alongside unrelated modules without
+serializing the whole run. Zero preserves existing behavior; negative values
+are rejected. Pacing state expires through the scheduler owner, with no Lua
+state sharing or cancellation goroutine. Behavioral coverage checks spacing,
+unrelated-module progress, complete results and invalid configuration.
+
+The additive Options field was reviewed and the public API fixture updated;
+external Options literals should use keyed fields. No throughput claim. Phase 3
+stays paused; live consumer cancellation/persistence acceptance remains separate.
+Validation: make check in /tmp/scribe163-check.log; service reinstall and POST
+/run smoke in /tmp/scribe163-smoke.log provide operational evidence only.
