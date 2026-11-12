@@ -187,3 +187,30 @@ func TestVarnishIdentity(t *testing.T) {
 		}
 	}
 }
+
+// Original observations pin Squid identity boundaries, not upstream compatibility.
+func TestSquidIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		header, version string
+		match           bool
+	}{
+		{"Squid/3.0.5", "3.0.5", true},
+		{"squid/2.9.12", "2.9.12", true},
+		{"Squid", "", true},
+		{"Squid/3.0.5 proxy", "3.0.5", true},
+		{"Squidish", "", false},
+		{"proxy Squid/3.0.5", "", false},
+		{"Squid/3.0.5evil", "", false},
+		{"Squid/", "", false},
+		{"Squid/3..5", "", false},
+	} {
+		got := Default().Match("", http.Header{"Server": {tc.header}})
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "http", Product: "Squid", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.header, got, want)
+		}
+	}
+}

@@ -41,6 +41,7 @@ func Default() *Matcher { return defaultMatcher }
 var defaultMatcher = New(
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^envoy(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Envoy"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Varnish(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Varnish"},
+	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Squid(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Squid"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^HAProxy(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "HAProxy"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^Caddy(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "Caddy"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^openresty(?:/([0-9.]+))?(?:$|\s)`), Service: "http", Product: "OpenResty"},

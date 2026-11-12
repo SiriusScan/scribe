@@ -11,6 +11,8 @@ func TestProductCPESelection(t *testing.T) {
 	for _, tc := range []struct{ header, banner, product, cpe string }{
 		{"Varnish/7.6.1", "", "Varnish", "cpe:/a:varnish-cache:varnish:7.6.1"},
 		{"Varnish", "", "Varnish", "cpe:/a:varnish-cache:varnish:*"},
+		{"Squid/7.6.1", "", "Squid", "cpe:/a:squid-cache:squid:7.6.1"},
+		{"Squid", "", "Squid", "cpe:/a:squid-cache:squid:*"},
 		{"envoy/1.32.3", "", "Envoy", "cpe:/a:envoyproxy:envoy:1.32.3"},
 		{"envoy", "", "Envoy", "cpe:/a:envoyproxy:envoy:*"},
 		{"HAProxy/3.0.5", "", "HAProxy", "cpe:/a:haproxy:haproxy:3.0.5"},

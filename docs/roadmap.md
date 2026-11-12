@@ -1863,3 +1863,19 @@ vet and static CLI build), /tmp/scribe151-check.log. Bounded race planner fuzz
 passed with 220/796 baseline seeds covered in five seconds; mutations did not
 begin (/tmp/scribe151-fuzz.log). Service reinstall and complete POST /run smoke
 provide operational evidence only, separate from live workflow acceptance.
+
+## v1.52.0 — Squid planner identity (2026-11-12)
+
+Original pinned Squid HTTP Server observations now supply product/version and
+CPE hints through the existing fingerprint and planner mapper. This extends
+product-aware target selection without a new execution path. Versionless headers
+retain unknown versions; misleading prefixes and malformed versions remain
+unknown. Shared selection fixtures preserve caller authority, exact missing and
+mismatched product skip reasons and the CPE-only false-clean gate. No public API
+change or throughput claim. Live consumer persistence remains separate;
+Phase 3 stays paused.
+
+Validation: make check logged in /tmp/scribe152-check.log. Bounded race planner
+fuzz passed with 225/796 baseline seeds covered in five seconds; mutations did
+not begin (/tmp/scribe152-fuzz.log). Service reinstall and complete POST /run
+smoke are operational evidence only, separate from live workflow acceptance.
