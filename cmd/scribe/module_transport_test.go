@@ -62,3 +62,49 @@ func TestModulePacingTransports(t *testing.T) {
 		}
 	}
 }
+func TestWindowTransports(t *testing.T) {
+	path := scriptFile(t, "return {api_version=1,action=function() return {data='paced'} end}")
+	for _, transport := range []string{"cli", "http"} {
+		for _, interval := range []string{"1", "65536", "-1", "65537"} {
+			t.Run(transport+"/"+interval, func(t *testing.T) {
+				args := []string{"--dialect", "sirius", "--script", path, "--script", path, "--host", "localhost", "--concurrency", "2", "--window", interval}
+				var out, diag bytes.Buffer
+				code := 0
+				if transport == "cli" {
+					code = run(context.Background(), args, &out, &diag)
+				} else {
+					body, _ := json.Marshal(map[string]any{"args": args})
+					rec := httptest.NewRecorder()
+					runHandler().ServeHTTP(rec, httptest.NewRequest("POST", "/run", bytes.NewReader(body)))
+					out.Write(rec.Body.Bytes())
+					if rec.Code != 200 {
+						code = 1
+					}
+				}
+				if interval == "-1" || interval == "65537" {
+					if code == 0 {
+						t.Fatal("invalid window accepted")
+					}
+					return
+				}
+				if code != 0 {
+					t.Fatalf("code=%d output=%s diagnostic=%s", code, &out, &diag)
+				}
+				dec := json.NewDecoder(&out)
+				for i := 0; i < 2; i++ {
+					var r scribe.Result
+					if err := dec.Decode(&r); err != nil {
+						t.Fatal(err)
+					}
+					if r.Status != scribe.Completed || r.Output.Data != "paced" {
+						t.Fatalf("%+v", r)
+					}
+				}
+				var extra any
+				if err := dec.Decode(&extra); err != io.EOF {
+					t.Fatalf("incomplete or excess stream: %v", err)
+				}
+			})
+		}
+	}
+}

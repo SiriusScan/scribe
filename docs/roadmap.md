@@ -2893,3 +2893,23 @@ selection; no throughput or live consumer persistence claim. Phase 3 stays pause
 Validation: make check log /tmp/scribe1121-check-final.log; bounded planner race
 fuzz passed 117 baseline seeds (/tmp/scribe1121-fuzz.log). Service smoke is local
 operational evidence only.
+
+## v1.122.0 — transport scheduling window control
+
+CLI and POST /run now expose --window through the existing Engine.Options.Window:
+pending plus active tasks are bounded to 1..65536, with zero retaining 256.
+This lets streaming consumers tune scheduling lookahead/backpressure independently
+of worker count; a window below concurrency limits usable workers. Shared transport
+fixtures require completed actions and JSONL EOF at both bounds and reject invalid
+limits. No public SDK change. Phase 3 stays paused.
+
+BenchmarkPlannerWindow reuses the verified 512-action JSONL runner. Raw samples
+in benchmarks/v1.122.0/window.txt were collected before validation, Linux amd64,
+i9-13900H, GOMAXPROCS=4, eight workers, module limit zero, unfiltered, three
+three-batch samples. Windows 1/8/256 measured 13,198–20,859 / 14,229–19,236 /
+10,500–14,580 actions/s respectively. Short shared-host samples establish local
+execution and encoding measurements, not a speedup or durable consumer acceptance.
+Command: go test ./runtime/lua54 -run '^$' -bench
+'^BenchmarkPlannerWindow/window=(1|8|256)/workers=8/module_limit=0/selected=false$'
+-benchtime=3x -count=3. Validation: /tmp/scribe1122-check.log (make check).
+Service deployment and HTTP smoke are local operational evidence only.

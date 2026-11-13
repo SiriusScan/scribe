@@ -1,0 +1,15 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerWindow/window=1/workers=8/module_limit=0/selected=false-4         	       3	  24546366 ns/op	     20859 actions/s	     20859 records/s	11334168 B/op	   79926 allocs/op
+BenchmarkPlannerWindow/window=1/workers=8/module_limit=0/selected=false-4         	       3	  38794487 ns/op	     13198 actions/s	     13198 records/s	11347352 B/op	   79934 allocs/op
+BenchmarkPlannerWindow/window=1/workers=8/module_limit=0/selected=false-4         	       3	  32853323 ns/op	     15584 actions/s	     15584 records/s	11358229 B/op	   79924 allocs/op
+BenchmarkPlannerWindow/window=8/workers=8/module_limit=0/selected=false-4         	       3	  31275767 ns/op	     16371 actions/s	     16371 records/s	11527757 B/op	   82028 allocs/op
+BenchmarkPlannerWindow/window=8/workers=8/module_limit=0/selected=false-4         	       3	  35981912 ns/op	     14229 actions/s	     14229 records/s	11475936 B/op	   81588 allocs/op
+BenchmarkPlannerWindow/window=8/workers=8/module_limit=0/selected=false-4         	       3	  26617617 ns/op	     19236 actions/s	     19235 records/s	11522978 B/op	   81606 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=false-4       	       3	  35117818 ns/op	     14580 actions/s	     14580 records/s	11761722 B/op	   81150 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=false-4       	       3	  45546633 ns/op	     11241 actions/s	     11241 records/s	11706301 B/op	   80845 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=false-4       	       3	  48761831 ns/op	     10500 actions/s	     10500 records/s	11729248 B/op	   80162 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	1.418s

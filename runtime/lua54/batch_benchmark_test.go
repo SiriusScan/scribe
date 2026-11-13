@@ -62,6 +62,16 @@ func BenchmarkPlannerJSONLHandoff(b *testing.B) {
 }
 
 func benchmarkPlannerExecution(b *testing.B, iterations int, jsonl bool) {
+	benchmarkPlannerWindow(b, iterations, jsonl, 0)
+}
+
+func BenchmarkPlannerWindow(b *testing.B) {
+	for _, window := range []int{1, 8, 256} {
+		b.Run(fmt.Sprintf("window=%d", window), func(b *testing.B) { benchmarkPlannerWindow(b, 100, true, window) })
+	}
+}
+
+func benchmarkPlannerWindow(b *testing.B, iterations int, jsonl bool, window int) {
 	for _, concurrency := range []int{1, 2, 4, 8} {
 		for _, moduleLimit := range []int{0, 1} {
 			for _, selected := range []bool{false, true} {
@@ -70,7 +80,7 @@ func benchmarkPlannerExecution(b *testing.B, iterations int, jsonl bool) {
 					if err != nil {
 						b.Fatal(err)
 					}
-					e, err := scribe.New(scribe.Options{Concurrency: concurrency, ModuleConcurrency: moduleLimit}, r)
+					e, err := scribe.New(scribe.Options{Concurrency: concurrency, ModuleConcurrency: moduleLimit, Window: window}, r)
 					if err != nil {
 						b.Fatal(err)
 					}

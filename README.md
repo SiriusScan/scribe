@@ -690,3 +690,8 @@ pipe; input reads are caller-owned and are not interrupted by engine cancellatio
 Exact affected releases can use `"versions":["1.2.3","2.0.1"]` in a match block
 (up to 64 semantic versions). Alternatives use semantic equality and intersect
 with version bounds and exclusions. Missing versions remain inconclusive.
+
+Use --window to bound pending plus active engine tasks in CLI and POST /run
+requests (1..65536; 0 selects 256). Smaller windows reduce scheduling lookahead;
+a window below --concurrency also limits usable workers. Result callbacks retain
+their existing serialized backpressure behavior.
