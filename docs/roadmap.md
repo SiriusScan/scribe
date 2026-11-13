@@ -2928,3 +2928,18 @@ Behavioral tests cover TCP/UDP, strong/exact/weak confidence, HTTP agreement,
 SMTP conflict and claim order. Validation: make check and a bounded race-enabled
 FuzzReader campaign. Local service POST smoke remains separate from live
 consumer persistence acceptance. No throughput claim; Phase 3 stays paused.
+
+## v1.124.0 — implicit TLS application claims
+
+Extends the existing HTTPS adapter path to accepted IMAPS, POP3S, SMTPS and
+LDAPS protocol/service claims. These now supply imap/pop3/smtp/ldap plus TLS
+for TCP endpoints, enabling existing base-service planner selection without a
+probe. This describes implicit TLS only, not STARTTLS negotiation. Shared
+behavioral fixtures cover both claim kinds, strong/exact/weak confidence,
+agreeing base services, incompatible services, UDP and reversed claim order.
+Service evidence supplies neither product confidence nor verdicts.
+
+Validation: make check (/tmp/scribe1124-check.log) and bounded race FuzzReader
+(/tmp/scribe1124-fuzz.log). Local systemd deployment and POST /run smoke are
+operational evidence only; live consumer persistence remains separate.
+No public API change or throughput claim; Phase 3 stays paused.

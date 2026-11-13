@@ -141,12 +141,12 @@ func Targets(d Document) ([]scribe.Target, error) {
 					}
 					continue
 				}
-				if v == "https" {
+				if base := implicitTLSService(v); base != "" {
 					if e.Transport != "tcp" {
 						transportConflict = true
 					}
 					t.TLS = true
-					services["http"] = true
+					services[base] = true
 					continue
 				}
 				if v == "tls" {
@@ -298,5 +298,23 @@ func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 		if err != nil {
 			r.err = fmt.Errorf("ping++ line %d: %s", r.lines, boundedDiagnostic(err.Error()))
 		}
+	}
+}
+
+// implicitTLSService maps explicit implicit-TLS identities, never STARTTLS hints.
+func implicitTLSService(service string) string {
+	switch service {
+	case "https":
+		return "http"
+	case "imaps":
+		return "imap"
+	case "pop3s":
+		return "pop3"
+	case "smtps":
+		return "smtp"
+	case "ldaps":
+		return "ldap"
+	default:
+		return ""
 	}
 }
