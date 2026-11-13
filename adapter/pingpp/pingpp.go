@@ -214,16 +214,21 @@ func Targets(d Document) ([]scribe.Target, error) {
 
 // canonicalSubject accepts only exact endpoint subjects, never host-wide claims.
 func canonicalSubject(subject string) (string, bool) {
-	parts := strings.Split(subject, "/")
-	if len(parts) != 3 || (parts[1] != "tcp" && parts[1] != "udp") {
+	address, rest, ok := strings.Cut(subject, "/")
+	transport, portText, complete := strings.Cut(rest, "/")
+	if !ok || !complete || (transport != "tcp" && transport != "udp") {
 		return "", false
 	}
-	ip := net.ParseIP(parts[0])
-	port, err := strconv.ParseUint(parts[2], 10, 16)
-	if ip == nil || err != nil || port == 0 || strconv.FormatUint(port, 10) != parts[2] {
+	ip := net.ParseIP(address)
+	port, err := strconv.ParseUint(portText, 10, 16)
+	if ip == nil || err != nil || port == 0 || portText[0] == '0' || portText[0] == '+' {
 		return "", false
 	}
-	return fmt.Sprintf("%s/%s/%d", ip.String(), parts[1], port), true
+	canonical := ip.String()
+	if canonical == address {
+		return subject, true
+	}
+	return canonical + "/" + rest, true
 }
 
 // boundedDiagnostic limits untrusted details before formatting can expand them.

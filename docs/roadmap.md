@@ -3016,3 +3016,19 @@ from live consumer persistence acceptance.
 
 Validation: make check (/tmp/scribe1129-check.log), bounded race FuzzReader,
 and installed-service POST smoke.
+
+## v1.130.0 — lean endpoint claim canonicalization
+
+Continues unfinished pingpp adapter allocation work. Exact endpoint subjects use
+nonallocating delimiter cuts and reuse the original key when the address is
+already canonical, avoiding split slices and formatted key construction. Equivalent
+IPv6 and mapped addresses still normalize; strict port syntax, transport isolation
+and host-wide claim rejection remain intact. Boundary and idempotence tests cover
+valid extremes, malformed ports and extra components. No public API change or
+executed throughput claim. Phase 3 stays paused; live consumer persistence remains
+separate.
+
+Validation: make check (/tmp/scribe1130-check.log), bounded race FuzzReader
+(/tmp/scribe1130-fuzz.log). Canonical-subject microbenchmark on apps01 Linux amd64,
+i9-13900H: 67.93 ns/op, 16 B/op, 1 alloc/op; this is not engine throughput evidence.
+Installed-service POST smoke supplies local operational evidence only.
