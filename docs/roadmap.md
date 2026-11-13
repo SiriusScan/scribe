@@ -2913,3 +2913,18 @@ Command: go test ./runtime/lua54 -run '^$' -bench
 '^BenchmarkPlannerWindow/window=(1|8|256)/workers=8/module_limit=0/selected=false$'
 -benchtime=3x -count=3. Validation: /tmp/scribe1122-check.log (make check).
 Service deployment and HTTP smoke are local operational evidence only.
+
+## v1.123.0 — HTTPS service claims feed HTTP selection
+
+The existing pingpp.scan/v1 adapter now translates accepted endpoint HTTPS
+protocol/service claims into HTTP service plus TLS on TCP. Agreeing HTTP and
+HTTPS claims combine instead of losing identity as conflicting services.
+This lets HTTP match blocks select supplied HTTPS endpoints without requiring
+a planner probe. Weak or contradicted claims remain ignored; incompatible
+services and UDP HTTPS claims retain conservative unknown identity. Service
+evidence never supplies product confidence or a vulnerability verdict.
+
+Behavioral tests cover TCP/UDP, strong/exact/weak confidence, HTTP agreement,
+SMTP conflict and claim order. Validation: make check and a bounded race-enabled
+FuzzReader campaign. Local service POST smoke remains separate from live
+consumer persistence acceptance. No throughput claim; Phase 3 stays paused.
