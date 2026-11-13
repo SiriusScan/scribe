@@ -93,3 +93,33 @@ func TestRealEmitterExecution(t *testing.T) {
 		t.Fatalf("%d %s %s", code, &out, &diagnostics)
 	}
 }
+
+func TestPingppStdin(t *testing.T) {
+	script := filepath.Join(t.TempDir(), "check.lua")
+	if err := os.WriteFile(script, []byte("return {api_version=1,action=function() return {data='pipe-executed'} end}"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	wire, err := os.ReadFile("../../adapter/pingpp/testdata/scan.jsonl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	args := []string{"--dialect", "sirius", "--script", script, "--pingpp-jsonl", "-"}
+	for _, broken := range []bool{false, true} {
+		input := string(wire)
+		if broken {
+			input += "\ninvalid\n"
+		}
+		var out, diag bytes.Buffer
+		code := runScriptsInput(context.Background(), args, nil, strings.NewReader(input), &out, &diag)
+		if (code != 0) != broken {
+			t.Fatalf("code=%d diagnostics=%s", code, &diag)
+		}
+		if !broken && (!strings.Contains(out.String(), "pipe-executed") || !strings.Contains(out.String(), `"verdict":"unknown"`)) {
+			t.Fatal(out.String())
+		}
+	}
+	var out, diag bytes.Buffer
+	if runScripts(context.Background(), args, nil, &out, &diag) == 0 {
+		t.Fatal("HTTP accepted process stdin")
+	}
+}

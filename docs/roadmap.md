@@ -2725,3 +2725,17 @@ cancellation/persistence remains separate; Phase 3 stays paused.
 Validation: make check log /tmp/scribe1109-check.log; finite adapter race fuzz
 log /tmp/scribe1109-fuzz.log. Deployment and service smoke are local operational
 evidence only.
+
+## v1.110.0 — direct ping++ CLI pipeline
+
+The CLI now accepts --pingpp-jsonl - to feed live emitter output directly through
+the existing bounded adapter, planner and parallel engine without a temporary
+scan file. HTTP requests reject process stdin. Shared runner input injection keeps
+one execution path and leaves caller input ownership intact. Behavioral tests
+cover executed Lua with unknown verdict, late malformed input failure and HTTP
+rejection. Documented pipefail preserves producer failure visibility; callers
+must close input and require complete output. No throughput claim. Live consumer
+persistence remains separate; Phase 3 stays paused.
+
+Validation: make check log /tmp/scribe1110-check.log. Local service deployment
+and smoke are operational evidence only.

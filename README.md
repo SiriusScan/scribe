@@ -673,3 +673,16 @@ per-node width limits. Oversized trees fail preparation rather than expanding
 planner work. Boundary fixtures preserve product identification and missing-product
 false-clean guards. No public API change or throughput claim. Live consumer
 persistence remains separate; Phase 3 stays paused.
+
+Pipe a live ping++ emitter directly into Scribe without an intermediate file:
+
+```sh
+set -o pipefail
+pingpp-scan 127.0.0.1:8080 | scribe --dialect sirius --script check.lua --pingpp-jsonl -
+```
+
+The CLI owns stdin; POST /run rejects this form. Input uses the existing bounded
+pingpp.scan/v1 reader and planner. Require both producer and Scribe success and
+complete JSONL output: a late input failure can follow earlier results. Only
+completed explicit verdicts establish an assessment. The producer must close its
+pipe; input reads are caller-owned and are not interrupted by engine cancellation.

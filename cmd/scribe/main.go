@@ -71,16 +71,20 @@ type inlineScript struct {
 }
 
 func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
-	return runScripts(ctx, argv, nil, stdout, stderr)
+	return runScriptsInput(ctx, argv, nil, os.Stdin, stdout, stderr)
 }
 
 func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdout, stderr io.Writer) int {
+	return runScriptsInput(ctx, argv, inline, nil, stdout, stderr)
+}
+
+func runScriptsInput(ctx context.Context, argv []string, inline []inlineScript, input io.Reader, stdout, stderr io.Writer) int {
 	if len(argv) > 0 && argv[0] == "serve" {
 		return serve(ctx, argv[1:], stderr)
 	}
 	flags := flag.NewFlagSet("scribe", flag.ContinueOnError)
 	flags.SetOutput(stderr)
-	pingppPath := flags.String("pingpp-jsonl", "", "read pingpp.scan/v1 JSONL endpoint facts")
+	pingppPath := flags.String("pingpp-jsonl", "", "read pingpp.scan/v1 JSONL endpoint facts (CLI: - reads stdin)")
 	factsJSONL := flags.String("facts-jsonl", "", "stream known endpoint facts from a JSONL file; at most 65536 records of 64 KiB")
 	summary := flags.Bool("summary", false, "append a summary JSONL record")
 	events := flags.Bool("events", false, "emit schema v1 SDK lifecycle events as JSONL")
@@ -228,7 +232,13 @@ func runScripts(ctx context.Context, argv []string, inline []inlineScript, stdou
 	target := scribe.Target{Host: *host, IP: *ip, Port: uint16(*port), Protocol: *protocol, Product: *product, Service: *service, State: *state, TLS: *tls}
 	targets := []scribe.Target{target}
 	var targetStream func(context.Context) (scribe.Target, bool, error)
-	if *pingppPath != "" {
+	if *pingppPath == "-" {
+		if input == nil {
+			return fail(errors.New("--pingpp-jsonl - requires CLI stdin"))
+		}
+		targetStream = pingpp.NewReader(input).Next
+		targets = nil
+	} else if *pingppPath != "" {
 		file, err := os.Open(*pingppPath)
 		if err != nil {
 			return fail(err)
