@@ -51,6 +51,15 @@ func version(v string) string {
 	return v
 }
 func (m Match) validate(depth int) error {
+	remaining := 256
+	return m.validateBudget(depth, &remaining)
+}
+
+func (m Match) validateBudget(depth int, remaining *int) error {
+	if *remaining <= 0 {
+		return fmt.Errorf("match tree exceeds 256 nodes")
+	}
+	*remaining--
 	if m.OnUnknown != "" && m.OnUnknown != "run" && m.OnUnknown != "skip" && m.OnUnknown != "probe" {
 		return fmt.Errorf("invalid on_unknown policy")
 	}
@@ -90,7 +99,7 @@ func (m Match) validate(depth int) error {
 	}
 	for _, group := range [][]Match{m.AnyOf, m.AllOf} {
 		for _, child := range group {
-			if err := child.validate(depth + 1); err != nil {
+			if err := child.validateBudget(depth+1, remaining); err != nil {
 				return err
 			}
 		}

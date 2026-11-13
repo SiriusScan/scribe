@@ -2692,3 +2692,18 @@ Validation: make check passed (race suite, external SDK, Windows/Darwin builds,
 vet and CGO-disabled CLI build), log /tmp/scribe1107-check.log. Bounded planner
 race fuzz passed 105/806 baseline seeds; mutations did not begin within the
 finite budget (/tmp/scribe1107-fuzz.log).
+
+
+## v1.108.0 — bounded planner match trees
+
+Declarative match validation now enforces a shared 256-node budget across
+all nested all_of and any_of branches, in addition to existing depth and
+per-node width limits. Oversized trees fail preparation rather than expanding
+planner work. Boundary fixtures preserve product identification and missing-product
+false-clean guards. No public API change or throughput claim. Live consumer
+persistence remains separate; Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, cross-compilation,
+vet and CGO-disabled CLI build), /tmp/scribe1108-check.log. Focused index/boundary
+race regression passed. Bounded planner race fuzz passed 622/806 baseline seeds;
+mutations did not begin within its finite budget (/tmp/scribe1108-fuzz.log).

@@ -713,3 +713,13 @@ Versionless identity remains supported. Behavioral fixtures cover accepted and
 rejected headers through the shared fingerprint and planner paths. No public API
 change or throughput claim. Local service smoke is separate from live consumer
 persistence acceptance. Phase 3 stays paused.
+
+
+## v1.108.0 — bounded planner match trees
+
+Declarative match validation now enforces a shared 256-node budget across
+all nested all_of and any_of branches, in addition to existing depth and
+per-node width limits. Oversized trees fail preparation rather than expanding
+planner work. Boundary fixtures preserve product identification and missing-product
+false-clean guards. No public API change or throughput claim. Live consumer
+persistence remains separate; Phase 3 stays paused.
