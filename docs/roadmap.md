@@ -2880,3 +2880,16 @@ separate; Phase 3 stays paused.
 
 Validation: make check log /tmp/scribe1120-check.log; bounded adapter race fuzz
 log /tmp/scribe1120-fuzz.log. Service smoke is local operational evidence only.
+
+## v1.121.0 — incompatible-service planner selection
+
+Match blocks accept exclude_services (up to 64 nonempty names). Known excluded
+services suppress execution and missing-fact probes, including on_unknown run.
+Nested alternatives remain independent; exclusions never identify a product.
+Normal/exhaustive behavioral fixtures retain unknown verdicts. Additive public
+Match field reviewed and signature fixture updated. This extends declarative
+selection; no throughput or live consumer persistence claim. Phase 3 stays paused.
+
+Validation: make check log /tmp/scribe1121-check-final.log; bounded planner race
+fuzz passed 117 baseline seeds (/tmp/scribe1121-fuzz.log). Service smoke is local
+operational evidence only.

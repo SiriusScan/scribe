@@ -746,3 +746,8 @@ unknown verdicts. Phase 3 stays paused.
 v1.120.0 reconciles TCP/UDP service claims as transport through the existing
 protocol path. Preserve accepted confidence filtering, order independence and
 conservative identity suppression on transport contradictions. Phase 3 paused.
+
+v1.121.0 adds exclude_services to declarative matching. Known excluded services
+suppress probes and normal execution even with on_unknown run; nested alternatives
+remain independent. Exclusions supply no product identification. Preserve exhaustive
+false-clean guards. Phase 3 stays paused.
