@@ -646,3 +646,9 @@ Planner skip diagnostics distinguish patched releases selected by
 `exclude_versions` ("declarative match: version explicitly excluded") from
 ordinary version-range mismatches. Nested alternatives preserve a specific
 reason only when their failures agree. Missing version facts remain inconclusive.
+
+v1.106.0 adds native `http.patch` for partial-update probes:
+`sirius.call("http.patch", "/resource", '{"enabled":true}', {["Content-Type"]="application/merge-patch+json"})`.
+SDK callers register `Client.PatchFunction` and grant exact `http.patch`.
+The shared POST/PUT path bounds bodies to 1 MiB, confines the endpoint, verifies
+TLS and returns non-2xx responses as evidence. Scripts decide explicit verdicts.

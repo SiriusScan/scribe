@@ -2661,3 +2661,18 @@ Live consumer persistence remains separate; Phase 3 stays paused.
 
 Validation: make check log /tmp/scribe1105-check.log. Service reinstall and HTTP
 smoke are local operational evidence only.
+
+## v1.106.0 — native HTTP PATCH probes
+
+Closes a Sirius Lua HTTP capability gap for partial-update and merge-patch probes.
+Client.PatchFunction and exact http.patch registration reuse POST/PUT validation
+and execution, including 1 MiB bodies, optional bounded headers, endpoint
+confinement, verified TLS and bounded responses. Non-2xx results remain evidence;
+missing verdicts remain unknown. The additive SDK method was reviewed and the
+API signature fixture updated. Shared socket behavior tests cover PUT/PATCH
+method, body, headers, non-2xx evidence and rejected inputs; real Lua CLI execution
+checks PATCH registration and caller authority. No throughput claim.
+Phase 3 stays paused; live consumer persistence remains separate.
+
+Validation: make check evidence /tmp/scribe1106-check.log. Service reinstall and
+POST /run smoke provide local operational evidence only.

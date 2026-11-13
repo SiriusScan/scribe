@@ -138,6 +138,12 @@ func (c *Client) PutFunction(ctx context.Context, target scribe.Target, args []a
 	return c.bodyFunction(ctx, target, args, http.MethodPut)
 }
 
+// PatchFunction implements exact http.patch with bounded body and optional headers.
+// It shares endpoint confinement, verified TLS and response limits with POST.
+func (c *Client) PatchFunction(ctx context.Context, target scribe.Target, args []any) (any, error) {
+	return c.bodyFunction(ctx, target, args, http.MethodPatch)
+}
+
 func (c *Client) bodyFunction(ctx context.Context, target scribe.Target, args []any, method string) (any, error) {
 	if len(args) < 2 || len(args) > 3 {
 		return nil, fmt.Errorf("%s requires path, body and optional headers", method)

@@ -697,3 +697,8 @@ v1.105.0 tightens IIS header identity boundaries and numeric versions through
 existing planner paths. Preserve versionless identity and conservative clean
 gates. No throughput claim; live consumer persistence remains separate.
 Phase 3 stays paused.
+
+v1.106.0 adds exact http.patch through the shared bounded HTTP body path and
+CLI/POST registry. Preserve exact grants, endpoint confinement, verified TLS and
+non-2xx evidence. Partial-update responses alone establish no verdict.
+Phase 3 stays paused; local smoke is separate from live consumer acceptance.
