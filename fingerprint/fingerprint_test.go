@@ -372,3 +372,11 @@ func TestDovecotIdentity(t *testing.T) {
 		}
 	}
 }
+
+func TestIISIdentityBoundaries(t *testing.T) {
+	for _, tt := range []struct{ header, version string }{{"Microsoft-IIS", ""}, {"Microsoft-IIS/10.0", "10.0"}, {"microsoft-iis/8.5 extra", "8.5"}} {
+		if got := Default().Match("", http.Header{"Server": {tt.header}}); got != (Facts{Service: "http", Product: "IIS", Version: tt.version}) {
+			t.Fatalf("%q: %+v", tt.header, got)
+		}
+	}
+}

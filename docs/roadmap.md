@@ -2648,3 +2648,16 @@ Validation: make check evidence in /tmp/scribe1104-check.log; bounded planner ra
 fuzz in /tmp/scribe1104-fuzz.log. Service smoke is local operational evidence only.
 The finite fuzz campaign passed 185/806 baseline seeds within its budget;
 mutations did not begin. Focused exclusion race tests also passed.
+
+## v1.105.0 — conservative IIS planner identity
+
+Continues the expanded planner fingerprint slice: Microsoft-IIS now requires
+an exact product boundary and numeric version components. Misleading prefixes,
+empty suffixes and malformed versions provide no identity or CPE hints.
+Versionless identity remains supported. Shared product-selection fixtures pin
+CPE mapping, caller authority and false-clean guards; rejected observations
+retain missing-product skips. No public API change or throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check log /tmp/scribe1105-check.log. Service reinstall and HTTP
+smoke are local operational evidence only.

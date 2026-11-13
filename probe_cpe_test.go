@@ -11,6 +11,8 @@ func TestProductCPESelection(t *testing.T) {
 	for _, tc := range []struct{ header, banner, product, cpe string }{
 		{"lighttpd/1.4.76", "", "lighttpd", "cpe:/a:lighttpd:lighttpd:1.4.76"},
 		{"lighttpd", "", "lighttpd", "cpe:/a:lighttpd:lighttpd:*"},
+		{"Microsoft-IIS/10.0", "", "IIS", "cpe:/a:microsoft:internet_information_services:10.0"},
+		{"Microsoft-IIS", "", "IIS", "cpe:/a:microsoft:internet_information_services:*"},
 		{"nginx/1.26.2", "", "nginx", "cpe:/a:nginx:nginx:1.26.2"},
 		{"nginx", "", "nginx", "cpe:/a:nginx:nginx:*"},
 		{"", "+OK Dovecot 2.3.21 ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:2.3.21"},
@@ -117,6 +119,24 @@ func TestLighttpdMisleadingIdentity(t *testing.T) {
 			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
 			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
 			m := Match{Products: []string{"lighttpd"}}
+			if ok, id := m.evaluate(observed); ok || id {
+				t.Fatalf("misleading identity accepted: %+v", observed)
+			}
+			if reason := m.skipReason(observed); reason != "declarative match: product identification missing" {
+				t.Fatal(reason)
+			}
+			if len(observed.CPE) != 0 {
+				t.Fatal(observed.CPE)
+			}
+		})
+	}
+}
+func TestIISMisleadingIdentity(t *testing.T) {
+	for _, header := range []string{"Microsoft-IISProxy", "Microsoft-IISTomcat/9.0", "Microsoft-IIS/2..4", "Microsoft-IIS/2.4evil", "Microsoft-IIS/", "Microsoft-IIS/2.4:injected"} {
+		t.Run(header, func(t *testing.T) {
+			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
+			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
+			m := Match{Products: []string{"IIS"}}
 			if ok, id := m.evaluate(observed); ok || id {
 				t.Fatalf("misleading identity accepted: %+v", observed)
 			}

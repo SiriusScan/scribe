@@ -692,3 +692,8 @@ pending input. No throughput claim; Phase 3 stays paused.
 v1.104.0 distinguishes explicitly excluded patched releases in planner skip
 diagnostics. Preserve nested reason agreement, ordinary range mismatch reasons,
 missing-version probes and exhaustive false-clean guards. Phase 3 stays paused.
+
+v1.105.0 tightens IIS header identity boundaries and numeric versions through
+existing planner paths. Preserve versionless identity and conservative clean
+gates. No throughput claim; live consumer persistence remains separate.
+Phase 3 stays paused.
