@@ -2801,3 +2801,18 @@ No throughput claim; live consumer persistence remains separate. Phase 3 paused.
 
 Validation: make check, /tmp/scribe1114-check.log; bounded adapter/planner fuzz
 evidence is local only. Service smoke is operational evidence.
+
+## v1.115.0 — explicit incompatible-product selection
+
+Match blocks now accept exclude_products through the shared Go matcher.
+Known excluded identities suppress execution and probing with an explicit
+product-excluded reason, including on_unknown run. Nested alternatives remain
+independent; exclusions supply no positive identification. Normal/exhaustive
+behavioral tests retain unknown verdicts for excluded products.
+The additive public field was reviewed and the signature fixture updated.
+No throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+Validation: make check passed, /tmp/scribe1115-check.log; focused product
+exclusion race tests passed. Finite planner race fuzz passed 117 baseline seeds
+before its budget ended, without mutations. Service smoke is local operational
+evidence only.

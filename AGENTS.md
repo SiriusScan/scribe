@@ -737,3 +737,8 @@ Phase 3 stays paused.
 v1.114.0 adds bounded explicit exclude_ports planner constraints. Keep ports
 advisory, nested branch semantics, probe suppression and exhaustive clean gates.
 Phase 3 stays paused.
+
+v1.115.0 adds explicit exclude_products planner constraints. Exclusions never
+supply positive identification; observed excluded products suppress probes and
+execution with explicit diagnostics. Preserve nested alternatives and exhaustive
+unknown verdicts. Phase 3 stays paused.
