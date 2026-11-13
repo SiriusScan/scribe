@@ -3157,3 +3157,16 @@ evidence does not establish executed-Lua throughput or live consumer persistence
 
 Validation: make check (/tmp/scribe1137-check-final.log). Installed-service POST
 smoke is separate local operational evidence.
+
+## v1.138.0 — secure service adapter-to-Lua acceptance
+
+Closes an end-to-end acceptance gap using the existing shared SDK gate: accepted
+HTTPS claims supply HTTP selection and retained TLS facts through pingpp.Run and
+real Lua execution. One/eight-worker and normal/exhaustive runs require complete
+unique terminal records; weak identity remains skipped/unknown. Matching product
+evidence still gates clean results. The identity and secure-service cases share
+one runner. No public API or throughput claim. Phase 3 stays paused; live consumer
+persistence acceptance remains separate.
+
+Validation: make check passed (/tmp/scribe1138-check-final.log), including race,
+vet and static/cross-platform builds. Installed-service smoke is operational evidence.

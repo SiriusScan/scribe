@@ -784,3 +784,9 @@ live consumer persistence. Phase 3 stays paused.
 v1.137.0 uses stack-backed netip formatting for pingpp claim subjects, avoiding
 canonical-subject allocations. Preserve mapped-IPv4 equivalence and reject scoped
 addresses. Adapter measurements do not establish Lua throughput. Phase 3 paused.
+
+v1.138.0 extends the shared adapter-to-Lua acceptance gate with HTTPS service
+claims, HTTP selection and retained TLS facts at one/eight workers under normal
+and exhaustive policy. Weak evidence stays skipped/unknown; explicit matching
+product evidence remains required for clean verdicts. Local acceptance is separate
+from live consumer persistence. Phase 3 stays paused.
