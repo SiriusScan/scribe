@@ -388,3 +388,28 @@ func TestTomcatIdentityBoundaries(t *testing.T) {
 		}
 	}
 }
+
+func TestDovecotIMAPIdentity(t *testing.T) {
+	for _, tc := range []struct {
+		banner, version string
+		match           bool
+	}{
+		{"* OK Dovecot ready.\r\n", "", true},
+		{"* OK [CAPABILITY IMAP4rev1 IDLE] Dovecot 2.3.21 ready.\r\n", "2.3.21", true},
+		{"* OK Dovecotish ready.", "", false},
+		{"* OK Dovecot 2..3 ready.", "", false},
+		{"* OK Dovecot 2.3evil ready.", "", false},
+		{"* BYE Dovecot ready.", "", false},
+		{"* OK proxy Dovecot ready.", "", false},
+		{"* OK Dovecot ready.\r\nother", "", false},
+	} {
+		got := Default().Match(tc.banner, nil)
+		want := Facts{}
+		if tc.match {
+			want = Facts{Service: "imap", Product: "Dovecot", Version: tc.version}
+		}
+		if got != want {
+			t.Errorf("%q: got %+v want %+v", tc.banner, got, want)
+		}
+	}
+}

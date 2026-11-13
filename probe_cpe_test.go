@@ -15,6 +15,8 @@ func TestProductCPESelection(t *testing.T) {
 		{"Microsoft-IIS", "", "IIS", "cpe:/a:microsoft:internet_information_services:*"},
 		{"nginx/1.26.2", "", "nginx", "cpe:/a:nginx:nginx:1.26.2"},
 		{"nginx", "", "nginx", "cpe:/a:nginx:nginx:*"},
+		{"", "* OK [CAPABILITY IMAP4rev1] Dovecot 2.3.21 ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:2.3.21"},
+		{"", "* OK Dovecot ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:*"},
 		{"", "+OK Dovecot 2.3.21 ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:2.3.21"},
 		{"", "+OK Dovecot ready.\r\n", "Dovecot", "cpe:/a:dovecot:dovecot:*"},
 		{"", "220 FileZilla Server 1.9.4 ready\r\n", "FileZilla", "cpe:/a:filezilla-project:filezilla_server:1.9.4"},

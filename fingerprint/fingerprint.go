@@ -39,6 +39,7 @@ func Default() *Matcher { return defaultMatcher }
 
 // Rules and compiled expressions are immutable after initialization.
 var defaultMatcher = New(
+	Rule{Pattern: regexp.MustCompile(`^\* OK(?: \[CAPABILITY [^\]\r\n]+\])? Dovecot(?: ([0-9]+(?:\.[0-9]+)*))? ready\.\r?\n?$`), Service: "imap", Product: "Dovecot"},
 	Rule{Pattern: regexp.MustCompile(`^\+OK Dovecot(?: ([0-9]+(?:\.[0-9]+)*))? ready\.\r?\n?$`), Service: "pop3", Product: "Dovecot"},
 	Rule{Pattern: regexp.MustCompile(`^220[ -]FileZilla Server(?: ([0-9]+(?:\.[0-9]+)*))?(?: ready)?\r?\n?$`), Service: "ftp", Product: "FileZilla"},
 	Rule{Header: "Server", Pattern: regexp.MustCompile(`(?i)^envoy(?:/([0-9]+(?:\.[0-9]+)*))?(?:$|\s)`), Service: "http", Product: "Envoy"},

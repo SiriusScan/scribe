@@ -2828,3 +2828,16 @@ persistence acceptance. Phase 3 stays paused.
 
 Validation: make check passed (/tmp/scribe1116-check.log); bounded adapter
 race fuzz passed 210 executions (/tmp/scribe1116-fuzz.log).
+
+## v1.117.0 — Dovecot IMAP planner identity
+
+Extends the unfinished fingerprint coverage slice with original pinned Dovecot
+IMAP greetings, including optional CAPABILITY response codes and numeric versions.
+The existing planner mapper supplies Dovecot CPE hints; versionless greetings
+retain unknown versions. Boundary fixtures reject misleading names, malformed
+versions, wrong status and appended lines. Shared CPE fixtures cover both forms.
+No public API change or throughput claim. Live consumer persistence remains
+separate; Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe1117-check.log). Service smoke is local
+operational evidence only.
