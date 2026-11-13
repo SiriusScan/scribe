@@ -267,3 +267,23 @@ func TestModuleIntervalAccountingBound(t *testing.T) {
 		t.Fatalf("results %+v error %v", results, err)
 	}
 }
+
+func TestPendingWindowGrowsBeyondInitialCapacity(t *testing.T) {
+	e, err := scribe.New(scribe.Options{Concurrency: 4, Window: 1024}, testRuntime{execute: func(context.Context, scribe.Task) (scribe.Output, error) { return scribe.Output{}, nil }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	count := 0
+	if err := e.Run(context.Background(), tasks(1024), func(r scribe.Result) error {
+		count++
+		if r.Status != scribe.Completed {
+			t.Errorf("status=%v", r.Status)
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1024 {
+		t.Fatalf("records=%d", count)
+	}
+}

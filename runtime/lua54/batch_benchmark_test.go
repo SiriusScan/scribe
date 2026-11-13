@@ -66,7 +66,7 @@ func benchmarkPlannerExecution(b *testing.B, iterations int, jsonl bool) {
 }
 
 func BenchmarkPlannerWindow(b *testing.B) {
-	for _, window := range []int{1, 8, 256} {
+	for _, window := range []int{1, 8, 256, 1024, 65536} {
 		b.Run(fmt.Sprintf("window=%d", window), func(b *testing.B) { benchmarkPlannerWindow(b, 100, true, window) })
 	}
 }

@@ -60,7 +60,8 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 	modules := map[moduleKey]int{}
 	moduleNext := map[moduleKey]time.Time{}
 	keyFor := func(t Task) moduleKey { return moduleKey{t.Script.Dialect, t.Script.ID} }
-	pending := make([]scheduledTask, 0, e.options.Window)
+	// Grow with admitted work rather than reserving the entire lookahead ceiling.
+	pending := make([]scheduledTask, 0, min(e.options.Window, 256))
 	done := make(chan completion, e.workers)
 	work := make(chan scheduledTask)
 	var workers sync.WaitGroup

@@ -760,3 +760,8 @@ Retain 250 ms/8 KiB bounds. Phase 3 stays paused.
 v1.131.0 adds required_ports through the shared declarative matcher. Preserve
 advisory ports, nested selection, probe suppression and exhaustive false-clean
 guards. Required ports never identify products. Phase 3 stays paused.
+
+v1.133.0 grows pending scheduler storage from at most 256 entries rather than
+reserving the full window. Preserve admission ceilings, terminal completeness,
+queue order and fairness. Verified large-window Lua/JSONL samples are local
+measurement only; Phase 3 stays paused.

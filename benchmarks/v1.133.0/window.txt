@@ -1,0 +1,42 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/runtime/lua54
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkPlannerWindow/window=256/workers=1/module_limit=0/selected=false-4         	       3	  17792116 ns/op	     28777 actions/s	     28777 records/s	11403445 B/op	   79408 allocs/op
+BenchmarkPlannerWindow/window=256/workers=1/module_limit=0/selected=false-4         	       3	  14878751 ns/op	     34412 actions/s	     34412 records/s	11429056 B/op	   79420 allocs/op
+BenchmarkPlannerWindow/window=256/workers=1/module_limit=0/selected=false-4         	       3	  18557105 ns/op	     27591 actions/s	     27591 records/s	11427464 B/op	   79410 allocs/op
+BenchmarkPlannerWindow/window=256/workers=1/module_limit=0/selected=true-4          	       3	   2006458 ns/op	     31899 actions/s	    255182 records/s	 1747077 B/op	   11782 allocs/op
+BenchmarkPlannerWindow/window=256/workers=1/module_limit=0/selected=true-4          	       3	   2090029 ns/op	     30623 actions/s	    244981 records/s	 1760901 B/op	   11795 allocs/op
+BenchmarkPlannerWindow/window=256/workers=1/module_limit=0/selected=true-4          	       3	   2097279 ns/op	     30517 actions/s	    244131 records/s	 1759872 B/op	   11787 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=false-4         	       3	  10847952 ns/op	     47199 actions/s	     47198 records/s	12080437 B/op	   88532 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=false-4         	       3	   9905121 ns/op	     51691 actions/s	     51691 records/s	12090106 B/op	   87170 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=false-4         	       3	   7718507 ns/op	     66336 actions/s	     66335 records/s	12087498 B/op	   87818 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=true-4          	       3	   2943748 ns/op	     21742 actions/s	    173931 records/s	 1763858 B/op	   11794 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=true-4          	       3	   2543228 ns/op	     25166 actions/s	    201323 records/s	 1768706 B/op	   11816 allocs/op
+BenchmarkPlannerWindow/window=256/workers=8/module_limit=0/selected=true-4          	       3	   3672929 ns/op	     17426 actions/s	    139403 records/s	 1787322 B/op	   11959 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=1/module_limit=0/selected=false-4        	       3	  14199501 ns/op	     36058 actions/s	     36058 records/s	11556578 B/op	   79424 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=1/module_limit=0/selected=false-4        	       3	  16599149 ns/op	     30845 actions/s	     30845 records/s	11506472 B/op	   79413 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=1/module_limit=0/selected=false-4        	       3	  14229315 ns/op	     35983 actions/s	     35982 records/s	11530314 B/op	   79409 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=1/module_limit=0/selected=true-4         	       3	   2044780 ns/op	     31301 actions/s	    250399 records/s	 2047736 B/op	   11796 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=1/module_limit=0/selected=true-4         	       3	   2019475 ns/op	     31693 actions/s	    253538 records/s	 2047757 B/op	   11796 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=1/module_limit=0/selected=true-4         	       3	   2033955 ns/op	     31468 actions/s	    251733 records/s	 2035533 B/op	   11796 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=8/module_limit=0/selected=false-4        	       3	   9503477 ns/op	     53876 actions/s	     53876 records/s	12008077 B/op	   87556 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=8/module_limit=0/selected=false-4        	       3	   8846543 ns/op	     57877 actions/s	     57876 records/s	12064597 B/op	   88955 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=8/module_limit=0/selected=false-4        	       3	   7624053 ns/op	     67157 actions/s	     67157 records/s	12036770 B/op	   87421 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=8/module_limit=0/selected=true-4         	       3	   3356821 ns/op	     19067 actions/s	    152530 records/s	 2040949 B/op	   11811 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=8/module_limit=0/selected=true-4         	       3	   1789558 ns/op	     35766 actions/s	    286113 records/s	 2086802 B/op	   11960 allocs/op
+BenchmarkPlannerWindow/window=1024/workers=8/module_limit=0/selected=true-4         	       3	   2133461 ns/op	     30000 actions/s	    239991 records/s	 2062050 B/op	   11963 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=1/module_limit=0/selected=false-4       	       3	  16989709 ns/op	     30136 actions/s	     30136 records/s	35729101 B/op	   79355 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=1/module_limit=0/selected=false-4       	       3	  16543134 ns/op	     30950 actions/s	     30950 records/s	35729213 B/op	   79357 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=1/module_limit=0/selected=false-4       	       3	  13186184 ns/op	     38829 actions/s	     38829 records/s	35728397 B/op	   79352 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=1/module_limit=0/selected=true-4        	       3	   4687736 ns/op	     13653 actions/s	    109224 records/s	26304037 B/op	   11794 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=1/module_limit=0/selected=true-4        	       3	   3842012 ns/op	     16659 actions/s	    133267 records/s	26304717 B/op	   11801 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=1/module_limit=0/selected=true-4        	       3	   4430106 ns/op	     14447 actions/s	    115575 records/s	26303997 B/op	   11794 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=8/module_limit=0/selected=false-4       	       3	  10697340 ns/op	     47863 actions/s	     47863 records/s	35986218 B/op	   83161 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=8/module_limit=0/selected=false-4       	       3	   7137844 ns/op	     71733 actions/s	     71731 records/s	36119842 B/op	   85543 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=8/module_limit=0/selected=false-4       	       3	   7660110 ns/op	     66841 actions/s	     66841 records/s	36153093 B/op	   86108 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=8/module_limit=0/selected=true-4        	       3	   3772426 ns/op	     16966 actions/s	    135727 records/s	26330946 B/op	   11964 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=8/module_limit=0/selected=true-4        	       3	   3205000 ns/op	     19970 actions/s	    159754 records/s	26351066 B/op	   12109 allocs/op
+BenchmarkPlannerWindow/window=65536/workers=8/module_limit=0/selected=true-4        	       3	   3345159 ns/op	     19133 actions/s	    153063 records/s	26331080 B/op	   11969 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/runtime/lua54	1.230s

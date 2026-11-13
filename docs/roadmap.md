@@ -3060,3 +3060,33 @@ Phase 3 stays paused; live consumer persistence remains separate.
 Validation: make check (/tmp/scribe1132-check.log), bounded race FuzzReader
 (/tmp/scribe1132-fuzz.log). Installed-service POST smoke is local operational
 evidence only.
+
+## v1.133.0 — grow pending storage with admitted work
+
+The parallel scheduler starts pending storage at at most 256 entries and grows
+normally up to the configured window. Large lookahead ceilings no longer force
+an allocation for every possible pending task on small batches. Admission limits,
+queue order, cancellation and fairness retain the existing scheduler path. A
+1,024-task regression requires complete successful terminal records across growth.
+The existing verified Lua/JSONL benchmark now includes windows 1,024 and 65,536;
+each batch checks 512 terminal records and 512 unfiltered or 64 selected actions.
+
+Raw baseline and final samples: benchmarks/v1.133.0/window.txt and
+window-after.txt. Linux amd64, i9-13900H, GOMAXPROCS=4, workers 1/8, module limit
+zero, both selection paths, three samples of three batches. Command:
+`GOMAXPROCS=4 go test ./runtime/lua54 -run '^$' -bench '^BenchmarkPlannerWindow/window=(256|1024|65536)/workers=(1|8)/module_limit=0/' -benchtime=3x -count=3`.
+Final samples are collected after validation without concurrent test campaigns.
+These shared-host measurements establish allocation behavior and verified local
+actions/s, not a throughput speedup or live consumer persistence acceptance.
+Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe1133-check-delivery.log), bounded race planner
+fuzz, installed-service POST /run smoke. Operational smoke remains separate from
+Sirius/vGPT workflow acceptance.
+
+At window 65,536/eight workers, unfiltered allocation fell from 35.99–36.15 MB
+per batch to 11.71–11.94 MB; selected allocation fell from 26.33–26.35 MB to
+1.78–1.80 MB. Final verified rates were 39,009–47,781 unfiltered actions/s and
+25,858–52,345 selected actions/s (selected batches execute 64 actions). Variance
+precludes a speedup claim. The five-second race fuzz run passed 326 baseline
+cases before its budget ended; mutation fuzzing was not reached.
