@@ -2943,3 +2943,18 @@ Validation: make check (/tmp/scribe1124-check.log) and bounded race FuzzReader
 (/tmp/scribe1124-fuzz.log). Local systemd deployment and POST /run smoke are
 operational evidence only; live consumer persistence remains separate.
 No public API change or throughput claim; Phase 3 stays paused.
+
+## v1.125.0 — secure application adapter selection
+
+Accepted FTPS, NNTPS, MQTTS and rediss endpoint claims now feed the existing
+implicit-TLS adapter path, supplying ftp/nntp/mqtt/redis plus TLS on TCP. This
+allows base-service planner selection directly from supplied pingpp.scan/v1
+facts. No port inference or STARTTLS negotiation is added. The shared behavioral
+matrix covers service/protocol claims, strong/exact/weak confidence, agreement,
+conflicting services, UDP rejection and reversed order. Service evidence never
+establishes product confidence or a vulnerability verdict.
+
+Validation: make check (/tmp/scribe1125-check.log) and bounded race FuzzReader
+(/tmp/scribe1125-fuzz.log). Local systemd deployment and POST /run smoke are
+operational evidence only; live consumer persistence remains separate.
+No public API change or throughput claim; Phase 3 stays paused.

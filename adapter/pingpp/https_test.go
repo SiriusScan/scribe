@@ -6,7 +6,7 @@ import (
 )
 
 func TestImplicitTLSServiceClaims(t *testing.T) {
-	for secure, base := range map[string]string{"https": "http", "imaps": "imap", "pop3s": "pop3", "smtps": "smtp", "ldaps": "ldap"} {
+	for secure, base := range map[string]string{"https": "http", "imaps": "imap", "pop3s": "pop3", "smtps": "smtp", "ldaps": "ldap", "ftps": "ftp", "nntps": "nntp", "mqtts": "mqtt", "rediss": "redis"} {
 		for _, kind := range []string{"service", "protocol"} {
 			for _, transport := range []string{"tcp", "udp"} {
 				for _, confidence := range []string{"exact", "strong", "weak"} {

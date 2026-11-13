@@ -314,6 +314,14 @@ func implicitTLSService(service string) string {
 		return "smtp"
 	case "ldaps":
 		return "ldap"
+	case "ftps":
+		return "ftp"
+	case "nntps":
+		return "nntp"
+	case "mqtts":
+		return "mqtt"
+	case "rediss":
+		return "redis"
 	default:
 		return ""
 	}
