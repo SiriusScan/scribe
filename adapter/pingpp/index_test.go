@@ -79,3 +79,27 @@ func TestClaimIndexOrderIndependent(t *testing.T) {
 		t.Fatalf("lost conflict policy: %+v", first)
 	}
 }
+
+func TestUnusableClaimsDoNotChangeIndexedTargets(t *testing.T) {
+	d := indexedDocument(t)
+	want, err := Targets(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for port := 1; port <= 128; port++ {
+		subject := fmt.Sprintf("127.0.0.1/tcp/%d", port)
+		d.Asset.Claims = append(d.Asset.Claims,
+			Claim{Subject: subject, Kind: "product", Product: "conflict", Confidence: "weak"},
+			Claim{Subject: subject, Kind: "product", Product: "conflict", Confidence: "exact", ContradictionIDs: []string{"opposed"}},
+			Claim{Subject: subject, Kind: "unsupported", Product: "conflict", Confidence: "exact"})
+	}
+	for reverse := 0; reverse < 2; reverse++ {
+		got, err := Targets(d)
+		if err != nil || !reflect.DeepEqual(got, want) {
+			t.Fatalf("targets changed: err=%v", err)
+		}
+		for i, j := 0, len(d.Asset.Claims)-1; i < j; i, j = i+1, j-1 {
+			d.Asset.Claims[i], d.Asset.Claims[j] = d.Asset.Claims[j], d.Asset.Claims[i]
+		}
+	}
+}

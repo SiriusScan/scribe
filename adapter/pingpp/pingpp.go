@@ -91,6 +91,14 @@ func Targets(d Document) ([]scribe.Target, error) {
 	next := make([]int, len(d.Asset.Claims))
 	for i := range d.Asset.Claims {
 		c := &d.Asset.Claims[i]
+		// Reject unusable evidence before canonicalizing subjects or growing the
+		// index. Reduction retains its checks as defense for future index users.
+		if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
+			continue
+		}
+		if c.Kind != "protocol" && c.Kind != "service" && c.Kind != "product" {
+			continue
+		}
 		if key, ok := canonicalSubject(c.Subject); ok {
 			next[i] = claims[key]
 			claims[key] = i + 1

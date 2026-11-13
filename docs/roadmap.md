@@ -3046,3 +3046,17 @@ The additive Match field was reviewed and the API signature fixture updated.
 Validation: make check (/tmp/scribe1131-check.log) and finite race planner fuzz.
 Local installed-service POST smoke is operational evidence only. No throughput
 claim; live consumer persistence remains separate. Phase 3 stays paused.
+
+## v1.132.0 — filter unusable adapter evidence before indexing
+
+The pingpp.scan/v1 adapter now rejects weak, contradicted and unsupported-kind
+claims before subject canonicalization and index insertion. This avoids growing
+the endpoint index with evidence that cannot contribute identity. Accepted claim
+reduction, endpoint isolation and conservative conflict handling remain unchanged.
+A multi-endpoint regression compares complete target facts with and without mixed
+unusable claims in both claim orders. No public API change or throughput claim.
+Phase 3 stays paused; live consumer persistence remains separate.
+
+Validation: make check (/tmp/scribe1132-check.log), bounded race FuzzReader
+(/tmp/scribe1132-fuzz.log). Installed-service POST smoke is local operational
+evidence only.
