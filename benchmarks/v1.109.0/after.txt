@@ -1,0 +1,9 @@
+goos: linux
+goarch: amd64
+pkg: github.com/SiriusScan/scribe/adapter/pingpp
+cpu: 13th Gen Intel(R) Core(TM) i9-13900H
+BenchmarkInterleavedClaimIndex-4   	    1671	    701842 ns/op	  342992 B/op	   11239 allocs/op
+BenchmarkInterleavedClaimIndex-4   	    2094	    689051 ns/op	  342986 B/op	   11239 allocs/op
+BenchmarkInterleavedClaimIndex-4   	    1618	    639041 ns/op	  342978 B/op	   11239 allocs/op
+PASS
+ok  	github.com/SiriusScan/scribe/adapter/pingpp	3.864s

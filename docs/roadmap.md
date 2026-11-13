@@ -2707,3 +2707,21 @@ Validation: make check passed (race suite, external SDK, cross-compilation,
 vet and CGO-disabled CLI build), /tmp/scribe1108-check.log. Focused index/boundary
 race regression passed. Bounded planner race fuzz passed 622/806 baseline seeds;
 mutations did not begin within its finite budget (/tmp/scribe1108-fuzz.log).
+
+## v1.109.0 — compact ping++ claim indexing
+
+Continues the unfinished adapter allocation/throughput work: endpoint claim
+chains now share one document-sized integer array instead of growing a slice
+for each subject. Exact canonical subjects, endpoint order, accepted-claim
+filtering and conservative identity conflicts remain intact. Behavioral tests
+reverse interleaved claims and retain isolated version conflicts.
+
+Raw samples in benchmarks/v1.109.0 (Linux amd64, i9-13900H) reduce the existing
+128-endpoint/2,048-claim benchmark from approximately 367 KB and 11,878 allocations
+to 343 KB and 11,239 allocations per document. Timing samples overlap; no
+throughput speedup is established. No public API change. Live consumer
+cancellation/persistence remains separate; Phase 3 stays paused.
+
+Validation: make check log /tmp/scribe1109-check.log; finite adapter race fuzz
+log /tmp/scribe1109-fuzz.log. Deployment and service smoke are local operational
+evidence only.

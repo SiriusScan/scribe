@@ -3,6 +3,7 @@ package pingpp
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -54,5 +55,27 @@ func BenchmarkInterleavedClaimIndex(b *testing.B) {
 		if err != nil || len(targets) != 128 {
 			b.Fatal(err)
 		}
+	}
+}
+
+func TestClaimIndexOrderIndependent(t *testing.T) {
+	d := indexedDocument(t)
+	d.Asset.Claims = append(d.Asset.Claims, Claim{Subject: "127.0.0.1/tcp/64", Kind: "product", Product: "product64", Version: "2", Confidence: "strong"})
+	first, err := Targets(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, j := 0, len(d.Asset.Claims)-1; i < j; i, j = i+1, j-1 {
+		d.Asset.Claims[i], d.Asset.Claims[j] = d.Asset.Claims[j], d.Asset.Claims[i]
+	}
+	second, err := Targets(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(first, second) {
+		t.Fatal("claim order changed endpoint facts")
+	}
+	if len(first) != 128 || first[63].Product != "product64" || first[63].Version != "" {
+		t.Fatalf("lost conflict policy: %+v", first)
 	}
 }

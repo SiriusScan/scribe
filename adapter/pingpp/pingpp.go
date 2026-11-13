@@ -85,11 +85,15 @@ func Targets(d Document) ([]scribe.Target, error) {
 		return nil, fmt.Errorf("ping++ document exceeds endpoint (65536) or claim (262144) limit")
 	}
 	// Index once so multi-endpoint documents do not repeatedly scan all claims.
-	claims := make(map[string][]int)
+	// One-based links reserve zero as the chain terminator. Claim reduction
+	// is order independent; reverse chains avoid per-subject slice growth.
+	claims := make(map[string]int)
+	next := make([]int, len(d.Asset.Claims))
 	for i := range d.Asset.Claims {
 		c := &d.Asset.Claims[i]
 		if key, ok := canonicalSubject(c.Subject); ok {
-			claims[key] = append(claims[key], i)
+			next[i] = claims[key]
+			claims[key] = i + 1
 		}
 	}
 	var out []scribe.Target
@@ -119,8 +123,8 @@ func Targets(d Document) ([]scribe.Target, error) {
 		conflict := false
 		productConfidence := 0.0
 		cpes := map[string]bool{}
-		for _, claimIndex := range claims[key] {
-			c := &d.Asset.Claims[claimIndex]
+		for entry := claims[key]; entry != 0; entry = next[entry-1] {
+			c := &d.Asset.Claims[entry-1]
 			if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
 				continue
 			}
