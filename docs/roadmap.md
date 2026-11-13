@@ -2987,3 +2987,18 @@ request and conservative malformed-response behavior.
 Validation: make check (/tmp/scribe1127-check.log). Local service POST smoke is
 operational evidence only; live consumer persistence remains separate. No
 throughput claim; Phase 3 stays paused.
+
+## v1.128.0 — event-driven pending queue sweeps
+
+The parallel scheduler now sweeps pending tasks only on cancellation, a host
+crossing its error budget, or admission of more tasks for an exhausted host.
+Ordinary successful completions avoid rewriting the entire lookahead window.
+Stable queue order, host-spray fairness and terminal cancellation records remain
+unchanged. A refill regression requires one failed action, 31 budget skips and
+32 completed actions with unknown verdicts; existing large-window ordering and
+cancellation tests remain in the race suite. No public API or measured throughput
+claim. Phase 3 stays paused; live consumer persistence remains separate.
+
+Validation: make check (/tmp/scribe1128-check.log); finite race planner fuzz
+(/tmp/scribe1128-fuzz.log, 252 baseline cases exercised within five-second budget).
+Service POST smoke supplies local operational evidence only.

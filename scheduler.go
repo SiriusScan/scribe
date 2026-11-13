@@ -75,6 +75,7 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 	}
 	defer func() { close(work); workers.Wait() }()
 	active, failed := 0, 0
+	budgetDirty := false
 	var globalNext time.Time
 	eof := false
 	var inputErr, sinkErr error
@@ -152,6 +153,9 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				hosts[key] = host
 			}
 			pending = append(pending, scheduledTask{task, host})
+			if e.options.HostErrorBudget > 0 && host.failures >= e.options.HostErrorBudget {
+				budgetDirty = true
+			}
 		}
 		// Collect completed failures before admitting more work against a budget.
 		collect := func(c completion) {
@@ -164,6 +168,9 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 			if c.result.Status == Failed {
 				c.host.failures++
+				if e.options.HostErrorBudget > 0 && c.host.failures == e.options.HostErrorBudget {
+					budgetDirty = true
+				}
 			}
 			emit(c.result)
 		}
@@ -176,22 +183,28 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				break drainDone
 			}
 		}
-		retained := pending[:0]
-		for _, p := range pending {
-			status, reason := Status(""), ""
-			if runCtx.Err() != nil {
-				status, reason = Cancelled, runCtx.Err().Error()
-			} else if e.options.HostErrorBudget > 0 && p.host.failures >= e.options.HostErrorBudget {
-				status, reason = Skipped, "host error budget exhausted"
+		// Successful completions cannot invalidate pending tasks. Sweep only
+		// when cancellation or changed host-budget eligibility requires it.
+		if runCtx.Err() != nil || budgetDirty {
+			retained := pending[:0]
+			for _, p := range pending {
+				status, reason := Status(""), ""
+				if runCtx.Err() != nil {
+					status, reason = Cancelled, runCtx.Err().Error()
+				} else if e.options.HostErrorBudget > 0 && p.host.failures >= e.options.HostErrorBudget {
+					status, reason = Skipped, "host error budget exhausted"
+				}
+				if status != "" {
+					emit(terminal(p.task, status, reason))
+					continue
+				}
+				retained = append(retained, p)
 			}
-			if status != "" {
-				emit(terminal(p.task, status, reason))
-				continue
-			}
-			retained = append(retained, p)
+			clear(pending[len(retained):])
+			pending = retained
+			budgetDirty = false
 		}
-		clear(pending[len(retained):])
-		pending = retained
+
 		now := time.Now()
 		for k, deadline := range moduleNext {
 			if !now.Before(deadline) {

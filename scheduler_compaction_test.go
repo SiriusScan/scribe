@@ -66,3 +66,33 @@ func TestLargePendingOrderedExecution(t *testing.T) {
 		t.Fatalf("err=%v records=%d actions=%d", err, records, next)
 	}
 }
+
+func TestBudgetSweepAfterRefill(t *testing.T) {
+	e, err := scribe.New(scribe.Options{Concurrency: 1, Window: 2, HostErrorBudget: 1, Strategy: scribe.ScriptSpray}, testRuntime{execute: func(_ context.Context, task scribe.Task) (scribe.Output, error) {
+		if task.Target.Host == "bad" {
+			return scribe.Output{}, errors.New("failure")
+		}
+		return scribe.Output{Data: task.Script.ID}, nil
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	batch := tasks(64)
+	for i := range batch {
+		batch[i].Target.Host = "bad"
+		if i%2 == 1 {
+			batch[i].Target.Host = "good"
+		}
+	}
+	counts := map[scribe.Status]int{}
+	err = e.Run(context.Background(), batch, func(r scribe.Result) error {
+		counts[r.Status]++
+		if r.Verdict != scribe.Unknown {
+			t.Fatalf("verdict: %+v", r)
+		}
+		return nil
+	})
+	if err == nil || counts[scribe.Failed] != 1 || counts[scribe.Skipped] != 31 || counts[scribe.Completed] != 32 {
+		t.Fatalf("counts=%v err=%v", counts, err)
+	}
+}
