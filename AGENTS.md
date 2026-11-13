@@ -756,3 +756,7 @@ v1.127.0 adds bounded unicast SSDP planner probes through the existing UDP path.
 Require complete HTTP/1.1 200 root-device replies and unique matching ST/USN
 headers; infer service only. Never fetch LOCATION or infer product/verdict.
 Retain 250 ms/8 KiB bounds. Phase 3 stays paused.
+
+v1.131.0 adds required_ports through the shared declarative matcher. Preserve
+advisory ports, nested selection, probe suppression and exhaustive false-clean
+guards. Required ports never identify products. Phase 3 stays paused.

@@ -700,3 +700,7 @@ Planner UDP identification supports a single unicast SSDP root-device search on
 port 1900 or caller-supplied `ssdp` service endpoints. Complete matching responses
 supply service evidence only, within the existing 250 ms and 8 KiB bounds.
 It does not perform multicast discovery or fetch advertised locations.
+
+Match blocks may use `"required_ports":[443,8443]` to require an endpoint port
+(maximum 64 nonzero ports). This combines with other fields and nested branches;
+`ports` remains advisory. A required port supplies no product identification.

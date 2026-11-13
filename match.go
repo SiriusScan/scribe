@@ -20,6 +20,8 @@ type Match struct {
 	OnUnknown string `json:"on_unknown,omitempty"`
 	// Ports contains advisory port numbers; nil supplies no hints and ports never exclude.
 	Ports []uint16 `json:"ports,omitempty"`
+	// RequiredPorts restricts execution to explicit endpoint ports; nil is unrestricted.
+	RequiredPorts []uint16 `json:"required_ports,omitempty"`
 	// ExcludePorts removes explicit endpoint ports; nil excludes none.
 	ExcludePorts []uint16 `json:"exclude_ports,omitempty"`
 	// Services contains accepted service names; nil imposes no service constraint.
@@ -94,6 +96,14 @@ func (m Match) validateBudget(depth int, remaining *int) error {
 			return fmt.Errorf("excluded product must be nonempty")
 		}
 	}
+	if len(m.RequiredPorts) > 64 {
+		return fmt.Errorf("too many required ports")
+	}
+	for _, p := range m.RequiredPorts {
+		if p == 0 {
+			return fmt.Errorf("required port must be nonzero")
+		}
+	}
 	if len(m.ExcludePorts) > 64 {
 		return fmt.Errorf("too many excluded ports")
 	}
@@ -166,6 +176,9 @@ func (m Match) evaluate(t Target) (bool, bool) {
 		return false, false
 	}
 	if t.Product != "" && contains(m.ExcludeProducts, t.Product) {
+		return false, false
+	}
+	if !m.acceptsPort(t.Port) {
 		return false, false
 	}
 	if m.excludesPort(t.Port) {
@@ -279,6 +292,9 @@ func (m Match) skipReason(t Target) string {
 	}
 	if t.Product != "" && contains(m.ExcludeProducts, t.Product) {
 		return "declarative match: product explicitly excluded"
+	}
+	if !m.acceptsPort(t.Port) {
+		return "declarative match: required port mismatched"
 	}
 	if m.excludesPort(t.Port) {
 		return "declarative match: port explicitly excluded"
@@ -473,6 +489,18 @@ func (m Match) acceptsVersion(v string) bool {
 
 func (m Match) excludesPort(port uint16) bool {
 	for _, p := range m.ExcludePorts {
+		if p == port {
+			return true
+		}
+	}
+	return false
+}
+
+func (m Match) acceptsPort(port uint16) bool {
+	if len(m.RequiredPorts) == 0 {
+		return true
+	}
+	for _, p := range m.RequiredPorts {
 		if p == port {
 			return true
 		}

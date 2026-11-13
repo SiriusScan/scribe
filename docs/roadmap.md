@@ -3032,3 +3032,17 @@ Validation: make check (/tmp/scribe1130-check.log), bounded race FuzzReader
 (/tmp/scribe1130-fuzz.log). Canonical-subject microbenchmark on apps01 Linux amd64,
 i9-13900H: 67.93 ns/op, 16 B/op, 1 alloc/op; this is not engine throughput evidence.
 Installed-service POST smoke supplies local operational evidence only.
+
+## v1.131.0 — required endpoint ports
+
+Declarative required_ports now restricts execution to a bounded list of exact
+endpoint ports, while existing ports remain advisory. The shared matcher applies
+this requirement across nested alternatives, direct execution, probe eligibility
+and exhaustive clean gates. Port matches alone never identify a product. Wrong
+ports report `declarative match: required port mismatched` and do not request
+identity probes. Zero ports and lists above 64 fail metadata validation.
+The additive Match field was reviewed and the API signature fixture updated.
+
+Validation: make check (/tmp/scribe1131-check.log) and finite race planner fuzz.
+Local installed-service POST smoke is operational evidence only. No throughput
+claim; live consumer persistence remains separate. Phase 3 stays paused.

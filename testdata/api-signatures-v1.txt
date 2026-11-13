@@ -121,6 +121,8 @@
 
 	Ports []uint16 `json:"ports,omitempty"`
 
+	RequiredPorts []uint16 `json:"required_ports,omitempty"`
+
 	ExcludePorts []uint16 `json:"exclude_ports,omitempty"`
 
 	Services []string `json:"services,omitempty"`
