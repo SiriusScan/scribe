@@ -2,7 +2,9 @@ package lua54
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/SiriusScan/scribe"
@@ -44,15 +46,22 @@ func BenchmarkLuaBatch(b *testing.B) {
 // BenchmarkPlannerExecution checks actual Lua action output for every completed
 // invocation; both paths emit the full matrix, including planner skips.
 func BenchmarkPlannerExecution(b *testing.B) {
-	benchmarkPlannerExecution(b, 100)
+	benchmarkPlannerExecution(b, 100, false)
 }
 
 // BenchmarkPlannerLongExecution amortizes setup with longer Lua CPU work.
 func BenchmarkPlannerLongExecution(b *testing.B) {
-	benchmarkPlannerExecution(b, 100000)
+	benchmarkPlannerExecution(b, 100000, false)
 }
 
-func benchmarkPlannerExecution(b *testing.B, iterations int) {
+// BenchmarkPlannerJSONLHandoff measures synchronous result encoding, including
+// planner skips, through the same verified execution matrix. Discard isolates
+// serialization cost; it does not model disk durability or a remote consumer.
+func BenchmarkPlannerJSONLHandoff(b *testing.B) {
+	benchmarkPlannerExecution(b, 100, true)
+}
+
+func benchmarkPlannerExecution(b *testing.B, iterations int, jsonl bool) {
 	for _, concurrency := range []int{1, 2, 4, 8} {
 		for _, moduleLimit := range []int{0, 1} {
 			for _, selected := range []bool{false, true} {
@@ -94,8 +103,17 @@ func benchmarkPlannerExecution(b *testing.B, iterations int) {
 					b.ResetTimer()
 					for i := 0; i < b.N; i++ {
 						completed, records := 0, 0
+						encoder := json.NewEncoder(io.Discard)
 						sink := func(r scribe.Result) error {
 							records++
+							if r.Verdict != scribe.Unknown {
+								b.Fatalf("unexpected verdict: %+v", r)
+							}
+							if jsonl {
+								if err := encoder.Encode(r); err != nil {
+									return err
+								}
+							}
 							if r.Status == scribe.Completed {
 								completed++
 								if fmt.Sprint(r.Output.Data) != fmt.Sprint(int64(iterations)*int64(iterations+1)/2) {
@@ -124,6 +142,7 @@ func benchmarkPlannerExecution(b *testing.B, iterations int) {
 						actions = 64
 					}
 					b.ReportMetric(actions*float64(b.N)/b.Elapsed().Seconds(), "actions/s")
+					b.ReportMetric(512*float64(b.N)/b.Elapsed().Seconds(), "records/s")
 				})
 			}
 		}

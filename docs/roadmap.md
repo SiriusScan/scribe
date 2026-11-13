@@ -2739,3 +2739,23 @@ persistence remains separate; Phase 3 stays paused.
 
 Validation: make check log /tmp/scribe1110-check.log. Local service deployment
 and smoke are operational evidence only.
+
+## v1.111.0 — executed Lua result-handoff throughput
+
+Adds BenchmarkPlannerJSONLHandoff through the existing verified 32 × 16 engine
+benchmark runner. The serialized sink encodes every execution record as JSONL,
+including planner skips; every completed action sum, unknown envelope verdict
+and all 512 terminal records are checked. Both benchmark paths report actions/s
+and records/s, distinguishing useful execution from handoff volume. No runtime
+or public API change. Raw samples, command, environment and interpretation live
+in benchmarks/v1.111.0. Measurements ran before validation/fuzz work.
+
+Unfiltered module-limit-zero handoff measured 24,191–36,530 actions/s with one
+worker and 70,456–77,620 with eight, GOMAXPROCS=4, Go 1.26.10, apps01 Linux
+amd64. Three short three-batch samples per matrix setting establish local
+execution/encoding evidence only; no before/after speedup claim. io.Discard
+excludes durable storage and remote transport. Live consumer route/store
+acceptance remains outstanding; Phase 3 stays paused.
+
+Validation: make check log /tmp/scribe1111-check.log. Service installation and
+HTTP smoke are local operational evidence, separate from consumer acceptance.
