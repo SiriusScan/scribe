@@ -101,3 +101,47 @@ func TestTargetsBoundsSDKDocuments(t *testing.T) {
 		}
 	}
 }
+
+// Pin identity reduction, selection and the exhaustive clean gate together.
+func TestRunIdentitySelectionAcceptance(t *testing.T) {
+	for _, workers := range []int{1, 8} {
+		for _, exhaustive := range []bool{false, true} {
+			runtime, err := lua54.NewNative(lua54.Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			engine, err := scribe.New(scribe.Options{Concurrency: workers, Exhaustive: exhaustive}, runtime)
+			if err != nil {
+				t.Fatal(err)
+			}
+			index, err := scribe.NewIndex([]scribe.Script{{ID: "identity", Dialect: scribe.Sirius, Source: []byte(`-- scribe: {"match":{"products":["nginx"]}}
+return {api_version=1, action=function() return {verdict="not_vulnerable"} end}`)}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			input := `{"schema_version":"pingpp.scan/v1","asset":{"endpoints":[{"address":"192.0.2.1","port":443,"transport":"tcp","state":"open","execution":"attempted"},{"address":"192.0.2.2","port":443,"transport":"tcp","state":"open","execution":"attempted"}],"claims":[{"subject":"192.0.2.1/tcp/443","kind":"product","product":"nginx","confidence":"exact"},{"subject":"192.0.2.2/tcp/443","kind":"product","product":"nginx","confidence":"weak"}]}}` + "\n"
+			seen := map[string]bool{}
+			err = Run(context.Background(), engine, index, strings.NewReader(input), func(r scribe.Result) error {
+				if seen[r.Target.Host] {
+					t.Fatalf("duplicate result: %+v", r)
+				}
+				seen[r.Target.Host] = true
+				if r.Target.Host == "192.0.2.1" {
+					if r.Status != "completed" || r.Verdict != "not_vulnerable" || r.Target.Product != "nginx" {
+						t.Fatalf("identified: %+v", r)
+					}
+				} else {
+					status := scribe.Status("skipped")
+
+					if r.Status != status || r.Verdict != "unknown" || r.Target.Product != "" || r.PlannerMiss {
+						t.Fatalf("unidentified: %+v", r)
+					}
+				}
+				return nil
+			})
+			if err != nil || len(seen) != 2 {
+				t.Fatalf("workers=%d exhaustive=%v records=%d error=%v", workers, exhaustive, len(seen), err)
+			}
+		}
+	}
+}

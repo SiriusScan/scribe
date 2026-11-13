@@ -3125,3 +3125,18 @@ These shared-host samples do not establish a throughput speedup.
 Validation: make check (/tmp/scribe1135-check.log), finite race planner fuzz
 (/tmp/scribe1135-fuzz.log; 124 baseline cases, no mutation campaign reached).
 Installed-service POST smoke is local operational evidence only.
+
+## v1.136.0 — adapter/planner/Lua identity acceptance
+
+Adds an end-to-end SDK acceptance gate through the existing pingpp.Run path,
+without a second mapper or runner. A two-endpoint JSONL document supplies exact
+product evidence for one endpoint and weak evidence for the other. Real Lua
+requests a clean verdict; only the identified endpoint completes cleanly, while
+the unidentified endpoint remains skipped/unknown even under exhaustive policy.
+One/eight-worker runs require successful stream completion, unique endpoint
+records and complete terminal counts. This is local integration evidence, not
+live Sirius/vGPT persistence acceptance or a throughput measurement. Phase 3
+stays paused.
+
+Validation: make check (/tmp/scribe1136-check.log). Installed-service POST smoke
+is tracked separately as operational evidence.

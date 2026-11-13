@@ -52,6 +52,7 @@ acceptance-local: acceptance
 	go test -race -count=1 ./cmd/scribe -run 'Test(PingppSelection|RealEmitterExecution)$$'
 
 	go test -count=1 -v ./adapter/pingpp -run TestRealEmitter
+	go test -race -count=1 ./adapter/pingpp -run TestRunIdentitySelectionAcceptance
 
 .PHONY: fuzz-long
 # Sequential, finite race campaigns; suitable for a caller-owned schedule.

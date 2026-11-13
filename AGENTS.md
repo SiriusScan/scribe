@@ -774,3 +774,9 @@ v1.135.0 stops host-spray scanning at the first eligible zero-start host, the
 minimum fairness score. Preserve full scans for nonzero scores, tie order and
 all admission/pacing checks. Verified Lua/JSONL samples are local measurements,
 not a speedup claim. Phase 3 stays paused.
+
+v1.136.0 pins pingpp.Run identity-to-planner-to-Lua acceptance under one/eight
+workers and normal/exhaustive policy. Exact product claims permit explicit clean
+results; weak claims remain unidentified and inconclusive. Require complete stream
+consumption and one terminal record per endpoint. Local acceptance does not prove
+live consumer persistence. Phase 3 stays paused.
