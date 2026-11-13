@@ -3188,3 +3188,18 @@ Shared-host timings establish no throughput speedup or executed-Lua claim.
 Validation: make check (/tmp/scribe1139-check-final.log), bounded race Reader fuzz,
 and installed-service POST smoke. Operational evidence remains separate from live
 consumer persistence acceptance. Phase 3 stays paused.
+
+## v1.140.0 — many-module adapter-to-Lua acceptance
+
+The existing pingpp.Run path now has a 32-module × 16-target acceptance matrix
+covering serial/eight-worker scheduling and normal/exhaustive selection. Each
+run requires all 512 unique endpoint/module terminal records and verifies 192
+completed clean results with module-specific Lua output. Weak and conflicting
+product evidence must remain unidentified, skipped and unknown with skip reasons
+and no planner miss. This closes a combined adapter/planner/parallel-engine
+acceptance gap without another mapper or runner. acceptance-local now includes
+the identity, HTTPS and many-module gates. No public API or throughput claim.
+Phase 3 stays paused; live consumer persistence remains separate.
+
+Validation: make check (/tmp/scribe1140-check.log). Installed-service POST smoke
+is separate operational evidence.

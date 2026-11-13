@@ -796,3 +796,10 @@ ceiling and uses scalar product reduction with sticky conflicts. Preserve order
 independence, unknown conflicting versions and suppression of conflicting product
 identity/confidence/CPEs. Raw adapter allocation samples are not Lua throughput
 or live consumer persistence acceptance. Phase 3 stays paused.
+
+v1.140.0 adds a 32-module × 16-target pingpp.Run acceptance gate with real Lua,
+serial/eight-worker and normal/exhaustive execution. Require 512 unique terminal
+records, 192 module-specific clean action outputs and unknown skips for weak or
+conflicting product claims. acceptance-local includes all adapter selection gates.
+This is local integration evidence, not throughput or live consumer persistence
+acceptance. Phase 3 stays paused.
