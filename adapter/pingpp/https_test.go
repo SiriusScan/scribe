@@ -3,10 +3,18 @@ package pingpp
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/SiriusScan/scribe"
 )
 
 func TestImplicitTLSServiceClaims(t *testing.T) {
-	for secure, base := range map[string]string{"https": "http", "imaps": "imap", "pop3s": "pop3", "smtps": "smtp", "ldaps": "ldap", "ftps": "ftp", "nntps": "nntp", "mqtts": "mqtt", "rediss": "redis"} {
+	index, err := scribe.NewIndex([]scribe.Script{{ID: "websocket", Dialect: scribe.Sirius, Source: []byte(`-- scribe: {"match":{"services":["ws"]}}
+return {api_version=1, action=function() return {verdict="unknown"} end}`)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for secure, base := range map[string]string{"wss": "ws", "https": "http", "imaps": "imap", "pop3s": "pop3", "smtps": "smtp", "ldaps": "ldap", "ftps": "ftp", "nntps": "nntp", "mqtts": "mqtt", "rediss": "redis"} {
 		for _, kind := range []string{"service", "protocol"} {
 			for _, transport := range []string{"tcp", "udp"} {
 				for _, confidence := range []string{"exact", "strong", "weak"} {
@@ -26,6 +34,9 @@ func TestImplicitTLSServiceClaims(t *testing.T) {
 								t.Fatalf("%v %v", targets, err)
 							}
 							got := targets[0]
+							if secure == "wss" && confidence != "weak" && transport == "tcp" && sibling != "unrelated" && len(index.Select(got)) != 1 {
+								t.Fatal("secure WebSocket endpoint did not select ws script")
+							}
 							wantService, wantTLS := sibling, false
 							if confidence != "weak" {
 								wantService, wantTLS = base, true

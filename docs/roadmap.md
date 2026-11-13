@@ -3002,3 +3002,17 @@ claim. Phase 3 stays paused; live consumer persistence remains separate.
 Validation: make check (/tmp/scribe1128-check.log); finite race planner fuzz
 (/tmp/scribe1128-fuzz.log, 252 baseline cases exercised within five-second budget).
 Service POST smoke supplies local operational evidence only.
+
+## v1.129.0 — secure WebSocket adapter selection
+
+Accepted endpoint wss service/protocol claims now supply ws service and TLS on
+TCP through the existing implicit-TLS mapper. Agreeing ws claims combine;
+conflicting services or UDP transport suppress identity. Weak and contradicted
+claims remain ignored. The shared matrix covers confidence, claim order,
+transport and service agreement, and verifies ws planner selection. No WebSocket
+handshake, product inference or verdict is implied. No public API change or
+throughput claim. Phase 3 stays paused; local service smoke remains separate
+from live consumer persistence acceptance.
+
+Validation: make check (/tmp/scribe1129-check.log), bounded race FuzzReader,
+and installed-service POST smoke.

@@ -304,6 +304,8 @@ func (r *Reader) Next(ctx context.Context) (scribe.Target, bool, error) {
 // implicitTLSService maps explicit implicit-TLS identities, never STARTTLS hints.
 func implicitTLSService(service string) string {
 	switch service {
+	case "wss":
+		return "ws"
 	case "https":
 		return "http"
 	case "imaps":
