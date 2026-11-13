@@ -2773,3 +2773,19 @@ persistence remains separate; Phase 3 stays paused.
 Validation: make check in /tmp/scribe1112-check.log; bounded adapter race fuzz
 passed 610 executions in /tmp/scribe1112-fuzz.log. Deployment smoke is local
 operational evidence only.
+
+## v1.113.0 — exact affected-release selection
+
+Match blocks accept a bounded versions array of exact semantic versions.
+Alternatives use semantic equality (including build metadata equivalence) and
+combine with existing ranges and exclusions. Nested selection, missing-fact
+probes and version skip reasons share the existing matcher. Missing versions
+never establish clean identification, including exhaustive execution.
+The additive Match field preserves existing defaults; API signatures reviewed.
+Behavioral tests cover normal/exhaustive execution and nested selection.
+No throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+Validation: make check passed (race suite, external SDK, cross-compilation,
+vet and CGO-disabled build), /tmp/scribe1113-check.log. Focused exact-version
+race tests passed. Finite planner race fuzz passed 120 baseline seeds; budget
+ended before mutations. Local service smoke is operational evidence only.

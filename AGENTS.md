@@ -728,3 +728,8 @@ v1.112.0 separates accepted pingpp TCP/UDP protocol claims from service identity
 Matching transport retains service evidence; contradictory accepted transport
 suppresses identity. Weak evidence remains ignored; claim order is irrelevant.
 Phase 3 stays paused.
+
+v1.113.0 adds bounded exact versions match alternatives through the shared
+version predicates. Preserve nested selection, semantic equality, range/exclusion
+intersection, missing-version probes and exhaustive false-clean guards.
+Phase 3 stays paused.

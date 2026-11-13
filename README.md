@@ -686,3 +686,7 @@ pingpp.scan/v1 reader and planner. Require both producer and Scribe success and
 complete JSONL output: a late input failure can follow earlier results. Only
 completed explicit verdicts establish an assessment. The producer must close its
 pipe; input reads are caller-owned and are not interrupted by engine cancellation.
+
+Exact affected releases can use `"versions":["1.2.3","2.0.1"]` in a match block
+(up to 64 semantic versions). Alternatives use semantic equality and intersect
+with version bounds and exclusions. Missing versions remain inconclusive.
