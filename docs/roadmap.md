@@ -3104,3 +3104,24 @@ Live consumer persistence remains separate; Phase 3 stays paused.
 Validation: make check (/tmp/scribe1134-check.log), bounded race FuzzReader
 (/tmp/scribe1134-fuzz.log). Installed-service POST smoke is local operational
 evidence only.
+
+## v1.135.0 — stop host-spray scans at the fairness minimum
+
+Host-spray dispatch now stops at the first eligible host with zero prior starts.
+Zero is the minimum possible fairness score, so later pending tasks cannot improve
+that choice. Previously the scheduler scanned the remaining window. Nonzero
+scores retain the full fairness scan; all admission and pacing checks precede
+selection. A serial behavioral regression pins first-start tie order and balanced
+subsequent starts. No public API change. Phase 3 stays paused; live consumer
+persistence acceptance remains separate.
+
+Raw verified executed-Lua/JSONL samples live in benchmarks/v1.135.0/{before,after}.txt.
+Environment: apps01 Linux amd64, i9-13900H, GOMAXPROCS=4, eight workers,
+window 1,024, module limit zero, both selection paths, three samples of three
+batches. Command: `GOMAXPROCS=4 go test ./runtime/lua54 -run '^$' -bench '^BenchmarkPlannerWindow/window=1024/workers=8/module_limit=0/' -benchtime=3x -count=3`.
+The benchmark verifies action outputs and all 512 terminal records per batch.
+These shared-host samples do not establish a throughput speedup.
+
+Validation: make check (/tmp/scribe1135-check.log), finite race planner fuzz
+(/tmp/scribe1135-fuzz.log; 124 baseline cases, no mutation campaign reached).
+Installed-service POST smoke is local operational evidence only.

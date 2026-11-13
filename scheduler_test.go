@@ -287,3 +287,27 @@ func TestPendingWindowGrowsBeyondInitialCapacity(t *testing.T) {
 		t.Fatalf("records=%d", count)
 	}
 }
+
+func TestHostSprayFirstStartTieOrder(t *testing.T) {
+	var order []string
+	e, err := scribe.New(scribe.Options{Concurrency: 1, Window: 16, Strategy: scribe.HostSpray}, testRuntime{execute: func(_ context.Context, task scribe.Task) (scribe.Output, error) {
+		order = append(order, task.Target.Host)
+		return scribe.Output{}, nil
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := tasks(6)
+	for i, host := range []string{"a", "a", "b", "b", "c", "c"} {
+		ts[i].Target.Host = host
+	}
+	if err := e.Run(context.Background(), ts, func(scribe.Result) error { return nil }); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"a", "b", "c", "a", "b", "c"}
+	for i := range want {
+		if order[i] != want[i] {
+			t.Fatalf("order %v, want %v", order, want)
+		}
+	}
+}

@@ -240,7 +240,8 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				}
 				if chosen < 0 || e.options.Strategy == HostSpray && p.host.starts < pending[chosen].host.starts {
 					chosen = i
-					if e.options.Strategy == ScriptSpray {
+					// No eligible host can improve on zero previous starts.
+					if e.options.Strategy == ScriptSpray || p.host.starts == 0 {
 						break
 					}
 				}

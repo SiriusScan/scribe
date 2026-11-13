@@ -769,3 +769,8 @@ measurement only; Phase 3 stays paused.
 v1.134.0 validates pingpp endpoints before claim indexing and omits orphan
 subjects from the index. Preserve canonical IPv6 identity, endpoint isolation and
 conservative reduction. No throughput claim; Phase 3 stays paused.
+
+v1.135.0 stops host-spray scanning at the first eligible zero-start host, the
+minimum fairness score. Preserve full scans for nonzero scores, tie order and
+all admission/pacing checks. Verified Lua/JSONL samples are local measurements,
+not a speedup claim. Phase 3 stays paused.
