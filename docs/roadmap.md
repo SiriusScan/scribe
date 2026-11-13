@@ -2789,3 +2789,15 @@ Validation: make check passed (race suite, external SDK, cross-compilation,
 vet and CGO-disabled build), /tmp/scribe1113-check.log. Focused exact-version
 race tests passed. Finite planner race fuzz passed 120 baseline seeds; budget
 ended before mutations. Local service smoke is operational evidence only.
+
+## v1.114.0 — explicit planner port exclusions
+
+Match blocks accept exclude_ports, up to 64 nonzero port numbers. Existing ports
+remain advisory. Excluded endpoints suppress missing-fact probes and cannot be
+revived by on_unknown run; nested alternatives remain independent. Exhaustive
+execution retains the conservative clean gate. Behavioral tests cover policies,
+nested alternatives and normal/exhaustive execution. Additive Match API reviewed.
+No throughput claim; live consumer persistence remains separate. Phase 3 paused.
+
+Validation: make check, /tmp/scribe1114-check.log; bounded adapter/planner fuzz
+evidence is local only. Service smoke is operational evidence.

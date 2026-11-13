@@ -733,3 +733,7 @@ v1.113.0 adds bounded exact versions match alternatives through the shared
 version predicates. Preserve nested selection, semantic equality, range/exclusion
 intersection, missing-version probes and exhaustive false-clean guards.
 Phase 3 stays paused.
+
+v1.114.0 adds bounded explicit exclude_ports planner constraints. Keep ports
+advisory, nested branch semantics, probe suppression and exhaustive clean gates.
+Phase 3 stays paused.

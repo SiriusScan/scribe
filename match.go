@@ -9,7 +9,7 @@ import (
 
 // Match combines fields with AND; alternatives within a field use OR.
 // The zero Match accepts every endpoint but supplies no product identification.
-// Ports are advisory and never exclude an endpoint.
+// Ports are advisory; ExcludePorts explicitly excludes endpoints.
 type Match struct {
 	bannerPattern *regexp.Regexp
 	// CPE contains accepted CPE alternatives; nil imposes no CPE constraint.
@@ -20,6 +20,8 @@ type Match struct {
 	OnUnknown string `json:"on_unknown,omitempty"`
 	// Ports contains advisory port numbers; nil supplies no hints and ports never exclude.
 	Ports []uint16 `json:"ports,omitempty"`
+	// ExcludePorts removes explicit endpoint ports; nil excludes none.
+	ExcludePorts []uint16 `json:"exclude_ports,omitempty"`
 	// Services contains accepted service names; nil imposes no service constraint.
 	Services []string `json:"services,omitempty"`
 	// Products contains accepted product names; nil supplies no positive product identification.
@@ -62,6 +64,14 @@ func (m Match) validateBudget(depth int, remaining *int) error {
 		return fmt.Errorf("match tree exceeds 256 nodes")
 	}
 	*remaining--
+	if len(m.ExcludePorts) > 64 {
+		return fmt.Errorf("too many excluded ports")
+	}
+	for _, p := range m.ExcludePorts {
+		if p == 0 {
+			return fmt.Errorf("excluded port must be nonzero")
+		}
+	}
 	if m.OnUnknown != "" && m.OnUnknown != "run" && m.OnUnknown != "skip" && m.OnUnknown != "probe" {
 		return fmt.Errorf("invalid on_unknown policy")
 	}
@@ -119,6 +129,9 @@ func (m Match) validateBudget(depth int, remaining *int) error {
 
 // evaluate returns applicability and positive product identification separately.
 func (m Match) evaluate(t Target) (bool, bool) {
+	if m.excludesPort(t.Port) {
+		return false, false
+	}
 	if t.Confidence < m.Confidence {
 		return false, false
 	}
@@ -219,6 +232,9 @@ func (m Match) missing(t Target) bool {
 }
 
 func (m Match) skipReason(t Target) string {
+	if m.excludesPort(t.Port) {
+		return "declarative match: port explicitly excluded"
+	}
 	if t.Confidence < m.Confidence {
 		return "declarative match: identification confidence below script threshold"
 	}
@@ -401,6 +417,15 @@ func (m Match) acceptsVersion(v string) bool {
 	}
 	for _, allowed := range m.Versions {
 		if semver.Compare(version(v), version(allowed)) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (m Match) excludesPort(port uint16) bool {
+	for _, p := range m.ExcludePorts {
+		if p == port {
 			return true
 		}
 	}
