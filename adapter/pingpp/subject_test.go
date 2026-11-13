@@ -71,3 +71,17 @@ func TestOrphanClaimsDoNotSupplyEndpointIdentity(t *testing.T) {
 		t.Fatalf("target=%+v", got[0])
 	}
 }
+
+func TestCanonicalSubjectMappedAndScoped(t *testing.T) {
+	for _, subject := range []string{"::ffff:192.0.2.1/tcp/443", "::ffff:c000:201/tcp/443", "192.0.2.1/tcp/443"} {
+		got, ok := canonicalSubject(subject)
+		if !ok || got != "192.0.2.1/tcp/443" {
+			t.Fatalf("%q: %q %v", subject, got, ok)
+		}
+	}
+	for _, subject := range []string{"fe80::1%eth0/tcp/443", "192.000.2.1/tcp/443"} {
+		if got, ok := canonicalSubject(subject); ok {
+			t.Fatalf("accepted %q as %q", subject, got)
+		}
+	}
+}

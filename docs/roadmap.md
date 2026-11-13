@@ -3140,3 +3140,20 @@ stays paused.
 
 Validation: make check (/tmp/scribe1136-check.log). Installed-service POST smoke
 is tracked separately as operational evidence.
+
+## v1.137.0 — allocation-free canonical claim subjects
+
+The adapter now uses netip and stack formatting, returning canonical input strings
+directly. Mapped IPv6 retains IPv4 equivalence; scoped addresses remain invalid.
+Focused regressions pin these boundaries. No public API change. Phase 3 paused.
+
+Raw samples: benchmarks/v1.137.0/{before,after}.txt, Linux amd64 i9-13900H,
+GOMAXPROCS=4. Command: go test ./adapter/pingpp -run '^$' -bench
+'Benchmark(CanonicalSubject|InterleavedClaimIndex)$' -benchmem -count=3.
+Canonical subjects fall from 16 B/1 allocation to zero; interleaved indexing
+falls from 155139–155140 B/3351 allocations to 122364–122366 B/1303 allocations.
+Timings overlap race validation; no throughput speedup claim. Adapter allocation
+evidence does not establish executed-Lua throughput or live consumer persistence.
+
+Validation: make check (/tmp/scribe1137-check-final.log). Installed-service POST
+smoke is separate local operational evidence.

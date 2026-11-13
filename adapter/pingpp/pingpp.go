@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/netip"
 	"sort"
 	"strconv"
 	"strings"
@@ -231,16 +232,17 @@ func canonicalSubject(subject string) (string, bool) {
 	if !ok || !complete || (transport != "tcp" && transport != "udp") {
 		return "", false
 	}
-	ip := net.ParseIP(address)
+	ip, ipErr := netip.ParseAddr(address)
 	port, err := strconv.ParseUint(portText, 10, 16)
-	if ip == nil || err != nil || port == 0 || portText[0] == '0' || portText[0] == '+' {
+	if ipErr != nil || ip.Zone() != "" || err != nil || port == 0 || portText[0] == '0' || portText[0] == '+' {
 		return "", false
 	}
-	canonical := ip.String()
-	if canonical == address {
+	var storage [39]byte
+	canonical := ip.Unmap().AppendTo(storage[:0])
+	if string(canonical) == address {
 		return subject, true
 	}
-	return canonical + "/" + rest, true
+	return string(canonical) + "/" + rest, true
 }
 
 // boundedDiagnostic limits untrusted details before formatting can expand them.

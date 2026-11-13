@@ -780,3 +780,7 @@ workers and normal/exhaustive policy. Exact product claims permit explicit clean
 results; weak claims remain unidentified and inconclusive. Require complete stream
 consumption and one terminal record per endpoint. Local acceptance does not prove
 live consumer persistence. Phase 3 stays paused.
+
+v1.137.0 uses stack-backed netip formatting for pingpp claim subjects, avoiding
+canonical-subject allocations. Preserve mapped-IPv4 equivalence and reject scoped
+addresses. Adapter measurements do not establish Lua throughput. Phase 3 paused.
