@@ -2816,3 +2816,15 @@ Validation: make check passed, /tmp/scribe1115-check.log; focused product
 exclusion race tests passed. Finite planner race fuzz passed 117 baseline seeds
 before its budget ended, without mutations. Service smoke is local operational
 evidence only.
+
+## v1.116.0 — canonical ping++ scheduling hosts
+
+The adapter emits canonical IP literals for Host and IP, including IPv4-mapped
+IPv6. Equivalent spellings across documents now share engine host concurrency,
+pacing and error-budget keys. Reader behavioral fixtures require both records
+and complete EOF for IPv6 and mapped IPv4 pairs. Endpoint/claim isolation stays
+unchanged. No throughput claim; local deployment is separate from live consumer
+persistence acceptance. Phase 3 stays paused.
+
+Validation: make check passed (/tmp/scribe1116-check.log); bounded adapter
+race fuzz passed 210 executions (/tmp/scribe1116-fuzz.log).

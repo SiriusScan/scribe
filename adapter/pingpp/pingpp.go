@@ -116,7 +116,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 		if e.State != "open" || e.Execution != "attempted" {
 			continue
 		}
-		t := scribe.Target{Host: e.Address, IP: e.Address, Port: e.Port, Protocol: e.Transport, State: "open"}
+		t := scribe.Target{Host: ip.String(), IP: ip.String(), Port: e.Port, Protocol: e.Transport, State: "open"}
 		// Use the same canonical endpoint identity for claims and duplicate checks.
 		services := map[string]bool{}
 		products := map[string]string{}
