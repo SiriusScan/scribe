@@ -2,6 +2,7 @@ package pingpp
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 )
 
@@ -50,5 +51,23 @@ func BenchmarkCanonicalSubject(b *testing.B) {
 		if _, ok := canonicalSubject("192.0.2.1/tcp/443"); !ok {
 			b.Fatal("rejected subject")
 		}
+	}
+}
+
+func TestOrphanClaimsDoNotSupplyEndpointIdentity(t *testing.T) {
+	var d Document
+	if err := json.Unmarshal([]byte(`{"schema_version":"pingpp.scan/v1","asset":{"endpoints":[{"address":"::1","port":443,"transport":"tcp","state":"open","execution":"attempted"}]}}`), &d); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 4096; i++ {
+		d.Asset.Claims = append(d.Asset.Claims, Claim{Subject: fmt.Sprintf("::2/tcp/%d", i+1), Kind: "product", Product: "wrong", Confidence: "exact"})
+	}
+	d.Asset.Claims = append(d.Asset.Claims, Claim{Subject: "0:0:0:0:0:0:0:1/tcp/443", Kind: "product", Product: "expected", Confidence: "strong"})
+	got, err := Targets(d)
+	if err != nil || len(got) != 1 {
+		t.Fatalf("targets=%v err=%v", got, err)
+	}
+	if got[0].Product != "expected" || got[0].Confidence != .8 {
+		t.Fatalf("target=%+v", got[0])
 	}
 }

@@ -765,3 +765,7 @@ v1.133.0 grows pending scheduler storage from at most 256 entries rather than
 reserving the full window. Preserve admission ceilings, terminal completeness,
 queue order and fairness. Verified large-window Lua/JSONL samples are local
 measurement only; Phase 3 stays paused.
+
+v1.134.0 validates pingpp endpoints before claim indexing and omits orphan
+subjects from the index. Preserve canonical IPv6 identity, endpoint isolation and
+conservative reduction. No throughput claim; Phase 3 stays paused.

@@ -3090,3 +3090,17 @@ per batch to 11.71–11.94 MB; selected allocation fell from 26.33–26.35 MB to
 25,858–52,345 selected actions/s (selected batches execute 64 actions). Variance
 precludes a speedup claim. The five-second race fuzz run passed 326 baseline
 cases before its budget ended; mutation fuzzing was not reached.
+
+## v1.134.0 — endpoint-scoped adapter claim indexing
+
+The pingpp.scan/v1 adapter validates endpoint enumeration before building its
+claim index and indexes accepted evidence only for declared endpoint subjects.
+Orphan subjects no longer grow the index. Equivalent IPv6 spellings retain
+identity evidence; exact port/transport isolation and conservative claim reduction
+remain intact. A 4,096-orphan-subject regression pins the surviving endpoint's
+product and confidence. No public API change or measured throughput claim.
+Live consumer persistence remains separate; Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe1134-check.log), bounded race FuzzReader
+(/tmp/scribe1134-fuzz.log). Installed-service POST smoke is local operational
+evidence only.

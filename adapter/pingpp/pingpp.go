@@ -84,27 +84,6 @@ func Targets(d Document) ([]scribe.Target, error) {
 	if len(d.Asset.Endpoints) > 65536 || len(d.Asset.Claims) > 262144 {
 		return nil, fmt.Errorf("ping++ document exceeds endpoint (65536) or claim (262144) limit")
 	}
-	// Index once so multi-endpoint documents do not repeatedly scan all claims.
-	// One-based links reserve zero as the chain terminator. Claim reduction
-	// is order independent; reverse chains avoid per-subject slice growth.
-	claims := make(map[string]int)
-	next := make([]int, len(d.Asset.Claims))
-	for i := range d.Asset.Claims {
-		c := &d.Asset.Claims[i]
-		// Reject unusable evidence before canonicalizing subjects or growing the
-		// index. Reduction retains its checks as defense for future index users.
-		if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
-			continue
-		}
-		if c.Kind != "protocol" && c.Kind != "service" && c.Kind != "product" {
-			continue
-		}
-		if key, ok := canonicalSubject(c.Subject); ok {
-			next[i] = claims[key]
-			claims[key] = i + 1
-		}
-	}
-	var out []scribe.Target
 	seen := make(map[string]bool, len(d.Asset.Endpoints))
 	for _, e := range d.Asset.Endpoints {
 		ip := net.ParseIP(e.Address)
@@ -121,6 +100,31 @@ func Targets(d Document) ([]scribe.Target, error) {
 		default:
 			return nil, fmt.Errorf("invalid ping++ endpoint state %q", boundedDiagnostic(e.State))
 		}
+	}
+	// Index once so multi-endpoint documents do not repeatedly scan all claims.
+	// One-based links reserve zero as the chain terminator. Claim reduction
+	// is order independent; reverse chains avoid per-subject slice growth.
+	claims := make(map[string]int)
+	next := make([]int, len(d.Asset.Claims))
+	for i := range d.Asset.Claims {
+		c := &d.Asset.Claims[i]
+		// Reject unusable evidence before canonicalizing subjects or growing the
+		// index. Reduction retains its checks as defense for future index users.
+		if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
+			continue
+		}
+		if c.Kind != "protocol" && c.Kind != "service" && c.Kind != "product" {
+			continue
+		}
+		if key, ok := canonicalSubject(c.Subject); ok && seen[key] {
+			next[i] = claims[key]
+			claims[key] = i + 1
+		}
+	}
+	var out []scribe.Target
+	for _, e := range d.Asset.Endpoints {
+		ip := net.ParseIP(e.Address)
+		key := fmt.Sprintf("%s/%s/%d", ip.String(), e.Transport, e.Port)
 		if e.State != "open" || e.Execution != "attempted" {
 			continue
 		}
