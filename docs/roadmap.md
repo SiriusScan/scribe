@@ -2841,3 +2841,16 @@ separate; Phase 3 stays paused.
 
 Validation: make check (/tmp/scribe1117-check.log). Service smoke is local
 operational evidence only.
+
+## v1.118.0 — conservative ping++ TLS transport reconciliation
+
+Accepted TLS protocol/service claims on UDP endpoints now suppress identity
+through the existing transport-conflict path. TLS evidence cannot identify DTLS
+or QUIC; the explicit UDP endpoint remains eligible with unknown service/product,
+version, confidence and CPE. Weak TLS claims remain ignored. Behavioral tests
+reverse claim order and cover both claim kinds and accepted confidence levels.
+No public API change or throughput claim. Phase 3 stays paused; local service
+smoke does not establish live consumer persistence acceptance.
+
+Validation: make check log /tmp/scribe1118-check.log; bounded adapter race fuzz
+log /tmp/scribe1118-fuzz.log.

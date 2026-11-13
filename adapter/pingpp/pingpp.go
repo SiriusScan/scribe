@@ -142,6 +142,10 @@ func Targets(d Document) ([]scribe.Target, error) {
 					continue
 				}
 				if v == "tls" {
+					// TLS claims describe TCP TLS, never DTLS or QUIC.
+					if e.Transport != "tcp" {
+						transportConflict = true
+					}
 					t.TLS = true
 				} else if v != "" {
 					services[v] = true

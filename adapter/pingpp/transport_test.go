@@ -44,3 +44,38 @@ func TestTransportClaims(t *testing.T) {
 		})
 	}
 }
+
+func TestUDPWithTLSClaim(t *testing.T) {
+	for _, confidence := range []string{"exact", "strong", "weak"} {
+		for _, kind := range []string{"protocol", "service"} {
+			var d Document
+			if err := json.Unmarshal([]byte(`{"schema_version":"pingpp.scan/v1","asset":{"endpoints":[{"address":"127.0.0.1","port":443,"transport":"udp","state":"open","execution":"attempted"}]}}`), &d); err != nil {
+				t.Fatal(err)
+			}
+			subject := "127.0.0.1/udp/443"
+			d.Asset.Claims = []Claim{
+				{Subject: subject, Kind: kind, Value: "tls", Confidence: confidence},
+				{Subject: subject, Kind: "service", Value: "dns", Confidence: "exact"},
+				{Subject: subject, Kind: "product", Product: "example", Version: "1.0", CPE: "cpe:/a:example:example:1.0", Confidence: "exact"},
+			}
+			for order := 0; order < 2; order++ {
+				targets, err := Targets(d)
+				if err != nil || len(targets) != 1 {
+					t.Fatalf("targets=%v err=%v", targets, err)
+				}
+				got := targets[0]
+				if got.Protocol != "udp" || got.TLS {
+					t.Fatalf("transport changed: %+v", got)
+				}
+				if confidence == "weak" {
+					if got.Product != "example" || got.Service != "dns" {
+						t.Fatalf("weak claim affected identity: %+v", got)
+					}
+				} else if got.Product != "" || got.Service != "" || got.Version != "" || got.Confidence != 0 || len(got.CPE) != 0 {
+					t.Fatalf("unsupported TLS transport established identity: %+v", got)
+				}
+				d.Asset.Claims[0], d.Asset.Claims[2] = d.Asset.Claims[2], d.Asset.Claims[0]
+			}
+		}
+	}
+}
