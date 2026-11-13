@@ -2958,3 +2958,17 @@ Validation: make check (/tmp/scribe1125-check.log) and bounded race FuzzReader
 (/tmp/scribe1125-fuzz.log). Local systemd deployment and POST /run smoke are
 operational evidence only; live consumer persistence remains separate.
 No public API change or throughput claim; Phase 3 stays paused.
+
+## v1.126.0 — incompatible-transport planner selection
+
+Match blocks accept exclude_protocols through the existing nested matcher.
+Known excluded transports suppress execution and missing-fact probes even with
+on_unknown run; independent alternatives remain eligible. Exclusions never
+identify products, and exhaustive execution retains unknown verdicts for rejected
+endpoints. The additive Match field was reviewed and the API fixture updated.
+Behavioral tests cover normal/exhaustive execution, nested alternatives, missing
+facts and validation. Phase 3 stays paused; no throughput or live consumer
+persistence claim.
+
+Validation: make check (/tmp/scribe1126-check.log), finite race planner fuzz
+(/tmp/scribe1126-fuzz.log). Service POST smoke is local operational evidence.

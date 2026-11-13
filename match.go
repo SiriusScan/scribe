@@ -30,6 +30,8 @@ type Match struct {
 	Products []string `json:"products,omitempty"`
 	// ExcludeProducts rejects known product identities without supplying positive identification.
 	ExcludeProducts []string `json:"exclude_products,omitempty"`
+	// ExcludeProtocols rejects known incompatible transports without identifying a product.
+	ExcludeProtocols []string `json:"exclude_protocols,omitempty"`
 	// Protocols contains accepted transports; nil imposes no transport constraint.
 	Protocols []string `json:"protocols,omitempty"`
 	// Versions restricts matching to exact semantic versions; nil is unrestricted.
@@ -68,6 +70,14 @@ func (m Match) validateBudget(depth int, remaining *int) error {
 		return fmt.Errorf("match tree exceeds 256 nodes")
 	}
 	*remaining--
+	if len(m.ExcludeProtocols) > 64 {
+		return fmt.Errorf("too many excluded protocols")
+	}
+	for _, protocol := range m.ExcludeProtocols {
+		if protocol == "" {
+			return fmt.Errorf("excluded protocol must be nonempty")
+		}
+	}
 	if len(m.ExcludeServices) > 64 {
 		return fmt.Errorf("too many excluded services")
 	}
@@ -149,6 +159,9 @@ func (m Match) validateBudget(depth int, remaining *int) error {
 
 // evaluate returns applicability and positive product identification separately.
 func (m Match) evaluate(t Target) (bool, bool) {
+	if t.Protocol != "" && contains(m.ExcludeProtocols, t.Protocol) {
+		return false, false
+	}
 	if t.Service != "" && contains(m.ExcludeServices, t.Service) {
 		return false, false
 	}
@@ -258,6 +271,9 @@ func (m Match) missing(t Target) bool {
 }
 
 func (m Match) skipReason(t Target) string {
+	if t.Protocol != "" && contains(m.ExcludeProtocols, t.Protocol) {
+		return "declarative match: transport explicitly excluded"
+	}
 	if t.Service != "" && contains(m.ExcludeServices, t.Service) {
 		return "declarative match: service explicitly excluded"
 	}

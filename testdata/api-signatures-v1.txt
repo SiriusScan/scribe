@@ -131,6 +131,8 @@
 
 	ExcludeProducts []string `json:"exclude_products,omitempty"`
 
+	ExcludeProtocols []string `json:"exclude_protocols,omitempty"`
+
 	Protocols []string `json:"protocols,omitempty"`
 
 	Versions []string `json:"versions,omitempty"`
