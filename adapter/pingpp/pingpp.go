@@ -135,7 +135,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 			}
 			switch c.Kind {
 			case "protocol", "service":
-				if c.Kind == "protocol" && (v == "tcp" || v == "udp") {
+				if v == "tcp" || v == "udp" {
 					if v != e.Transport {
 						transportConflict = true
 					}

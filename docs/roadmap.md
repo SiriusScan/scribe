@@ -2868,3 +2868,15 @@ persistence remains separate; Phase 3 stays paused.
 Validation: make check (/tmp/scribe1119-check.log); bounded adapter race fuzz
 passed 176 executions (/tmp/scribe1119-fuzz.log). Service smoke is local
 operational evidence only.
+
+## v1.120.0 — ping++ service transport reconciliation
+
+TCP/UDP service claims now share protocol-claim transport reconciliation.
+Matching accepted transport evidence preserves application service and product
+selection; contradictory transport suppresses identity. Weak claims remain
+ignored. Shared behavioral fixtures exercise both kinds and reversed order.
+No public API change or throughput claim. Live consumer persistence remains
+separate; Phase 3 stays paused.
+
+Validation: make check log /tmp/scribe1120-check.log; bounded adapter race fuzz
+log /tmp/scribe1120-fuzz.log. Service smoke is local operational evidence only.

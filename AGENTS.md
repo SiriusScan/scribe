@@ -742,3 +742,7 @@ v1.115.0 adds explicit exclude_products planner constraints. Exclusions never
 supply positive identification; observed excluded products suppress probes and
 execution with explicit diagnostics. Preserve nested alternatives and exhaustive
 unknown verdicts. Phase 3 stays paused.
+
+v1.120.0 reconciles TCP/UDP service claims as transport through the existing
+protocol path. Preserve accepted confidence filtering, order independence and
+conservative identity suppression on transport contradictions. Phase 3 paused.
