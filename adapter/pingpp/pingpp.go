@@ -171,8 +171,8 @@ func Targets(d Document) ([]scribe.Target, error) {
 				}
 			}
 		}
-		if transportConflict {
-			// Contradictory transport evidence cannot establish endpoint identity.
+		if transportConflict || len(services) > 1 {
+			// Contradictory transport or service evidence cannot establish endpoint identity.
 			t.TLS = false
 			out = append(out, t)
 			continue

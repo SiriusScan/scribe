@@ -2854,3 +2854,17 @@ smoke does not establish live consumer persistence acceptance.
 
 Validation: make check log /tmp/scribe1118-check.log; bounded adapter race fuzz
 log /tmp/scribe1118-fuzz.log.
+
+## v1.119.0 — conflicting ping++ service identity guard
+
+Continues the richer-facts adapter work: multiple accepted service identities
+now suppress product, version, confidence, CPE and TLS observations through the
+existing contradiction path. The endpoint remains available with unknown identity;
+conflicting service evidence cannot authorize product-specific clean results.
+Order-reversal fixtures cover exact/strong contradictions, agreeing claims and
+ignored weak claims. No public API change or throughput claim. Live consumer
+persistence remains separate; Phase 3 stays paused.
+
+Validation: make check (/tmp/scribe1119-check.log); bounded adapter race fuzz
+passed 176 executions (/tmp/scribe1119-fuzz.log). Service smoke is local
+operational evidence only.
