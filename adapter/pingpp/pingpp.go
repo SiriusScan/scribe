@@ -105,8 +105,9 @@ func Targets(d Document) ([]scribe.Target, error) {
 	// Index once so multi-endpoint documents do not repeatedly scan all claims.
 	// One-based links reserve zero as the chain terminator. Claim reduction
 	// is order independent; reverse chains avoid per-subject slice growth.
-	claims := make(map[string]int)
-	next := make([]int, len(d.Asset.Claims))
+	// The validated 262144-claim ceiling keeps one-based links within int32.
+	claims := make(map[string]int32)
+	next := make([]int32, len(d.Asset.Claims))
 	for i := range d.Asset.Claims {
 		c := &d.Asset.Claims[i]
 		// Reject unusable evidence before canonicalizing subjects or growing the
@@ -119,7 +120,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 		}
 		if key, ok := canonicalSubject(c.Subject); ok && seen[key] {
 			next[i] = claims[key]
-			claims[key] = i + 1
+			claims[key] = int32(i + 1)
 		}
 	}
 	var out []scribe.Target
@@ -132,7 +133,8 @@ func Targets(d Document) ([]scribe.Target, error) {
 		t := scribe.Target{Host: ip.String(), IP: ip.String(), Port: e.Port, Protocol: e.Transport, State: "open"}
 		// Use the same canonical endpoint identity for claims and duplicate checks.
 		services := map[string]bool{}
-		products := map[string]string{}
+		product, version := "", ""
+		productConflict := false
 		conflict := false
 		productConfidence := 0.0
 		cpes := map[string]bool{}
@@ -183,12 +185,16 @@ func Targets(d Document) ([]scribe.Target, error) {
 					if confidence > productConfidence {
 						productConfidence = confidence
 					}
-					if old, ok := products[c.Product]; ok && old != "" && c.Version != "" && old != c.Version {
+					if product != "" && product != c.Product {
+						productConflict = true
+					}
+					if product == c.Product && version != "" && c.Version != "" && version != c.Version {
 						conflict = true
 					}
-					if c.Version != "" || products[c.Product] == "" {
-						products[c.Product] = c.Version
+					if c.Version != "" {
+						version = c.Version
 					}
+					product = c.Product
 				}
 			}
 		}
@@ -204,17 +210,15 @@ func Targets(d Document) ([]scribe.Target, error) {
 			}
 		}
 		// Version disagreements do not contradict an otherwise agreed product.
-		if len(products) == 1 {
-			for p, v := range products {
-				t.Product = p
-				t.Confidence = productConfidence
-				if !conflict {
-					t.Version = v
-					for cpe := range cpes {
-						t.CPE = append(t.CPE, cpe)
-					}
-					sort.Strings(t.CPE)
+		if product != "" && !productConflict {
+			t.Product = product
+			t.Confidence = productConfidence
+			if !conflict {
+				t.Version = version
+				for cpe := range cpes {
+					t.CPE = append(t.CPE, cpe)
 				}
+				sort.Strings(t.CPE)
 			}
 		}
 		if err := t.Validate(); err != nil {

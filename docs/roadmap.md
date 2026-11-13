@@ -3170,3 +3170,21 @@ persistence acceptance remains separate.
 
 Validation: make check passed (/tmp/scribe1138-check-final.log), including race,
 vet and static/cross-platform builds. Installed-service smoke is operational evidence.
+
+## v1.139.0 — compact adapter claim reduction
+
+Continues unfinished pingpp adapter allocation work. Validated claim chains use
+32-bit one-based links within the existing 262,144-claim ceiling. Product reduction
+uses scalar agreed identity and sticky conflict state instead of an endpoint map;
+version disagreements remain unknown and product disagreements suppress identity,
+confidence and CPE hints regardless of ordering. No public API change.
+
+Raw samples: benchmarks/v1.139.0/{before,after}.txt, apps01 Linux amd64,
+i9-13900H, GOMAXPROCS=4. Command: go test ./adapter/pingpp -run '^$' -bench
+'^BenchmarkInterleavedClaimIndex$' -benchmem -count=3. Allocated bytes fall from
+122363–122367 to 114169–114171 per operation; allocation count remains 1303.
+Shared-host timings establish no throughput speedup or executed-Lua claim.
+
+Validation: make check (/tmp/scribe1139-check-final.log), bounded race Reader fuzz,
+and installed-service POST smoke. Operational evidence remains separate from live
+consumer persistence acceptance. Phase 3 stays paused.

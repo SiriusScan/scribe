@@ -790,3 +790,9 @@ claims, HTTP selection and retained TLS facts at one/eight workers under normal
 and exhaustive policy. Weak evidence stays skipped/unknown; explicit matching
 product evidence remains required for clean verdicts. Local acceptance is separate
 from live consumer persistence. Phase 3 stays paused.
+
+v1.139.0 compacts pingpp claim chains to int32 under the validated 262144-claim
+ceiling and uses scalar product reduction with sticky conflicts. Preserve order
+independence, unknown conflicting versions and suppression of conflicting product
+identity/confidence/CPEs. Raw adapter allocation samples are not Lua throughput
+or live consumer persistence acceptance. Phase 3 stays paused.
