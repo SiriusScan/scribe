@@ -380,3 +380,11 @@ func TestIISIdentityBoundaries(t *testing.T) {
 		}
 	}
 }
+
+func TestTomcatIdentityBoundaries(t *testing.T) {
+	for _, tt := range []struct{ header, version string }{{"Tomcat", ""}, {"Tomcat/10.0", "10.0"}, {"Apache Tomcat/8.5 extra", "8.5"}} {
+		if got := Default().Match("", http.Header{"Server": {tt.header}}); got != (Facts{Service: "http", Product: "Tomcat", Version: tt.version}) {
+			t.Fatalf("%q: %+v", tt.header, got)
+		}
+	}
+}

@@ -2676,3 +2676,19 @@ Phase 3 stays paused; live consumer persistence remains separate.
 
 Validation: make check evidence /tmp/scribe1106-check.log. Service reinstall and
 POST /run smoke provide local operational evidence only.
+
+
+## v1.107.0 — conservative Tomcat planner identity
+
+Tomcat and Apache Tomcat HTTP Server identities now require exact product
+boundaries and numeric version components. Misleading prefixes and malformed
+versions provide no product or CPE evidence and retain missing-product skips.
+Versionless identity remains supported. Behavioral fixtures cover accepted and
+rejected headers through the shared fingerprint and planner paths. No public API
+change or throughput claim. Local service smoke is separate from live consumer
+persistence acceptance. Phase 3 stays paused.
+
+Validation: make check passed (race suite, external SDK, Windows/Darwin builds,
+vet and CGO-disabled CLI build), log /tmp/scribe1107-check.log. Bounded planner
+race fuzz passed 105/806 baseline seeds; mutations did not begin within the
+finite budget (/tmp/scribe1107-fuzz.log).

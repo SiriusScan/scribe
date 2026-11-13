@@ -652,3 +652,14 @@ v1.106.0 adds native `http.patch` for partial-update probes:
 SDK callers register `Client.PatchFunction` and grant exact `http.patch`.
 The shared POST/PUT path bounds bodies to 1 MiB, confines the endpoint, verifies
 TLS and returns non-2xx responses as evidence. Scripts decide explicit verdicts.
+
+
+## v1.107.0 — conservative Tomcat planner identity
+
+Tomcat and Apache Tomcat HTTP Server identities now require exact product
+boundaries and numeric version components. Misleading prefixes and malformed
+versions provide no product or CPE evidence and retain missing-product skips.
+Versionless identity remains supported. Behavioral fixtures cover accepted and
+rejected headers through the shared fingerprint and planner paths. No public API
+change or throughput claim. Local service smoke is separate from live consumer
+persistence acceptance. Phase 3 stays paused.

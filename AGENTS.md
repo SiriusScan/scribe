@@ -702,3 +702,14 @@ v1.106.0 adds exact http.patch through the shared bounded HTTP body path and
 CLI/POST registry. Preserve exact grants, endpoint confinement, verified TLS and
 non-2xx evidence. Partial-update responses alone establish no verdict.
 Phase 3 stays paused; local smoke is separate from live consumer acceptance.
+
+
+## v1.107.0 — conservative Tomcat planner identity
+
+Tomcat and Apache Tomcat HTTP Server identities now require exact product
+boundaries and numeric version components. Misleading prefixes and malformed
+versions provide no product or CPE evidence and retain missing-product skips.
+Versionless identity remains supported. Behavioral fixtures cover accepted and
+rejected headers through the shared fingerprint and planner paths. No public API
+change or throughput claim. Local service smoke is separate from live consumer
+persistence acceptance. Phase 3 stays paused.

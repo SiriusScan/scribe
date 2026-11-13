@@ -149,3 +149,22 @@ func TestIISMisleadingIdentity(t *testing.T) {
 		})
 	}
 }
+
+func TestTomcatMisleadingIdentity(t *testing.T) {
+	for _, header := range []string{"TomcatProxy", "TomcatTomcat/9.0", "Tomcat/2..4", "Tomcat/2.4evil", "Tomcat/", "Tomcat/2.4:injected"} {
+		t.Run(header, func(t *testing.T) {
+			f := fingerprint.Default().Match("", http.Header{"Server": {header}})
+			observed := Target{Product: f.Product, Version: f.Version, CPE: inferredCPE(f.Product, f.Version)}
+			m := Match{Products: []string{"Tomcat"}}
+			if ok, id := m.evaluate(observed); ok || id {
+				t.Fatalf("misleading identity accepted: %+v", observed)
+			}
+			if reason := m.skipReason(observed); reason != "declarative match: product identification missing" {
+				t.Fatal(reason)
+			}
+			if len(observed.CPE) != 0 {
+				t.Fatal(observed.CPE)
+			}
+		})
+	}
+}
