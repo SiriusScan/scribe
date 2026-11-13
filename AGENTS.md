@@ -723,3 +723,8 @@ per-node width limits. Oversized trees fail preparation rather than expanding
 planner work. Boundary fixtures preserve product identification and missing-product
 false-clean guards. No public API change or throughput claim. Live consumer
 persistence remains separate; Phase 3 stays paused.
+
+v1.112.0 separates accepted pingpp TCP/UDP protocol claims from service identity.
+Matching transport retains service evidence; contradictory accepted transport
+suppresses identity. Weak evidence remains ignored; claim order is irrelevant.
+Phase 3 stays paused.

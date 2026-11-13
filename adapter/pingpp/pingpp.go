@@ -123,6 +123,7 @@ func Targets(d Document) ([]scribe.Target, error) {
 		conflict := false
 		productConfidence := 0.0
 		cpes := map[string]bool{}
+		transportConflict := false
 		for entry := claims[key]; entry != 0; entry = next[entry-1] {
 			c := &d.Asset.Claims[entry-1]
 			if (c.Confidence != "exact" && c.Confidence != "strong") || len(c.ContradictionIDs) > 0 {
@@ -134,6 +135,12 @@ func Targets(d Document) ([]scribe.Target, error) {
 			}
 			switch c.Kind {
 			case "protocol", "service":
+				if c.Kind == "protocol" && (v == "tcp" || v == "udp") {
+					if v != e.Transport {
+						transportConflict = true
+					}
+					continue
+				}
 				if v == "tls" {
 					t.TLS = true
 				} else if v != "" {
@@ -159,6 +166,12 @@ func Targets(d Document) ([]scribe.Target, error) {
 					}
 				}
 			}
+		}
+		if transportConflict {
+			// Contradictory transport evidence cannot establish endpoint identity.
+			t.TLS = false
+			out = append(out, t)
+			continue
 		}
 		if len(services) == 1 {
 			for s := range services {

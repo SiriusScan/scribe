@@ -2759,3 +2759,17 @@ acceptance remains outstanding; Phase 3 stays paused.
 
 Validation: make check log /tmp/scribe1111-check.log. Service installation and
 HTTP smoke are local operational evidence, separate from consumer acceptance.
+
+## v1.112.0 — ping++ transport claim reconciliation
+
+Accepted TCP/UDP protocol claims now describe transport rather than competing
+with service claims. Matching TCP plus HTTP evidence retains HTTP selection.
+An accepted transport contradiction leaves endpoint identity unknown, including
+TLS, product, version, confidence and CPE hints; weak claims remain ignored.
+Behavioral tests reverse claim order and cover matching, contradictory and weak
+transport evidence. No public API change or throughput claim. Live consumer
+persistence remains separate; Phase 3 stays paused.
+
+Validation: make check in /tmp/scribe1112-check.log; bounded adapter race fuzz
+passed 610 executions in /tmp/scribe1112-fuzz.log. Deployment smoke is local
+operational evidence only.
