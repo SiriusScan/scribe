@@ -751,3 +751,8 @@ v1.121.0 adds exclude_services to declarative matching. Known excluded services
 suppress probes and normal execution even with on_unknown run; nested alternatives
 remain independent. Exclusions supply no product identification. Preserve exhaustive
 false-clean guards. Phase 3 stays paused.
+
+v1.127.0 adds bounded unicast SSDP planner probes through the existing UDP path.
+Require complete HTTP/1.1 200 root-device replies and unique matching ST/USN
+headers; infer service only. Never fetch LOCATION or infer product/verdict.
+Retain 250 ms/8 KiB bounds. Phase 3 stays paused.

@@ -695,3 +695,8 @@ Use --window to bound pending plus active engine tasks in CLI and POST /run
 requests (1..65536; 0 selects 256). Smaller windows reduce scheduling lookahead;
 a window below --concurrency also limits usable workers. Result callbacks retain
 their existing serialized backpressure behavior.
+
+Planner UDP identification supports a single unicast SSDP root-device search on
+port 1900 or caller-supplied `ssdp` service endpoints. Complete matching responses
+supply service evidence only, within the existing 250 ms and 8 KiB bounds.
+It does not perform multicast discovery or fetch advertised locations.

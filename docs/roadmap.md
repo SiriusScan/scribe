@@ -2972,3 +2972,18 @@ persistence claim.
 
 Validation: make check (/tmp/scribe1126-check.log), finite race planner fuzz
 (/tmp/scribe1126-fuzz.log). Service POST smoke is local operational evidence.
+
+## v1.127.0 — bounded SSDP planner identification
+
+The existing UDP planner probe now supports SSDP on port 1900 or an explicit
+ssdp service, including nonstandard ports. One unicast M-SEARCH requests
+upnp:rootdevice; only complete HTTP/1.1 200 replies with a single matching ST
+and nonempty matching UUID USN establish service evidence. Duplicate identifiers,
+wrong search targets and incomplete headers remain unknown. No multicast discovery,
+location fetching, product inference or verdict is added. The existing 250 ms
+endpoint budget and 8 KiB ceiling apply. Original loopback fixtures pin the exact
+request and conservative malformed-response behavior.
+
+Validation: make check (/tmp/scribe1127-check.log). Local service POST smoke is
+operational evidence only; live consumer persistence remains separate. No
+throughput claim; Phase 3 stays paused.
