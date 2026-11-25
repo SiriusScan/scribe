@@ -17,6 +17,7 @@ func runLineage(argv []string, stdout, stderr io.Writer) int {
 	referencePath := flags.String("reference", "", "independently supplied reference records JSON")
 	reviewPath := flags.String("review", "", "independently supplied review receipts JSON")
 	outPath := flags.String("out", "", "write the JSON receipt to this file instead of stdout")
+	requireQualified := flags.Bool("require-qualified", false, "exit nonzero after emitting an unqualified receipt")
 	if err := flags.Parse(argv); err != nil {
 		return 2
 	}
@@ -59,6 +60,9 @@ func runLineage(argv []string, stdout, stderr io.Writer) int {
 		}
 	} else if _, err := stdout.Write(data); err != nil {
 		return fail(err)
+	}
+	if *requireQualified && !report.ReleaseQualified {
+		return fail(fmt.Errorf("release is unqualified"))
 	}
 	return 0
 }

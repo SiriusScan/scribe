@@ -88,9 +88,11 @@ first-party evidence covers the fixture cases only.
 
 `scribe-compat lineage` checks supplied JSON records without running a candidate,
 reference tool, or fixture script. It emits a separate schema 1 receipt and
-preserves the existing manifest and schema 2 fixture report. A successful
-command exit means the receipt was produced. Read `release_qualified` and each
-scope's `qualified` field to make an eligibility decision.
+preserves the existing manifest and schema 2 fixture report. By default, exit
+status 0 means the receipt was produced. Read `release_qualified` and each
+scope's `qualified` field to make an eligibility decision. With
+`--require-qualified`, an unqualified release still gets a receipt and the
+command exits with status 1.
 
 The checked-in [synthetic example](../internal/compatlineage/testdata/) has
 one affirmative and one explicit negative comparison across two independent

@@ -31,6 +31,16 @@ func TestLineageCommand(t *testing.T) {
 		t.Fatalf("unexpected synthetic receipt: %s", stdout.String())
 	}
 
+	want := bytes.Clone(stdout.Bytes())
+	stdout.Reset()
+	stderr.Reset()
+	if code := run(context.Background(), append(args, "--require-qualified"), &stdout, &stderr); code != 1 {
+		t.Fatalf("qualification gate exit code = %d: %s", code, stderr.String())
+	}
+	if !bytes.Equal(stdout.Bytes(), want) || !bytes.Contains(stderr.Bytes(), []byte("release is unqualified")) {
+		t.Fatalf("qualification gate changed the receipt or omitted the error: %s", stderr.String())
+	}
+
 	stdout.Reset()
 	stderr.Reset()
 	if code := run(context.Background(), args[:3], &stdout, &stderr); code != 0 {
