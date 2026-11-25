@@ -428,14 +428,34 @@ capability/tcpcap: func Function(ctx context.Context, target scribe.Target, args
 capability/udpcap: func Function(ctx context.Context, target scribe.Target, args []any) (any, error)
 
 compat: const (
-	Pass Status = "pass"
-
-	Fail Status = "fail"
-
-	Unsupported Status = "unsupported"
+	Completion       Disposition = "completed"
+	Rejection        Disposition = "explicit_rejection"
+	RuleIneligible   Disposition = "rule_ineligible"
+	MissingFacts     Disposition = "missing_required_fact"
+	KnownUnsupported Disposition = "unsupported"
+	Timeout          Disposition = "timeout"
+	Cancellation     Disposition = "cancelled"
+	Unmeasured       Disposition = "unmeasured"
 )
 
+compat: const (
+	FixtureMatch      FixtureResult = "match"
+	FixtureMismatch   FixtureResult = "mismatch"
+	FixtureUnmeasured FixtureResult = "unmeasured"
+)
+
+compat: const (
+	Pass            Status = "pass"
+	Fail            Status = "fail"
+	Unsupported     Status = "unsupported"
+	ExpectedOutcome Status = "expected_outcome"
+)
+
+compat: const EvidenceSchemaVersion = 2
+
 compat: func (m Manifest) Validate() error
+
+compat: func (r Report) CoveredCases(manifest Manifest) []string
 
 compat: func (r Report) OK() bool
 
@@ -471,24 +491,29 @@ compat: type Corpus struct {
 	PinStatus string `json:"pin_status,omitempty"`
 }
 
+compat: type Disposition string
+
 compat: type Entry struct {
-	ID string `json:"id"`
-
-	Script string `json:"script"`
-
-	SHA256 string `json:"sha256,omitempty"`
-
-	ExpectedSHA256 string `json:"expected_sha256,omitempty"`
-
-	Status Status `json:"status"`
-
-	Reason string `json:"reason"`
-
-	ExecutionStatus string `json:"execution_status,omitempty"`
-
-	Error string `json:"error,omitempty"`
-
-	Unexpected bool `json:"unexpected,omitempty"`
+	ID              string          `json:"id"`
+	Script          string          `json:"script"`
+	SHA256          string          `json:"sha256,omitempty"`
+	ExpectedSHA256  string          `json:"expected_sha256"`
+	InputSHA256     string          `json:"input_sha256"`
+	Expected        Expect          `json:"expected"`
+	Status          Status          `json:"status"`
+	FixtureResult   FixtureResult   `json:"fixture_result"`
+	Disposition     Disposition     `json:"disposition"`
+	Eligible        bool            `json:"eligible"`
+	Reason          string          `json:"reason"`
+	ExecutionStatus string          `json:"execution_status,omitempty"`
+	Code            string          `json:"code,omitempty"`
+	Phase           string          `json:"phase,omitempty"`
+	Data            json.RawMessage `json:"data,omitempty"`
+	Text            *string         `json:"text,omitempty"`
+	Verdict         scribe.Verdict  `json:"verdict,omitempty"`
+	SkipReason      string          `json:"skip_reason,omitempty"`
+	Error           string          `json:"error,omitempty"`
+	Unexpected      bool            `json:"unexpected,omitempty"`
 }
 
 compat: type Expect struct {
@@ -497,7 +522,17 @@ compat: type Expect struct {
 	Data json.RawMessage `json:"data,omitempty"`
 
 	ErrorContains string `json:"error_contains,omitempty"`
+
+	Code string `json:"code,omitempty"`
+
+	Phase string `json:"phase,omitempty"`
+
+	Text *string `json:"text,omitempty"`
+
+	Verdict scribe.Verdict `json:"verdict,omitempty"`
 }
+
+compat: type FixtureResult string
 
 compat: type Manifest struct {
 	SchemaVersion int `json:"schema_version"`
@@ -510,27 +545,37 @@ compat: type Manifest struct {
 }
 
 compat: type Report struct {
-	SchemaVersion int `json:"schema_version"`
+	SchemaVersion  int     `json:"schema_version"`
+	Corpus         Corpus  `json:"corpus"`
+	Source         *Source `json:"source,omitempty"`
+	ManifestSHA256 string  `json:"manifest_sha256"`
+	Complete       bool    `json:"complete"`
+	Planned        int     `json:"planned"`
+	Summary        Summary `json:"summary"`
+	Results        []Entry `json:"results"`
+}
 
-	Corpus Corpus `json:"corpus"`
-
-	Summary Summary `json:"summary"`
-
-	Results []Entry `json:"results"`
+compat: type Source struct {
+	Module   string `json:"module"`
+	Version  string `json:"version,omitempty"`
+	Commit   string `json:"commit,omitempty"`
+	Modified bool   `json:"modified"`
+	Go       string `json:"go"`
+	GOOS     string `json:"goos"`
+	GOARCH   string `json:"goarch"`
 }
 
 compat: type Status string
 
 compat: type Summary struct {
-	Total int `json:"total"`
-
-	Pass int `json:"pass"`
-
-	Fail int `json:"fail"`
-
+	Total       int `json:"total"`
+	Pass        int `json:"pass"`
+	Fail        int `json:"fail"`
 	Unsupported int `json:"unsupported"`
-
-	Unexpected int `json:"unexpected"`
+	Unexpected  int `json:"unexpected"`
+	Matched     int `json:"matched"`
+	Eligible    int `json:"eligible"`
+	Measured    int `json:"measured"`
 }
 
 fingerprint: func (m *Matcher) Match(banner string, headers http.Header) Facts

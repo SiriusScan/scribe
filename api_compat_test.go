@@ -76,9 +76,22 @@ func TestPublicSignatures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
 	var entries []string
-	for _, dir := range strings.Fields(string(out)) {
-		if strings.Contains(dir, "/internal/") {
+	for _, line := range strings.Split(string(out), "\n") {
+		dir := strings.TrimSuffix(line, "\r")
+		if dir == "" {
+			continue
+		}
+		pkg, err := filepath.Rel(wd, dir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		pkg = filepath.ToSlash(pkg)
+		if strings.Contains("/"+pkg+"/", "/internal/") {
 			continue
 		}
 		files, err := filepath.Glob(filepath.Join(dir, "*.go"))
@@ -106,8 +119,6 @@ func TestPublicSignatures(t *testing.T) {
 				if err := format.Node(&b, fs, d); err != nil {
 					t.Fatal(err)
 				}
-				wd, _ := os.Getwd()
-				pkg, _ := filepath.Rel(wd, dir)
 				entries = append(entries, pkg+": "+b.String())
 			}
 		}
