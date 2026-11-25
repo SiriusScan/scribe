@@ -138,7 +138,9 @@ func (idx *Index) Select(t Target) []Script {
 }
 
 // RunSelected schedules indexed scripts across supplied endpoints. Hint exclusions
-// emit skipped records. Cancellation drains all pairs from this known target slice.
+// emit skipped records. With a writable sink, cancellation emits terminal rows
+// for the known pairs using supplied facts for unread work. A callback error
+// stops input, preparation and result delivery.
 func (e *Engine) RunSelected(ctx context.Context, idx *Index, targets []Target, sink func(Result) error) error {
 	if idx == nil {
 		return fmt.Errorf("index is required")
@@ -162,7 +164,8 @@ func (e *Engine) RunSelected(ctx context.Context, idx *Index, targets []Target, 
 // RunTargetStream consumes targets with bounded task lookahead. Every script /
 // endpoint pair emits a record, including hint exclusions with a skip reason.
 // The producer must honor ctx; false signals EOF. On cancellation only accepted
-// pairs emit terminal records; unread input has never been submitted.
+// pairs emit terminal records; unread input has never been submitted. Callback
+// errors stop both preparation and delivery.
 func (e *Engine) RunTargetStream(ctx context.Context, idx *Index, next func(context.Context) (Target, bool, error), sink func(Result) error) error {
 	return e.runTargets(ctx, idx, next, sink, false)
 }
@@ -175,7 +178,7 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 		return fmt.Errorf("index must contain scripts")
 	}
 	cache := make(probeCache)
-	var target Target
+	var target, preparedTarget Target
 	pos := len(idx.entries)
 	return e.run(ctx, func(ctx context.Context) (Task, bool, error) {
 		if pos == len(idx.entries) {
@@ -186,25 +189,37 @@ func (e *Engine) runTargets(ctx context.Context, idx *Index, next func(context.C
 			if err := t.Validate(); err != nil {
 				return Task{}, false, err
 			}
-			for _, entry := range idx.entries {
-				if m := entry.hints.Match; !e.options.Plan && m != nil && m.OnUnknown == "probe" && m.missing(t) {
-					t = cache.enrich(ctx, t, e.options.MaxHosts, e.options.SNMPCommunity)
-					break
-				}
-			}
 			target = t
 			pos = 0
 		}
 		entry := &idx.entries[pos]
 		pos++
-		t := Task{Script: entry.script, Target: target, preparedHints: &entry.hints}
-		if !entry.hints.matches(target) {
+		return Task{Script: entry.script, Target: target}, true, nil
+	}, func(ctx context.Context, t Task) Task {
+		if ctx.Err() != nil {
+			return t
+		}
+		if pos == 1 {
+			preparedTarget = target
+			for _, entry := range idx.entries {
+				if m := entry.hints.Match; !e.options.Plan && m != nil && m.OnUnknown == "probe" && m.missing(target) {
+					if ctx.Err() == nil {
+						preparedTarget = cache.enrich(ctx, target, e.options.MaxHosts, e.options.SNMPCommunity)
+					}
+					break
+				}
+			}
+		}
+		t.Target = preparedTarget
+		hints := &idx.entries[pos-1].hints
+		t.preparedHints = hints
+		if ctx.Err() == nil && !hints.matches(t.Target) {
 			t.plannerExcluded = true
 			if !e.options.Exhaustive {
 				t.planSkip = "script hints exclude supplied endpoint facts"
 			}
 		}
-		return t, true, nil
+		return t
 	}, sink, drain)
 }
 
