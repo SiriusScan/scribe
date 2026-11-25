@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"io"
 	"math/big"
@@ -16,7 +15,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -59,7 +57,8 @@ func TestMarkerCorpusSockets(t *testing.T) {
 					t.Run(fmt.Sprintf("%s/%s/product=%s/exhaustive=%t", protocol, marker, product, exhaustive), func(t *testing.T) {
 						if trustedTLS && os.Getenv("SCRIBE_TLS_CHILD") == "" {
 							cmd := exec.Command(os.Args[0], "-test.run=^TestMarkerCorpusSockets$/^"+protocol+"$/^"+marker+"$/^product="+product+"$/^exhaustive="+fmt.Sprint(exhaustive)+"$")
-							cmd.Env = append(os.Environ(), "SCRIBE_TLS_CHILD=1")
+							godebug := strings.Trim(os.Getenv("GODEBUG")+",x509usefallbackroots=1", ",")
+							cmd.Env = append(os.Environ(), "SCRIBE_TLS_CHILD=1", "GODEBUG="+godebug)
 							if out, err := cmd.CombinedOutput(); err != nil {
 								t.Fatalf("trusted TLS child: %v\n%s", err, out)
 							}
@@ -94,12 +93,14 @@ func TestMarkerCorpusSockets(t *testing.T) {
 								if e != nil {
 									t.Fatal(e)
 								}
-								ca := filepath.Join(t.TempDir(), "ca.pem")
-								if e = os.WriteFile(ca, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}), 0600); e != nil {
+								root, e := x509.ParseCertificate(der)
+								if e != nil {
 									t.Fatal(e)
 								}
-								t.Setenv("SSL_CERT_FILE", ca)
-								t.Setenv("SSL_CERT_DIR", t.TempDir())
+								pool := x509.NewCertPool()
+								pool.AddCert(root)
+								// The child process trusts only this fixture CA.
+								x509.SetFallbackRoots(pool)
 								listener, err = tls.Listen("tcp", "127.0.0.1:0", &tls.Config{Certificates: []tls.Certificate{{Certificate: [][]byte{der}, PrivateKey: key}}, MinVersion: tls.VersionTLS12})
 							} else {
 								listener, err = net.Listen("tcp", "127.0.0.1:0")
