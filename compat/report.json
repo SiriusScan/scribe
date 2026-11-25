@@ -1,16 +1,22 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "corpus": {
     "name": "scribe-original-mit-fixtures",
     "revision": "compat/fixtures at repository HEAD; each case pins its script sha256",
     "pin_status": "open: no reference Nmap version or external corpus revision has been selected as the Phase 1 differential pin; see docs/compatibility.md"
   },
+  "manifest_sha256": "6dca3f4f5d99a4e27e1fc59ffe55b0182f1088bfa637c990662944cd0af7fd83",
+  "complete": true,
+  "planned": 10,
   "summary": {
     "total": 10,
-    "pass": 8,
+    "pass": 5,
     "fail": 0,
     "unsupported": 2,
-    "unexpected": 0
+    "unexpected": 0,
+    "matched": 10,
+    "eligible": 7,
+    "measured": 5
   },
   "results": [
     {
@@ -18,72 +24,216 @@
       "script": "fixtures/stdnse-args.nse",
       "sha256": "2562c7c92feab025c630bb648def06e83694891e6d30a3024768dd1222995e53",
       "expected_sha256": "2562c7c92feab025c630bb648def06e83694891e6d30a3024768dd1222995e53",
+      "input_sha256": "27d818e41de85605a6e4457a9e8dd32587401e4c98effcc00a00c4c5a018c269",
+      "expected": {
+        "status": "completed",
+        "data": {
+          "first": "alpha",
+          "missing_is_nil": true,
+          "third": 42,
+          "hostname": "fixture.example"
+        }
+      },
       "status": "pass",
+      "fixture_result": "match",
+      "disposition": "completed",
+      "eligible": true,
       "reason": "completed with the asserted output",
-      "execution_status": "completed"
+      "execution_status": "completed",
+      "phase": "action",
+      "data": {
+        "first": "alpha",
+        "hostname": "fixture.example",
+        "missing_is_nil": true,
+        "third": 42
+      },
+      "verdict": "unknown"
     },
     {
       "id": "stdnse-pure-helpers",
       "script": "fixtures/stdnse-helpers.nse",
       "sha256": "28b72e828e5d248ba649bc66094b4198b7ba8bd4eb9ae74c723086c6da49f52c",
       "expected_sha256": "28b72e828e5d248ba649bc66094b4198b7ba8bd4eb9ae74c723086c6da49f52c",
+      "input_sha256": "72508d0ae8fc2e39987d383166def7e2de13a72c3dcf81c92cea518cb23248df",
+      "expected": {
+        "status": "completed",
+        "data": {
+          "hex": "53:63:72:69:62:65",
+          "decoded": "Scribe",
+          "bad_hex_is_nil": true,
+          "bad_hex_err_type": "string",
+          "timeout_seconds": 120,
+          "bad_time_is_nil": true,
+          "bad_time_err": "Can't parse time specification \"10z\" (bad unit \"z\")",
+          "blank": "\u003cblank\u003e"
+        }
+      },
       "status": "pass",
+      "fixture_result": "match",
+      "disposition": "completed",
+      "eligible": true,
       "reason": "completed with the asserted output",
-      "execution_status": "completed"
+      "execution_status": "completed",
+      "phase": "action",
+      "data": {
+        "bad_hex_err_type": "string",
+        "bad_hex_is_nil": true,
+        "bad_time_err": "Can't parse time specification \"10z\" (bad unit \"z\")",
+        "bad_time_is_nil": true,
+        "blank": "\u003cblank\u003e",
+        "decoded": "Scribe",
+        "hex": "53:63:72:69:62:65",
+        "timeout_seconds": 120
+      },
+      "verdict": "unknown"
     },
     {
       "id": "shortport-http-service",
       "script": "fixtures/shortport-http.nse",
       "sha256": "c674c8113c53efa918a1d0b546679a8e2a8969f67b8fbd8b1c80c4049aec8213",
       "expected_sha256": "c674c8113c53efa918a1d0b546679a8e2a8969f67b8fbd8b1c80c4049aec8213",
+      "input_sha256": "a1e4bf57e57adb428cc32c5bd82f2ebef030be5edc8e0d29b7d2bb7f4a259462",
+      "expected": {
+        "status": "completed",
+        "data": {
+          "service": "http",
+          "number": 8080,
+          "state": "open"
+        }
+      },
       "status": "pass",
+      "fixture_result": "match",
+      "disposition": "completed",
+      "eligible": true,
       "reason": "completed with the asserted output",
-      "execution_status": "completed"
+      "execution_status": "completed",
+      "phase": "action",
+      "data": {
+        "number": 8080,
+        "service": "http",
+        "state": "open"
+      },
+      "verdict": "unknown"
     },
     {
       "id": "shortport-http-skip-closed",
       "script": "fixtures/shortport-http.nse",
       "sha256": "c674c8113c53efa918a1d0b546679a8e2a8969f67b8fbd8b1c80c4049aec8213",
       "expected_sha256": "c674c8113c53efa918a1d0b546679a8e2a8969f67b8fbd8b1c80c4049aec8213",
-      "status": "pass",
-      "reason": "rule did not match the supplied facts, as expected",
-      "execution_status": "skipped"
+      "input_sha256": "f02b7f58245e8d88d4f745866e04f438a58fcec3366f009f91dfa45ada914092",
+      "expected": {
+        "status": "skipped",
+        "code": "rule_false",
+        "phase": "rule"
+      },
+      "status": "expected_outcome",
+      "fixture_result": "match",
+      "disposition": "rule_ineligible",
+      "eligible": false,
+      "reason": "skipped as expected",
+      "execution_status": "skipped",
+      "code": "rule_false",
+      "phase": "rule",
+      "verdict": "unknown",
+      "skip_reason": "NSE rule did not match the supplied facts"
     },
     {
       "id": "shortport-ssl-tunnel-fact",
       "script": "fixtures/shortport-ssl-tunnel.nse",
       "sha256": "c330b82fa89923e057334d6950360630efd486f481fe43de153804a521641ed3",
       "expected_sha256": "c330b82fa89923e057334d6950360630efd486f481fe43de153804a521641ed3",
+      "input_sha256": "54038ad775858ed47956df14ed269a34b04043d63513a74b5cbc599cca8b56e4",
+      "expected": {
+        "status": "completed",
+        "data": {
+          "number": 9443,
+          "tunnel": "ssl"
+        }
+      },
       "status": "pass",
+      "fixture_result": "match",
+      "disposition": "completed",
+      "eligible": true,
       "reason": "completed with the asserted output",
-      "execution_status": "completed"
+      "execution_status": "completed",
+      "phase": "action",
+      "data": {
+        "number": 9443,
+        "tunnel": "ssl"
+      },
+      "verdict": "unknown"
     },
     {
       "id": "shortport-ssl-skip-without-tunnel",
       "script": "fixtures/shortport-ssl-tunnel.nse",
       "sha256": "c330b82fa89923e057334d6950360630efd486f481fe43de153804a521641ed3",
       "expected_sha256": "c330b82fa89923e057334d6950360630efd486f481fe43de153804a521641ed3",
-      "status": "pass",
-      "reason": "rule did not match the supplied facts, as expected",
-      "execution_status": "skipped"
+      "input_sha256": "e504c785486fe12f5a0d256ffdb34a6afd43a7a5b96944d09185d1b78f01f53e",
+      "expected": {
+        "status": "skipped",
+        "code": "rule_false",
+        "phase": "rule"
+      },
+      "status": "expected_outcome",
+      "fixture_result": "match",
+      "disposition": "rule_ineligible",
+      "eligible": false,
+      "reason": "skipped as expected",
+      "execution_status": "skipped",
+      "code": "rule_false",
+      "phase": "rule",
+      "verdict": "unknown",
+      "skip_reason": "NSE rule did not match the supplied facts"
     },
     {
       "id": "shortport-port-range-udp",
       "script": "fixtures/shortport-range.nse",
       "sha256": "732c26ef97d8817c9da8bb40f92a349f33ef2d00557943d15a20a95c94e80007",
       "expected_sha256": "732c26ef97d8817c9da8bb40f92a349f33ef2d00557943d15a20a95c94e80007",
+      "input_sha256": "9bb61741d3ad3f3048fb2daa69586c263a3c77fac3b912cbcb0f50fc7777fa48",
+      "expected": {
+        "status": "completed",
+        "data": {
+          "number": 53,
+          "protocol": "udp",
+          "likely_http_first": 80
+        }
+      },
       "status": "pass",
+      "fixture_result": "match",
+      "disposition": "completed",
+      "eligible": true,
       "reason": "completed with the asserted output",
-      "execution_status": "completed"
+      "execution_status": "completed",
+      "phase": "action",
+      "data": {
+        "likely_http_first": 80,
+        "number": 53,
+        "protocol": "udp"
+      },
+      "verdict": "unknown"
     },
     {
       "id": "unsupported-http-module",
       "script": "fixtures/unsupported-http-module.nse",
       "sha256": "a8effd5e18b00fed9dc1cddda4389df7d94ab22dbc9700adb02352c26644f08c",
       "expected_sha256": "a8effd5e18b00fed9dc1cddda4389df7d94ab22dbc9700adb02352c26644f08c",
+      "input_sha256": "9717c2338fb4926562743ec61fe5b36712539497a83ede0d4d802a02b0de6000",
+      "expected": {
+        "status": "unsupported",
+        "error_contains": "unsupported Lua module \"http\"",
+        "code": "unsupported_module",
+        "phase": "initialize"
+      },
       "status": "unsupported",
-      "reason": "explicitly unsupported: initialize script: error: unsupported-http-module.nse:4: unsupported Lua module \"http\" in nse profile",
+      "fixture_result": "match",
+      "disposition": "unsupported",
+      "eligible": false,
+      "reason": "encountered the asserted unsupported surface",
       "execution_status": "error",
+      "code": "unsupported_module",
+      "phase": "initialize",
+      "verdict": "unknown",
       "error": "initialize script: error: unsupported-http-module.nse:4: unsupported Lua module \"http\" in nse profile"
     },
     {
@@ -91,9 +241,22 @@
       "script": "fixtures/unsupported-stdnse-thread.nse",
       "sha256": "59e5aa5d06130db313a9e4d7ca09d9a56f28150c2cb607fd4b929e67d99915cf",
       "expected_sha256": "59e5aa5d06130db313a9e4d7ca09d9a56f28150c2cb607fd4b929e67d99915cf",
+      "input_sha256": "4dfa69120ef3f68a3584f1dcca9c6d2f8f7b73ba9f2b4f57c3b6022ad78a9f10",
+      "expected": {
+        "status": "unsupported",
+        "error_contains": "unsupported NSE API stdnse.new_thread",
+        "code": "unsupported_api",
+        "phase": "action"
+      },
       "status": "unsupported",
-      "reason": "explicitly unsupported: NSE action: error: unsupported NSE API stdnse.new_thread",
+      "fixture_result": "match",
+      "disposition": "unsupported",
+      "eligible": true,
+      "reason": "encountered the asserted unsupported surface",
       "execution_status": "error",
+      "code": "unsupported_api",
+      "phase": "action",
+      "verdict": "unknown",
       "error": "NSE action: error: unsupported NSE API stdnse.new_thread"
     },
     {
@@ -101,9 +264,22 @@
       "script": "fixtures/action-error.nse",
       "sha256": "c6d76fdab49fd62ae36ed39b101e861cca0669f5f6e44695d8509647c9c3ff85",
       "expected_sha256": "c6d76fdab49fd62ae36ed39b101e861cca0669f5f6e44695d8509647c9c3ff85",
-      "status": "pass",
-      "reason": "failed as expected: NSE action: error: action-error.nse:11: fixture blew up on purpose",
+      "input_sha256": "8a906af489ec58aec0da3dfbfa5c49613b3d983981b2910bd864526a68e5d08e",
+      "expected": {
+        "status": "error",
+        "error_contains": "fixture blew up on purpose",
+        "code": "rejected",
+        "phase": "action"
+      },
+      "status": "expected_outcome",
+      "fixture_result": "match",
+      "disposition": "explicit_rejection",
+      "eligible": true,
+      "reason": "rejected as expected",
       "execution_status": "error",
+      "code": "rejected",
+      "phase": "action",
+      "verdict": "unknown",
       "error": "NSE action: error: action-error.nse:11: fixture blew up on purpose"
     }
   ]

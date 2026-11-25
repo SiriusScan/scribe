@@ -5,13 +5,14 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/base"
 	"math"
 	"net"
 	"strconv"
 	"strings"
 
 	"github.com/SiriusScan/scribe"
+	"github.com/SiriusScan/scribe/internal/execdiag"
+	"github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/base"
 	rt "github.com/SiriusScan/scribe/internal/thirdparty/golua/runtime"
 )
 
@@ -79,7 +80,8 @@ func strictModule(vm *rt.Runtime, name string, module *rt.Table) {
 	meta := rt.NewTable()
 	setFunction(vm, meta, "__index", func(t *rt.Thread, c *rt.GoCont) (rt.Cont, error) {
 		key, _ := c.Arg(1).ToString()
-		return nil, fmt.Errorf("unsupported NSE API %s.%s", name, key)
+		err := fmt.Errorf("unsupported NSE API %s.%s", name, key)
+		return nil, rt.NewErrorWithCause(rt.StringValue(err.Error()), execdiag.WithCode(err, execdiag.UnsupportedAPI))
 	}, 2, false)
 	module.SetMetatable(meta)
 }
@@ -504,22 +506,28 @@ func runNSE(ctx context.Context, vm *rt.Runtime, task scribe.Task) (scribe.Outpu
 	env := vm.GlobalEnv()
 	for _, phase := range []string{"prerule", "postrule"} {
 		if !env.Get(rt.StringValue(phase)).IsNil() {
-			return scribe.Output{}, fmt.Errorf("NSE %s is unsupported in this experimental profile", phase)
+			err := execdiag.WithCode(fmt.Errorf("NSE %s is unsupported in this experimental profile", phase), execdiag.UnsupportedPhase)
+			return scribe.Output{}, execdiag.At(err, execdiag.Rule)
 		}
 	}
 	if dependencies := env.Get(rt.StringValue("dependencies")); !dependencies.IsNil() {
 		table, ok := dependencies.TryTable()
 		if !ok {
-			return scribe.Output{}, errors.New("NSE dependencies must be a table")
+			return scribe.Output{}, execdiag.At(errors.New("NSE dependencies must be a table"), execdiag.Rule)
 		}
 		if key, _, _ := table.Next(rt.NilValue); !key.IsNil() {
-			return scribe.Output{}, errors.New("NSE script dependencies are unsupported in this experimental profile")
+			err := execdiag.WithCode(errors.New("NSE script dependencies are unsupported in this experimental profile"), execdiag.UnsupportedDep)
+			return scribe.Output{}, execdiag.At(err, execdiag.Rule)
 		}
 	}
 	hostrule := env.Get(rt.StringValue("hostrule"))
 	portrule := env.Get(rt.StringValue("portrule"))
 	if hostrule.IsNil() == portrule.IsNil() {
-		return scribe.Output{}, errors.New("NSE script must define exactly one hostrule or portrule")
+		err := errors.New("NSE script must define exactly one hostrule or portrule")
+		if !hostrule.IsNil() {
+			err = execdiag.WithCode(err, execdiag.UnsupportedPhase)
+		}
+		return scribe.Output{}, execdiag.At(err, execdiag.Rule)
 	}
 	host := rt.NewTable()
 	address := task.Target.IP
@@ -538,7 +546,8 @@ func runNSE(ctx context.Context, vm *rt.Runtime, task scribe.Task) (scribe.Outpu
 	phase := "hostrule"
 	if !portrule.IsNil() {
 		if task.Target.Port == 0 {
-			return scribe.Output{}, errors.New("NSE portrule requires a supplied target port")
+			execdiag.Record(ctx, execdiag.Observation{Code: execdiag.MissingTargetPort, Phase: execdiag.Rule})
+			return scribe.Output{Skipped: true, SkipReason: "NSE portrule requires a supplied target port"}, nil
 		}
 		port := rt.NewTable()
 		vm.SetEnv(port, "number", rt.IntValue(int64(task.Target.Port)))
@@ -562,24 +571,35 @@ func runNSE(ctx context.Context, vm *rt.Runtime, task scribe.Task) (scribe.Outpu
 	vm.SetEnv(env, "SCRIPT_TYPE", rt.StringValue(phase))
 	matches, err := evaluateRule(ctx, vm, rule, args...)
 	if err != nil {
-		return scribe.Output{}, err
+		return scribe.Output{}, execdiag.At(err, execdiag.Rule)
 	}
 	if !matches {
-		return scribe.Output{Skipped: true}, nil
+		execdiag.Record(ctx, execdiag.Observation{Code: execdiag.RuleFalse, Phase: execdiag.Rule})
+		return scribe.Output{Skipped: true, SkipReason: "NSE rule did not match the supplied facts"}, nil
 	}
 	action := env.Get(rt.StringValue("action"))
 	if _, ok := action.TryCallable(); !ok {
-		return scribe.Output{}, errors.New("NSE action must be a function")
+		return scribe.Output{}, execdiag.At(errors.New("NSE action must be a function"), execdiag.Action)
 	}
 	if err := ctx.Err(); err != nil {
 		return scribe.Output{}, err
 	}
 	results := rt.NewTerminationWith(vm.MainThread().CurrentCont(), 2, false)
 	if err := rt.Call(vm.MainThread(), action, args, results); err != nil {
-		return scribe.Output{}, fmt.Errorf("NSE action: %w", err)
+		return scribe.Output{}, execdiag.At(fmt.Errorf("NSE action: %w", err), execdiag.Action)
 	}
 	first, second := results.Get(0), results.Get(1)
+	output, err := convertNSEOutput(ctx, vm, first, second)
+	if err != nil {
+		return scribe.Output{}, execdiag.At(err, execdiag.Output)
+	}
+	return output, nil
+}
+
+func convertNSEOutput(ctx context.Context, vm *rt.Runtime, first, second rt.Value) (scribe.Output, error) {
+	observation := execdiag.Observation{Phase: execdiag.Action}
 	if first.IsNil() && second.IsNil() {
+		execdiag.Record(ctx, observation)
 		return scribe.Output{}, nil
 	}
 	if !first.IsNil() && first.Type() != rt.StringType && first.Type() != rt.TableType {
@@ -590,16 +610,25 @@ func runNSE(ctx context.Context, vm *rt.Runtime, task scribe.Task) (scribe.Outpu
 	if err != nil {
 		return scribe.Output{}, err
 	}
+	if text, ok := data.(string); ok {
+		observation.Text = &text
+	}
 	if !second.IsNil() {
 		if first.Type() != rt.TableType || second.Type() != rt.StringType {
 			return scribe.Output{}, errors.New("dual NSE output must be a table and string")
 		}
-		text, err := converter.fromLua(second, 0)
+		converted, err := converter.fromLua(second, 0)
 		if err != nil {
 			return scribe.Output{}, err
 		}
+		text := converted.(string)
+		observation.Text = &text
 		data = map[string]any{"structured": data, "text": text}
 	}
 	output := scribe.Output{Data: data}
-	return output, checkOutputSize(output)
+	if err := checkOutputSize(output); err != nil {
+		return scribe.Output{}, err
+	}
+	execdiag.Record(ctx, observation)
+	return output, nil
 }

@@ -59,19 +59,30 @@ empty output must not be recorded as a successful vulnerability assessment.
 
 ## Measured compatibility harness
 
-`make compat` runs the pinned manifest in `compat/manifest.json` through the
-`compat` package (`cmd/scribe-compat`) and writes the deterministic JSON report to
-`compat/report.json`. Each case pins the exact script SHA-256 (a digest mismatch
-fails without executing), the supplied target facts and arguments, and one asserted
-outcome. A `completed` expectation must assert the exact action output as JSON;
-completion or module loading without an output assertion is rejected by manifest
-validation and can never count as a pass. Scripts that hit an explicitly
-unsupported API are reported `unsupported` with the error as the reason, separately
-from `pass` and `fail`; an unsupported outcome the manifest did not predict fails
-the run. The current manifest covers original MIT fixtures only (10 cases over the
-`stdnse`/`shortport` slice above, two of them expected-unsupported). It is
-measurement infrastructure and first-party regression evidence, not an upstream
-corpus result and not a compatibility percentage for any Nmap script set.
+The first-party harness runs original MIT fixtures against inert supplied facts.
+The schema 2 report keeps fixture assertions and measured dispositions
+independent. Each row includes the case-input and script SHA-256, the expected
+and observed status, a bounded phase and reason code where available, and the
+exact JSON output for completed scripts. Fixtures can additionally assert the
+separate textual return and explicit verdict. A skipped rule, missing required
+fact, recognized unsupported surface, or expected rejection can match its
+fixture without increasing the pass count. A timeout, cancelled case or missing
+result makes the run incomplete.
+
+`Report.OK()` still tests fixture expectation agreement for SDK callers.
+`Report.CoveredCases(manifest)` requires a strict schema 2 manifest and complete
+matching rows with the pinned digests. It returns only the completed cases
+whose asserted, nonempty data was observed. Schema 1 input remains readable for
+regression runs. A schema 1 report supplies no schema 2 coverage.
+
+Run `make compat` to refresh the checked-in portable snapshot in
+`compat/report.json`. The CLI publishes full build provenance along with the
+evidence. To write that report to a file, run
+`go run ./cmd/scribe-compat --manifest compat/manifest.json --out report.json`.
+The checked-in snapshot excludes machine-specific build provenance. The CLI
+test regenerates twice and compares the report bytes and snapshot, so the
+default CI test job detects stale snapshots and mismatched inputs. The
+first-party evidence covers the fixture cases only.
 
 ## Open item: select the Phase 1 reference pin
 

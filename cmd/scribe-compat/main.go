@@ -1,11 +1,9 @@
-// Command scribe-compat runs a pinned NSE compatibility manifest through
-// Scribe's experimental NSE profile and emits a JSON report with one
-// pass, fail, or unsupported entry (plus the exact script digest and
-// reason) per case. It exits nonzero when any case fails or is
-// unsupported contrary to the manifest's expectation.
+// Command scribe-compat runs a pinned offline NSE fixture manifest and
+// emits a versioned compatibility evidence report.
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
@@ -30,6 +28,8 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	flags.SetOutput(stderr)
 	manifestPath := flags.String("manifest", "", "compatibility manifest JSON file (required)")
 	outPath := flags.String("out", "", "write the JSON report to this file instead of stdout")
+	checkPath := flags.String("check", "", "compare the evidence snapshot with this file")
+	snapshotPath := flags.String("snapshot", "", "write a portable evidence snapshot to this file")
 	if err := flags.Parse(argv); err != nil {
 		return 2
 	}
@@ -45,15 +45,14 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err)
 	}
-	report, err := compat.Run(ctx, manifest)
-	if err != nil && len(report.Results) == 0 {
-		return fail(err)
+	report, runErr := compat.Run(ctx, manifest)
+	if report.SchemaVersion == 0 && runErr != nil {
+		return fail(runErr)
 	}
-	data, err := json.MarshalIndent(report, "", "  ")
+	data, err := marshalReport(report)
 	if err != nil {
 		return fail(err)
 	}
-	data = append(data, '\n')
 	if *outPath != "" {
 		if err := os.WriteFile(*outPath, data, 0o644); err != nil {
 			return fail(fmt.Errorf("write report: %w", err))
@@ -61,12 +60,48 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	} else if _, err := stdout.Write(data); err != nil {
 		return fail(err)
 	}
-	if err != nil {
-		return fail(err)
+	if runErr != nil {
+		return fail(runErr)
 	}
 	if !report.OK() {
 		return fail(fmt.Errorf("compatibility run did not match the manifest: %d fail, %d unexpected unsupported (of %d cases)",
 			report.Summary.Fail, report.Summary.Unexpected, report.Summary.Total))
 	}
+	if *checkPath != "" || *snapshotPath != "" {
+		if err := snapshot(report, *checkPath, *snapshotPath); err != nil {
+			return fail(err)
+		}
+	}
 	return 0
+}
+
+func marshalReport(report compat.Report) ([]byte, error) {
+	data, err := json.MarshalIndent(report, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(data, '\n'), nil
+}
+
+func snapshot(report compat.Report, checkPath, outPath string) error {
+	report.Source = nil
+	data, err := marshalReport(report)
+	if err != nil {
+		return err
+	}
+	if checkPath != "" {
+		expected, err := os.ReadFile(checkPath)
+		if err != nil {
+			return fmt.Errorf("read evidence snapshot: %w", err)
+		}
+		if !bytes.Equal(data, expected) {
+			return fmt.Errorf("evidence snapshot %s is stale; regenerate with make compat", checkPath)
+		}
+	}
+	if outPath != "" {
+		if err := os.WriteFile(outPath, data, 0o644); err != nil {
+			return fmt.Errorf("write evidence snapshot: %w", err)
+		}
+	}
+	return nil
 }

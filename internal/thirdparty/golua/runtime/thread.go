@@ -101,15 +101,16 @@ func (t *Thread) RunContinuation(c Cont) (err error) {
 			if rtErr.Handled() {
 				return rtErr
 			}
-			err = rtErr.AddContext(c, -1)
+			rtErr = rtErr.AddContext(c, -1)
+			err = rtErr
 			errContCount++
 			if t.messageHandler != nil {
 				if errContCount > maxErrorsInMessageHandler {
-					return newHandledError(errErrorInMessageHandler)
+					return newHandledError(errErrorInMessageHandler, nil)
 				}
-				next = t.messageHandler.Continuation(t, newMessageHandlerCont(c))
+				next = t.messageHandler.Continuation(t, newMessageHandlerCont(c, nil))
 			} else {
-				next = newMessageHandlerCont(c)
+				next = newMessageHandlerCont(c, rtErr.cause)
 			}
 			next.Push(t.Runtime, ErrorValue(err))
 		}
@@ -383,13 +384,14 @@ func (t *Thread) cleanupCloseStack(c Cont, h int, err error) error {
 // turns it to handled).
 //
 type messageHandlerCont struct {
-	c    Cont
-	err  Value
-	done bool
+	c     Cont
+	cause error
+	err   Value
+	done  bool
 }
 
-func newMessageHandlerCont(c Cont) *messageHandlerCont {
-	return &messageHandlerCont{c: c}
+func newMessageHandlerCont(c Cont, cause error) *messageHandlerCont {
+	return &messageHandlerCont{c: c, cause: cause}
 }
 
 var _ Cont = (*messageHandlerCont)(nil)
@@ -421,5 +423,5 @@ func (c *messageHandlerCont) PushEtc(r *Runtime, etc []Value) {
 }
 
 func (c *messageHandlerCont) RunInThread(t *Thread) (Cont, error) {
-	return nil, newHandledError(c.err)
+	return nil, newHandledError(c.err, c.cause)
 }

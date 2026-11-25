@@ -259,7 +259,10 @@ func (m *runtimeContextManager) UnusedMem() uint64 {
 func (m *runtimeContextManager) updateTimeUsed() {
 	m.usedResources.Millis = now() - m.startTime
 	if atLimit(m.usedResources.Millis, m.hardLimits.Millis) {
-		m.TerminateContext("time limit of %d exceeded", m.hardLimits.Millis)
+		m.terminate(ContextTerminationError{
+			message:   fmt.Sprintf("time limit of %d exceeded", m.hardLimits.Millis),
+			timeLimit: true,
+		})
 	}
 }
 
@@ -296,13 +299,15 @@ func (m *runtimeContextManager) KillContext() {
 
 // TerminateContext forcefully terminates the context with the given message.
 func (m *runtimeContextManager) TerminateContext(format string, args ...interface{}) {
+	m.terminate(ContextTerminationError{message: fmt.Sprintf(format, args...)})
+}
+
+func (m *runtimeContextManager) terminate(err ContextTerminationError) {
 	if m.status != StatusLive {
 		return
 	}
 	m.status = StatusKilled
-	panic(ContextTerminationError{
-		message: fmt.Sprintf(format, args...),
-	})
+	panic(err)
 }
 
 // Current unix time in ms
