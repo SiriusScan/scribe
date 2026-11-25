@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "policy": "scribe-json-v1",
+  "release": {
+    "scribe_version": "v0.0.0-fixture",
+    "scribe_commit": "1111111111111111111111111111111111111111",
+    "scribe_producer": {
+      "id": "fixture-candidate",
+      "sha256": "d35968087e46a4f0f095f0730812f735f36544fa69ac3070cea6cbf3cf53a1a6"
+    },
+    "reference_version": "",
+    "reference_revision": "",
+    "reference_producer": {
+      "id": "",
+      "sha256": ""
+    },
+    "sirius_commit": "",
+    "scanner_commit": "",
+    "catalog_revision": "",
+    "catalog_sha256": "",
+    "fixture_manifest_sha256": ""
+  },
+  "workflows": [
+    {
+      "id": "synthetic-affirmative",
+      "reference_kind": "synthetic",
+      "reference_producer": {
+        "id": "fixture-reference-author",
+        "sha256": "1336f1a2361daf971b3fd4591b92e751398a38518bcb44c5b432104e8f379f27"
+      },
+      "cases": [
+        {
+          "id": "marker-present",
+          "input": {
+            "case": "marker-present",
+            "supplied": true
+          },
+          "review_sha256": "b7f312df71055710e1948370dac421022af32dd671c7a4390ede37e3af537907"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-negative",
+      "reference_kind": "synthetic",
+      "reference_producer": {
+        "id": "fixture-reference-author",
+        "sha256": "1336f1a2361daf971b3fd4591b92e751398a38518bcb44c5b432104e8f379f27"
+      },
+      "cases": [
+        {
+          "id": "marker-absent",
+          "input": {
+            "case": "marker-absent",
+            "supplied": true
+          },
+          "review_sha256": "8ec2b0f8baad504e8b20ddb0db1900f1e05b900491fb9ba02ce5479b0f270674"
+        }
+      ]
+    }
+  ]
+}

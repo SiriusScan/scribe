@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "workflow": "synthetic-affirmative",
+      "case_id": "marker-present",
+      "input_sha256": "46424d29a147f8f4237b11b245b0477bd34a922fcc2f5ea79acf7cc562101acc",
+      "policy": "scribe-json-v1",
+      "producer": {
+        "id": "fixture-candidate",
+        "sha256": "d35968087e46a4f0f095f0730812f735f36544fa69ac3070cea6cbf3cf53a1a6"
+      },
+      "result_sha256": "4b57630507a6c2198887252170bbefb663bc7330153c99e129cbf74218c8133f",
+      "result": {"disposition":"completed","complete":true,"verdict":"vulnerable","data":{"observation":"present","source":"inert"}}
+    },
+    {
+      "workflow": "synthetic-negative",
+      "case_id": "marker-absent",
+      "input_sha256": "6481a4f2ded691e39cb4054cc83218681fc447429c0313bb5cf730ba45fcd745",
+      "policy": "scribe-json-v1",
+      "producer": {
+        "id": "fixture-candidate",
+        "sha256": "d35968087e46a4f0f095f0730812f735f36544fa69ac3070cea6cbf3cf53a1a6"
+      },
+      "result_sha256": "8ca3fe721c7b86d09598d0d89ee2a973afe56d04711690dc18c378e3b8648933",
+      "result": {"disposition":"completed","complete":true,"verdict":"not_vulnerable","data":{"observation":"absent","source":"inert"}}
+    }
+  ]
+}
