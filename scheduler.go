@@ -47,11 +47,11 @@ func hostKey(t Target) string {
 }
 
 // run is the sole owner of scheduling state. Workers only own their invocation.
-// Producers execute synchronously and must honor context. Slice cancellation
-// drains all submitted tasks; streaming cancellation drains accepted tasks only.
-func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool, error), sink func(Result) error, drain bool) error {
+// next produces raw input. prepare runs only on live work. With drain set,
+// next must enumerate prevalidated input without preparation or other side effects
+// after cancellation. A stream stops pulling when its context is cancelled.
+func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool, error), prepare func(context.Context, Task) Task, sink func(Result) error, drain bool) error {
 	runCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
 	hosts := map[string]*hostState{}
 	type moduleKey struct {
 		dialect Dialect
@@ -74,31 +74,28 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 		}()
 	}
-	defer func() { close(work); workers.Wait() }()
+	defer func() {
+		cancel()
+		close(work)
+		workers.Wait()
+	}()
 	active, failed := 0, 0
 	budgetDirty := false
 	var globalNext time.Time
 	eof := false
-	var inputErr, sinkErr error
-	emit := func(r Result) {
+	var inputErr error
+	emit := func(r Result) error {
 		if r.Status == Failed {
 			failed++
 		}
-		if sinkErr == nil {
-			if e.options.OnEvent != nil {
-				for _, event := range Events(r) {
-					if sinkErr = e.options.OnEvent(event); sinkErr != nil {
-						break
-					}
+		if e.options.OnEvent != nil {
+			for _, event := range Events(r) {
+				if err := e.options.OnEvent(event); err != nil {
+					return err
 				}
 			}
-			if sinkErr == nil {
-				sinkErr = sink(r)
-			}
-			if sinkErr != nil {
-				cancel()
-			}
 		}
+		return sink(r)
 	}
 	terminal := func(t Task, status Status, reason string) Result {
 		r := Result{SchemaVersion: 1, ScriptID: t.Script.ID, ScriptSHA256: fmt.Sprintf("%x", sha256.Sum256(t.Script.Source)), Dialect: t.Script.Dialect, Target: t.Target, Status: status, Verdict: Unknown}
@@ -133,12 +130,20 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				eof = true
 				break
 			}
-			if runCtx.Err() != nil {
-				emit(terminal(task, Cancelled, runCtx.Err().Error()))
+			raw := task
+			if runCtx.Err() == nil {
+				task = prepare(runCtx, task)
+			}
+			if err := runCtx.Err(); err != nil {
+				if err := emit(terminal(raw, Cancelled, err.Error())); err != nil {
+					return err
+				}
 				continue
 			}
 			if task.planSkip != "" {
-				emit(terminal(task, Skipped, task.planSkip))
+				if err := emit(terminal(task, Skipped, task.planSkip)); err != nil {
+					return err
+				}
 				continue
 			}
 			key := hostKey(task.Target)
@@ -147,7 +152,9 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 				if len(hosts) >= e.options.MaxHosts {
 					inputErr = errors.New("host accounting limit exceeded")
 					eof = true
-					emit(terminal(task, Failed, inputErr.Error()))
+					if err := emit(terminal(task, Failed, inputErr.Error())); err != nil {
+						return err
+					}
 					break
 				}
 				host = &hostState{}
@@ -159,7 +166,7 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 		}
 		// Collect completed failures before admitting more work against a budget.
-		collect := func(c completion) {
+		collect := func(c completion) error {
 			active--
 			c.host.active--
 			k := moduleKey{c.result.Dialect, c.result.ScriptID}
@@ -173,13 +180,15 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 					budgetDirty = true
 				}
 			}
-			emit(c.result)
+			return emit(c.result)
 		}
 	drainDone:
 		for active > 0 {
 			select {
 			case c := <-done:
-				collect(c)
+				if err := collect(c); err != nil {
+					return err
+				}
 			default:
 				break drainDone
 			}
@@ -196,7 +205,9 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 					status, reason = Skipped, "host error budget exhausted"
 				}
 				if status != "" {
-					emit(terminal(p.task, status, reason))
+					if err := emit(terminal(p.task, status, reason)); err != nil {
+						return err
+					}
 					continue
 				}
 				retained = append(retained, p)
@@ -261,7 +272,9 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 			}
 			if e.options.ModuleInterval > 0 {
 				if _, exists := moduleNext[keyFor(p.task)]; !exists && len(moduleNext) >= e.options.MaxHosts {
-					emit(terminal(p.task, Failed, "module pacing accounting limit exceeded"))
+					if err := emit(terminal(p.task, Failed, "module pacing accounting limit exceeded")); err != nil {
+						return err
+					}
 					continue
 				}
 			}
@@ -294,18 +307,19 @@ func (e *Engine) run(ctx context.Context, next func(context.Context) (Task, bool
 		if runCtx.Err() != nil {
 			cancelled = nil
 		}
+		var err error
 		select {
 		case c := <-done:
-			collect(c)
+			err = collect(c)
 		case <-tick:
 		case <-cancelled:
 		}
 		if timer != nil {
 			timer.Stop()
 		}
-	}
-	if sinkErr != nil {
-		return sinkErr
+		if err != nil {
+			return err
+		}
 	}
 	if ctx.Err() != nil {
 		return ctx.Err()

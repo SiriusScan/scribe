@@ -136,8 +136,9 @@ func New(options Options, runtimes ...Runtime) (*Engine, error) {
 // controls apply within this run. Every submitted task gets a terminal record
 // after cancellation while the sink remains available.
 // The callback runs synchronously, serially within this run, in completion order
-// (not submission order). Slow callbacks apply backpressure. Return an error to
-// stop delivery and cancel/drain active executions; Run returns the sink error.
+// (not submission order). Slow callbacks apply backpressure. A result or event
+// callback error stops new input, preparation and delivery. Run cancels active
+// executions and returns the callback error after they exit.
 // Callbacks must return promptly and must not wait for Run to finish. A nil Run
 // error describes delivery, not a vulnerability verdict; inspect each Result.
 func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) error) error {
@@ -149,9 +150,6 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 			return fmt.Errorf("task %d: %w", i, err)
 		}
 	}
-	if err := ctx.Err(); err != nil {
-		return err
-	}
 	cache := make(probeCache)
 	// Bound metadata retention independently of the submitted batch size.
 	metadata := make(map[[32]byte]*selectionHints)
@@ -161,6 +159,12 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 			return Task{}, false, nil
 		}
 		t := tasks[n]
+		n++
+		return t, true, nil
+	}, func(ctx context.Context, t Task) Task {
+		if ctx.Err() != nil {
+			return t
+		}
 		key := sha256.Sum256(t.Script.Source)
 		if hints, ok := metadata[key]; ok {
 			t.preparedHints = hints
@@ -172,10 +176,13 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 				}
 			}
 		}
+		if ctx.Err() != nil {
+			return t
+		}
 		if e.options.PlannerProbes && !e.options.Plan && (t.preparedHints == nil || t.preparedHints.Match == nil || t.preparedHints.Match.missing(t.Target)) {
 			t.Target = cache.enrich(ctx, t.Target, e.options.MaxHosts, e.options.SNMPCommunity)
 		}
-		if !e.options.Exhaustive && t.preparedHints != nil && t.preparedHints.Match != nil {
+		if ctx.Err() == nil && !e.options.Exhaustive && t.preparedHints != nil && t.preparedHints.Match != nil {
 			if ok, _ := t.preparedHints.Match.evaluate(t.Target); !ok {
 				t.planSkip = t.preparedHints.Match.skipReason(t.Target)
 				if t.Script.Dialect == NSE {
@@ -183,8 +190,7 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 				}
 			}
 		}
-		n++
-		return t, true, nil
+		return t
 	}, onResult, true)
 }
 func (e *Engine) validate(task Task) error {
