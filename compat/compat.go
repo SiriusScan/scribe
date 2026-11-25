@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -211,8 +212,8 @@ func (m Manifest) Validate() error {
 			return fmt.Errorf("case %d: duplicate id %q", i, c.ID)
 		}
 		seen[c.ID] = true
-		if c.Script == "" || filepath.IsAbs(c.Script) || filepath.Clean(c.Script) != c.Script ||
-			c.Script == ".." || strings.HasPrefix(c.Script, ".."+string(filepath.Separator)) {
+		if c.Script == "" || filepath.IsAbs(c.Script) || path.IsAbs(c.Script) || path.Clean(c.Script) != c.Script ||
+			strings.ContainsAny(c.Script, `\:`) || c.Script == ".." || strings.HasPrefix(c.Script, "../") {
 			return fmt.Errorf("case %q: script must be a clean relative path inside the manifest directory", c.ID)
 		}
 		if len(c.SHA256) != 64 {
