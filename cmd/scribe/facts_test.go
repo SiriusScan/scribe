@@ -65,7 +65,10 @@ func TestPingppSelection(t *testing.T) {
 func TestRealEmitterExecution(t *testing.T) {
 	repo := os.Getenv("PINGPP_REPO")
 	if repo == "" {
-		repo = "/home/agi/Projects/sirius-workspace/minor-projects/ping++"
+		t.Skip("set PINGPP_REPO to enable the external ping++ emitter integration")
+	}
+	if _, err := os.Stat(filepath.Join(repo, "cmd/pingpp-scan/main.go")); err != nil {
+		t.Fatalf("PINGPP_REPO must point to a ping++ checkout: %v", err)
 	}
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
