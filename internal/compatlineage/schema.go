@@ -15,6 +15,7 @@ import (
 
 	"github.com/SiriusScan/scribe"
 	"github.com/SiriusScan/scribe/compat"
+	"github.com/SiriusScan/scribe/internal/jsonwire"
 )
 
 const (
@@ -325,51 +326,5 @@ func validateJSON(data []byte) error {
 	if !utf8.Valid(data) {
 		return errors.New("invalid UTF-8")
 	}
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.UseNumber()
-	if err := walkJSON(decoder, 0); err != nil {
-		return err
-	}
-	if _, err := decoder.Token(); !errors.Is(err, io.EOF) {
-		return errors.New("expected one JSON value")
-	}
-	return nil
-}
-
-func walkJSON(decoder *json.Decoder, depth int) error {
-	if depth > 64 {
-		return errors.New("JSON nesting exceeds 64 levels")
-	}
-	token, err := decoder.Token()
-	if err != nil {
-		return err
-	}
-	switch token {
-	case json.Delim('{'):
-		seen := make(map[string]bool)
-		for decoder.More() {
-			token, err := decoder.Token()
-			if err != nil {
-				return err
-			}
-			name, ok := token.(string)
-			if !ok || seen[name] {
-				return fmt.Errorf("invalid or duplicate JSON field %q", token)
-			}
-			seen[name] = true
-			if err := walkJSON(decoder, depth+1); err != nil {
-				return err
-			}
-		}
-	case json.Delim('['):
-		for decoder.More() {
-			if err := walkJSON(decoder, depth+1); err != nil {
-				return err
-			}
-		}
-	default:
-		return nil
-	}
-	_, err = decoder.Token()
-	return err
+	return jsonwire.Validate(data)
 }
