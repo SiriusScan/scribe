@@ -1,5 +1,7 @@
 package runtime
 
+import "context"
+
 // RuntimeContextDef contains the data necessary to create an new runtime context.
 type RuntimeContextDef struct {
 	HardLimits     RuntimeResources
@@ -38,7 +40,8 @@ const (
 // A ContextTerminationError is an error reserved for when the runtime context
 // should be terminated immediately.
 type ContextTerminationError struct {
-	message string
+	message   string
+	timeLimit bool
 }
 
 var _ error = ContextTerminationError{}
@@ -46,6 +49,14 @@ var _ error = ContextTerminationError{}
 // Error string for a ContextTerminationError
 func (e ContextTerminationError) Error() string {
 	return e.message
+}
+
+// Unwrap preserves the cause of a VM time-limit stop.
+func (e ContextTerminationError) Unwrap() error {
+	if e.timeLimit {
+		return context.DeadlineExceeded
+	}
+	return nil
 }
 
 // RuntimeContextStatus describes the status of a context

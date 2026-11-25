@@ -12,7 +12,7 @@ test:
 acceptance:
 	cd examples/external && go test -race ./... && go vet ./...
 compat:
-	go run ./cmd/scribe-compat --manifest compat/manifest.json --out compat/report.json
+	go run ./cmd/scribe-compat --manifest compat/manifest.json --snapshot compat/report.json
 check: test acceptance cross-compile
 	go vet ./...
 	CGO_ENABLED=0 go build -o /tmp/scribe-check ./cmd/scribe

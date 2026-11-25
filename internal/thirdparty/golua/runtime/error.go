@@ -11,6 +11,7 @@ import (
 // is no call stack, but you can imagine you "unwind" the call stack by
 // iterating over this slice.
 type Error struct {
+	cause   error
 	message Value
 	handled bool
 	lineno  int
@@ -22,9 +23,18 @@ func NewError(message Value) *Error {
 	return &Error{message: message}
 }
 
-func newHandledError(message Value) *Error {
-	return &Error{message: message, handled: true}
+// NewErrorWithCause delivers message to Lua and preserves a trusted Go cause
+// when the original error escapes the VM.
+func NewErrorWithCause(message Value, cause error) *Error {
+	return &Error{message: message, cause: cause}
 }
+
+func newHandledError(message Value, cause error) *Error {
+	return &Error{message: message, cause: cause, handled: true}
+}
+
+// Unwrap returns an optional Go cause attached at the runtime boundary.
+func (e *Error) Unwrap() error { return e.cause }
 
 // AsError check if err can be converted to an *Error and returns that if
 // successful.
@@ -65,6 +75,7 @@ func (e *Error) AddContext(c Cont, depth int) *Error {
 		return e
 	}
 	e = &Error{
+		cause:   e.cause,
 		lineno:  -1,
 		source:  "?",
 		message: e.message,

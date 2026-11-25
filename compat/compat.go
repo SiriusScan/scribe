@@ -1,12 +1,5 @@
 // Package compat measures the experimental NSE profile against a pinned
-// fixture manifest and emits a machine-readable report.
-//
-// A case passes only when its script digest matches the manifest pin and
-// the observed execution matches the manifest expectation, including an
-// exact output assertion for completed scripts. A script that merely
-// loads, or completes with unasserted output, is a failure, never a pass.
-// Scripts that hit an explicitly unsupported API are reported as
-// unsupported, separately from passes and failures.
+// offline fixture manifest and emits a versioned evidence report.
 package compat
 
 import (
@@ -21,24 +14,15 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/SiriusScan/scribe"
+	"github.com/SiriusScan/scribe/internal/execdiag"
 	"github.com/SiriusScan/scribe/runtime/lua54"
 )
 
-// Status is the measured compatibility outcome for one case.
-// The empty zero value is unmeasured, never Pass.
-type Status string
-
-const (
-	// Pass indicates a pinned fixture matched its expected output.
-	Pass Status = "pass"
-	// Fail indicates fixture validation or execution failed.
-	Fail Status = "fail"
-	// Unsupported indicates execution encountered an unsupported API.
-	Unsupported Status = "unsupported"
-)
+var caseIDPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
 
 // Corpus identifies the script collection a manifest pins. The reference
 // Nmap fields record the differential oracle once selected; until the
@@ -67,8 +51,16 @@ type Expect struct {
 	Status string `json:"status"`
 	// Data is exact expected JSON output, required for completed; nil supplies no assertion.
 	Data json.RawMessage `json:"data,omitempty"`
-	// ErrorContains is the expected error substring; empty is rejected for error/unsupported expectations.
+	// ErrorContains optionally asserts an exact diagnostic substring.
 	ErrorContains string `json:"error_contains,omitempty"`
+	// Code asserts the bounded runtime reason. Required for v2 skips and failures.
+	Code string `json:"code,omitempty"`
+	// Phase asserts the runtime boundary. Required for v2 skips and failures.
+	Phase string `json:"phase,omitempty"`
+	// Text, when set, asserts the exact separate NSE textual return.
+	Text *string `json:"text,omitempty"`
+	// Verdict, when set, asserts the independent modeled assessment.
+	Verdict scribe.Verdict `json:"verdict,omitempty"`
 }
 
 // Case is one pinned script invocation against supplied target facts.
@@ -89,7 +81,7 @@ type Case struct {
 
 // Manifest is the pinned input to a compatibility run.
 type Manifest struct {
-	// SchemaVersion must be 1; zero is invalid.
+	// SchemaVersion accepts 1 for legacy fixtures or 2 for strict evidence.
 	SchemaVersion int `json:"schema_version"`
 	// Corpus describes the selected corpus; zero establishes no upstream compatibility.
 	Corpus Corpus `json:"corpus"`
@@ -98,64 +90,6 @@ type Manifest struct {
 	// BaseDir resolves script paths; empty uses the current directory for relative paths.
 	BaseDir string `json:"-"`
 }
-
-// Entry is one case's measured outcome. Unexpected marks an unsupported
-// outcome the manifest did not predict (or predicted with a different
-// reason); it fails the run even though the status stays "unsupported".
-type Entry struct {
-	// ID echoes case identity; empty supplies none.
-	ID string `json:"id"`
-	// Script echoes the case source path; empty supplies none.
-	Script string `json:"script"`
-	// SHA256 is measured source digest; empty means unavailable.
-	SHA256 string `json:"sha256,omitempty"`
-	// ExpectedSHA256 is the manifest pin; empty supplies no pin.
-	ExpectedSHA256 string `json:"expected_sha256,omitempty"`
-	// Status is pass, fail or unsupported; empty is uninitialized.
-	Status Status `json:"status"`
-	// Reason explains the measured outcome; empty supplies none.
-	Reason string `json:"reason"`
-	// ExecutionStatus is raw execution status; empty means unavailable.
-	ExecutionStatus string `json:"execution_status,omitempty"`
-	// Error contains execution error text; empty means none recorded.
-	Error string `json:"error,omitempty"`
-	// Unexpected marks an unpredicted unsupported outcome; false adds no such failure.
-	Unexpected bool `json:"unexpected,omitempty"`
-}
-
-// Summary counts outcomes. It conveys no compatibility percentage claim
-// beyond the manifest's own selected cases.
-type Summary struct {
-	// Total counts cases; zero means none.
-	Total int `json:"total"`
-	// Pass counts matching expectations; zero means none.
-	Pass int `json:"pass"`
-	// Fail counts failed cases; zero means none.
-	Fail int `json:"fail"`
-	// Unsupported counts unsupported outcomes including expected ones; zero means none.
-	Unsupported int `json:"unsupported"`
-	// Unexpected counts unpredicted unsupported outcomes; zero means none.
-	Unexpected int `json:"unexpected"`
-}
-
-// Report is the deterministic machine-readable result of a run. It holds
-// no timestamps or durations so identical inputs produce identical bytes.
-type Report struct {
-	// SchemaVersion is 1 for generated reports; zero is uninitialized.
-	SchemaVersion int `json:"schema_version"`
-	// Corpus preserves manifest corpus identity; zero establishes no compatibility claim.
-	Corpus Corpus `json:"corpus"`
-	// Summary contains case counts; zero has no measured cases.
-	Summary Summary `json:"summary"`
-	// Results contains ordered case outcomes; nil contains none.
-	Results []Entry `json:"results"`
-}
-
-// A zero Report has no failures and OK returns true; it establishes no corpus coverage.
-// OK reports whether the run matched every manifest expectation: no
-// failures and no unexpected unsupported outcomes. Expected unsupported
-// cases are measured gaps, not run failures.
-func (r Report) OK() bool { return r.Summary.Fail == 0 && r.Summary.Unexpected == 0 }
 
 const maxManifestBytes = 8 << 20
 
@@ -194,8 +128,8 @@ func LoadManifest(path string) (Manifest, error) {
 // Validate rejects manifests whose expectations could pass vacuously or
 // whose script paths escape the manifest directory.
 func (m Manifest) Validate() error {
-	if m.SchemaVersion != 1 {
-		return fmt.Errorf("manifest schema_version must be 1, got %d", m.SchemaVersion)
+	if m.SchemaVersion != 1 && m.SchemaVersion != 2 {
+		return fmt.Errorf("manifest schema_version must be 1 or 2, got %d", m.SchemaVersion)
 	}
 	if m.Corpus.Name == "" {
 		return errors.New("manifest corpus.name is required")
@@ -207,6 +141,9 @@ func (m Manifest) Validate() error {
 	for i, c := range m.Cases {
 		if c.ID == "" {
 			return fmt.Errorf("case %d: id is required", i)
+		}
+		if m.SchemaVersion == 2 && !caseIDPattern.MatchString(c.ID) {
+			return fmt.Errorf("case %q: id must use lowercase ASCII letters, digits, dots, dashes or underscores", c.ID)
 		}
 		if seen[c.ID] {
 			return fmt.Errorf("case %d: duplicate id %q", i, c.ID)
@@ -232,11 +169,19 @@ func (m Manifest) Validate() error {
 			}
 		case "skipped":
 		case "error", "unsupported":
-			if c.Expect.ErrorContains == "" {
+			if m.SchemaVersion == 1 && c.Expect.ErrorContains == "" {
 				return fmt.Errorf("case %q: %s expectation requires error_contains", c.ID, c.Expect.Status)
 			}
 		default:
 			return fmt.Errorf("case %q: expect.status must be completed, skipped, error, or unsupported", c.ID)
+		}
+		if m.SchemaVersion == 2 && c.Expect.Status != "completed" && (c.Expect.Code == "" || c.Expect.Phase == "") {
+			return fmt.Errorf("case %q: %s expectation requires code and phase", c.ID, c.Expect.Status)
+		}
+		switch c.Expect.Verdict {
+		case "", scribe.Unknown, scribe.Vulnerable, scribe.NotVulnerable:
+		default:
+			return fmt.Errorf("case %q: invalid expect.verdict %q", c.ID, c.Expect.Verdict)
 		}
 		if err := c.Target.Validate(); err != nil {
 			return fmt.Errorf("case %q: %w", c.ID, err)
@@ -245,67 +190,84 @@ func (m Manifest) Validate() error {
 	return nil
 }
 
-// Run executes every manifest case once, in manifest order, through the
-// experimental NSE profile and classifies the outcomes.
+// Run measures the pinned cases using the offline NSE profile.
 func Run(ctx context.Context, manifest Manifest) (Report, error) {
+	if ctx == nil {
+		return Report{}, errors.New("context is required")
+	}
 	if err := manifest.Validate(); err != nil {
 		return Report{}, err
 	}
-	runtime, err := lua54.NewNSE(lua54.Options{})
+	inputDigest, err := digestJSON(manifest)
+	if err != nil {
+		return Report{}, fmt.Errorf("digest manifest: %w", err)
+	}
+	inputDigests := make([]string, len(manifest.Cases))
+	for i, c := range manifest.Cases {
+		inputDigests[i], err = digestJSON(c)
+		if err != nil {
+			return Report{}, fmt.Errorf("case %q: digest input: %w", c.ID, err)
+		}
+	}
+
+	vm, err := lua54.NewNSE(lua54.Options{})
 	if err != nil {
 		return Report{}, err
 	}
-	engine, err := scribe.New(scribe.Options{Concurrency: 1}, runtime)
+	engine, err := scribe.New(scribe.Options{Concurrency: 1}, vm)
 	if err != nil {
 		return Report{}, err
 	}
-	report := Report{SchemaVersion: 1, Corpus: manifest.Corpus}
-	for _, c := range manifest.Cases {
-		entry := runCase(ctx, engine, manifest.BaseDir, c)
-		report.Results = append(report.Results, entry)
-		report.Summary.Total++
-		switch entry.Status {
-		case Pass:
-			report.Summary.Pass++
-		case Fail:
-			report.Summary.Fail++
-		case Unsupported:
-			report.Summary.Unsupported++
-		}
-		if entry.Unexpected {
-			report.Summary.Unexpected++
-		}
+	report := Report{
+		SchemaVersion: EvidenceSchemaVersion, Corpus: manifest.Corpus, Source: buildSource(),
+		ManifestSHA256: inputDigest, Complete: true, Planned: len(manifest.Cases),
+		Results: make([]Entry, 0, len(manifest.Cases)),
 	}
-	return report, ctx.Err()
+	for i, c := range manifest.Cases {
+		entry := Entry{
+			ID: c.ID, Script: c.Script, ExpectedSHA256: c.SHA256, InputSHA256: inputDigests[i], Expected: c.Expect,
+		}
+		if err := ctx.Err(); err != nil {
+			markUnmeasured(&entry, interruptDisposition(err), "case was not started: "+err.Error())
+		} else {
+			runCase(ctx, engine, manifest.BaseDir, c, &entry)
+		}
+		report.add(entry)
+	}
+	if err := ctx.Err(); err != nil {
+		report.Complete = false
+		return report, err
+	}
+	return report, nil
 }
 
-func runCase(ctx context.Context, engine *scribe.Engine, baseDir string, c Case) Entry {
-	entry := Entry{ID: c.ID, Script: c.Script, ExpectedSHA256: c.SHA256}
-	path := filepath.Join(baseDir, c.Script)
-	file, err := os.Open(path)
+func runCase(ctx context.Context, engine *scribe.Engine, baseDir string, c Case, entry *Entry) {
+	file, err := os.Open(filepath.Join(baseDir, filepath.FromSlash(c.Script)))
 	if err != nil {
-		entry.Status, entry.Reason = Fail, fmt.Sprintf("read script: %v", err)
-		return entry
+		markUnmeasured(entry, Unmeasured, fmt.Sprintf("read script: %v", err))
+		return
 	}
+	defer file.Close()
 	source, err := io.ReadAll(io.LimitReader(file, scribe.MaxSourceBytes+1))
-	file.Close()
 	if err != nil {
-		entry.Status, entry.Reason = Fail, fmt.Sprintf("read script: %v", err)
-		return entry
+		markUnmeasured(entry, Unmeasured, fmt.Sprintf("read script: %v", err))
+		return
 	}
 	if len(source) == 0 || len(source) > scribe.MaxSourceBytes {
-		entry.Status, entry.Reason = Fail, fmt.Sprintf("script must contain 1-%d bytes", scribe.MaxSourceBytes)
-		return entry
+		markUnmeasured(entry, Unmeasured, fmt.Sprintf("script must contain 1-%d bytes", scribe.MaxSourceBytes))
+		return
 	}
 	entry.SHA256 = fmt.Sprintf("%x", sha256.Sum256(source))
 	if entry.SHA256 != c.SHA256 {
-		entry.Status = Fail
-		entry.Reason = "script digest does not match the manifest pin; not executed"
-		return entry
+		markUnmeasured(entry, Unmeasured, "script digest does not match the manifest pin")
+		return
 	}
+
 	var result *scribe.Result
+	var observation execdiag.Observation
+	ctx = execdiag.WithRecorder(ctx, func(o execdiag.Observation) { observation = o })
 	task := scribe.Task{
-		Script: scribe.Script{ID: filepath.Base(c.Script), Dialect: scribe.NSE, Source: source, Args: c.Args},
+		Script: scribe.Script{ID: path.Base(c.Script), Dialect: scribe.NSE, Source: source, Args: c.Args},
 		Target: c.Target,
 	}
 	runErr := engine.Run(ctx, []scribe.Task{task}, func(r scribe.Result) error {
@@ -314,81 +276,60 @@ func runCase(ctx context.Context, engine *scribe.Engine, baseDir string, c Case)
 		return nil
 	})
 	if result == nil {
-		entry.Status, entry.Reason = Fail, fmt.Sprintf("execution produced no result: %v", runErr)
-		return entry
+		markUnmeasured(entry, interruptDisposition(runErr), fmt.Sprintf("execution produced no result: %v", runErr))
+		return
 	}
 	entry.ExecutionStatus = string(result.Status)
 	entry.Error = result.Error
-	classify(&entry, c, *result)
-	return entry
-}
-
-func classify(entry *Entry, c Case, result scribe.Result) {
-	if result.Status == scribe.Failed {
-		if isUnsupported(result.Error) {
-			entry.Status = Unsupported
-			entry.Reason = "explicitly unsupported: " + result.Error
-			if c.Expect.Status != "unsupported" {
-				entry.Unexpected = true
-				entry.Reason = "unexpected unsupported outcome (manifest expected " + c.Expect.Status + "): " + result.Error
-			} else if !strings.Contains(result.Error, c.Expect.ErrorContains) {
-				entry.Unexpected = true
-				entry.Reason = fmt.Sprintf("unsupported for an unexpected reason (manifest expected error containing %q): %s", c.Expect.ErrorContains, result.Error)
-			}
+	entry.Code = observation.Code
+	entry.Phase = observation.Phase
+	entry.SkipReason = result.Output.SkipReason
+	entry.Verdict = result.Verdict
+	entry.Text = observation.Text
+	switch result.Status {
+	case scribe.Completed:
+		entry.Disposition = Completion
+		entry.Data, err = json.Marshal(result.Output.Data)
+		if err != nil {
+			markUnmeasured(entry, Unmeasured, "encode actual output: "+err.Error())
 			return
 		}
-		if c.Expect.Status == "error" && strings.Contains(result.Error, c.Expect.ErrorContains) {
-			entry.Status, entry.Reason = Pass, "failed as expected: "+result.Error
-			return
+	case scribe.Skipped:
+		entry.Disposition = RuleIneligible
+		if entry.Code == execdiag.MissingTargetPort {
+			entry.Disposition = MissingFacts
 		}
-		entry.Status, entry.Reason = Fail, "execution failed: "+result.Error
+	case scribe.Cancelled:
+		markUnmeasured(entry, Cancellation, result.Error)
+		return
+	case scribe.Failed:
+		switch entry.Code {
+		case execdiag.TimedOut:
+			markUnmeasured(entry, Timeout, result.Error)
+			return
+		case execdiag.UnsupportedAPI, execdiag.UnsupportedModule, execdiag.UnsupportedPhase, execdiag.UnsupportedDep:
+			entry.Disposition = KnownUnsupported
+		default:
+			entry.Disposition = Rejection
+		}
+	default:
+		markUnmeasured(entry, Unmeasured, "execution returned an unknown status")
 		return
 	}
-	if string(result.Status) != c.Expect.Status {
-		entry.Status = Fail
-		entry.Reason = fmt.Sprintf("execution status %q does not match expected %q", result.Status, c.Expect.Status)
-		return
-	}
-	if result.Status == scribe.Skipped {
-		entry.Status, entry.Reason = Pass, "rule did not match the supplied facts, as expected"
-		return
-	}
-	// Completed: require the exact output assertion (Validate enforces its
-	// presence, so completion without asserted output can never pass).
-	actual, err := canonicalJSON(result.Output.Data)
-	if err != nil {
-		entry.Status, entry.Reason = Fail, "encode actual output: "+err.Error()
-		return
-	}
-	var expected any
-	decoder := json.NewDecoder(bytes.NewReader(c.Expect.Data))
-	decoder.UseNumber()
-	if err := decoder.Decode(&expected); err != nil {
-		entry.Status, entry.Reason = Fail, "decode expected output: "+err.Error()
-		return
-	}
-	want, err := canonicalJSON(expected)
-	if err != nil {
-		entry.Status, entry.Reason = Fail, "encode expected output: "+err.Error()
-		return
-	}
-	if !bytes.Equal(actual, want) {
-		entry.Status = Fail
-		entry.Reason = fmt.Sprintf("output mismatch: got %s, want %s", actual, want)
-		return
-	}
-	entry.Status, entry.Reason = Pass, "completed with the asserted output"
+
+	entry.Eligible = entry.Disposition == Completion ||
+		(entry.Disposition != RuleIneligible && entry.Disposition != MissingFacts &&
+			(entry.Phase == execdiag.Action || entry.Phase == execdiag.Output))
+	classify(entry)
 }
 
-// isUnsupported recognizes Scribe's explicit unsupported-surface errors.
-// Any other execution error is a failure, never silently reclassified.
-func isUnsupported(message string) bool {
-	return strings.Contains(strings.ToLower(message), "unsupported")
-}
-
-func canonicalJSON(value any) ([]byte, error) {
-	if value == nil {
-		return []byte("null"), nil
+func interruptDisposition(err error) Disposition {
+	switch {
+	case errors.Is(err, context.Canceled):
+		return Cancellation
+	case errors.Is(err, context.DeadlineExceeded):
+		return Timeout
+	default:
+		return Unmeasured
 	}
-	return json.Marshal(value)
 }

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/SiriusScan/scribe/internal/execdiag"
 )
 
 // MaxSourceBytes bounds script source size to one MiB.
@@ -176,6 +178,9 @@ func (e *Engine) Run(ctx context.Context, tasks []Task, onResult func(Result) er
 		if !e.options.Exhaustive && t.preparedHints != nil && t.preparedHints.Match != nil {
 			if ok, _ := t.preparedHints.Match.evaluate(t.Target); !ok {
 				t.planSkip = t.preparedHints.Match.skipReason(t.Target)
+				if t.Script.Dialect == NSE {
+					execdiag.Record(ctx, execdiag.Observation{Code: execdiag.ExcludedByHints, Phase: execdiag.Plan})
+				}
 			}
 		}
 		n++
@@ -230,6 +235,21 @@ func (e *Engine) execute(ctx context.Context, task Task) Result {
 		result.Status, result.Error, result.Output = Failed, err.Error(), Output{Logs: output.Logs, LogsTruncated: output.LogsTruncated}
 		if errors.Is(err, context.Canceled) {
 			result.Status = Cancelled
+		}
+		if task.Script.Dialect == NSE {
+			code, phase := execdiag.Details(err)
+			switch {
+			case errors.Is(err, context.Canceled):
+				code = execdiag.Cancelled
+			case errors.Is(err, context.DeadlineExceeded):
+				code = execdiag.TimedOut
+			case code == "":
+				code = execdiag.Rejected
+			}
+			if phase == "" {
+				phase = execdiag.Execution
+			}
+			execdiag.Record(ctx, execdiag.Observation{Code: code, Phase: phase})
 		}
 	} else if output.Skipped {
 		result.Status = Skipped

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/SiriusScan/scribe"
+	"github.com/SiriusScan/scribe/internal/execdiag"
 	"github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/base"
 	"github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/mathlib"
 	"github.com/SiriusScan/scribe/internal/thirdparty/golua/lib/stringlib"
@@ -127,6 +128,9 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 		return output, err
 	}
 	if !plan.Matches(task.Target) {
+		if r.dialect == scribe.NSE {
+			execdiag.Record(ctx, execdiag.Observation{Code: execdiag.ExcludedByHints, Phase: execdiag.Plan})
+		}
 		return scribe.Output{Skipped: true, SkipReason: "script hints exclude supplied endpoint facts"}, nil
 	}
 	var denied *scribe.CapabilityDeniedError
@@ -168,7 +172,7 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 			modules["sirius"] = rt.TableValue(module)
 			vm.SetEnv(vm.GlobalEnv(), "sirius", modules["sirius"])
 		} else if err := loadNSE(ctx, vm, task, modules); err != nil {
-			return err
+			return execdiag.At(err, execdiag.Initialize)
 		}
 		setFunction(vm, vm.GlobalEnv(), "require", func(t *rt.Thread, c *rt.GoCont) (rt.Cont, error) {
 			name, err := c.StringArg(0)
@@ -177,7 +181,11 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 			}
 			module, ok := modules[name]
 			if !ok {
-				return nil, fmt.Errorf("unsupported Lua module %q in %s profile", name, r.dialect)
+				err := fmt.Errorf("unsupported Lua module %q in %s profile", name, r.dialect)
+				if r.dialect == scribe.NSE {
+					return nil, rt.NewErrorWithCause(rt.StringValue(err.Error()), execdiag.WithCode(err, execdiag.UnsupportedModule))
+				}
+				return nil, err
 			}
 			return c.PushingNext1(t.Runtime, module), nil
 		}, 1, false)
@@ -186,11 +194,11 @@ func (r *runtime) Execute(ctx context.Context, task scribe.Task) (output scribe.
 		}
 		chunk, err := r.load(vm, task.Script, key)
 		if err != nil {
-			return fmt.Errorf("load script: %w", err)
+			return execdiag.At(fmt.Errorf("load script: %w", err), execdiag.Load)
 		}
 		value, err := rt.Call1(vm.MainThread(), rt.FunctionValue(chunk))
 		if err != nil {
-			return fmt.Errorf("initialize script: %w", err)
+			return execdiag.At(fmt.Errorf("initialize script: %w", err), execdiag.Initialize)
 		}
 		if r.dialect == scribe.Sirius {
 			output, err = runNative(ctx, vm, task, value)
