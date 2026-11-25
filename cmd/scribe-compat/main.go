@@ -1,5 +1,5 @@
 // Command scribe-compat runs a pinned offline NSE fixture manifest and
-// emits a versioned compatibility evidence report.
+// emits a versioned compatibility evidence report or verifies supplied lineage.
 package main
 
 import (
@@ -24,6 +24,9 @@ func main() {
 }
 
 func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
+	if len(argv) > 0 && argv[0] == "lineage" {
+		return runLineage(argv[1:], stdout, stderr)
+	}
 	flags := flag.NewFlagSet("scribe-compat", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	manifestPath := flags.String("manifest", "", "compatibility manifest JSON file (required)")
@@ -75,7 +78,7 @@ func run(ctx context.Context, argv []string, stdout, stderr io.Writer) int {
 	return 0
 }
 
-func marshalReport(report compat.Report) ([]byte, error) {
+func marshalReport(report any) ([]byte, error) {
 	data, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
 		return nil, err

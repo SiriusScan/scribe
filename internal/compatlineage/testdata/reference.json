@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "records": [
+    {
+      "workflow": "synthetic-affirmative",
+      "case_id": "marker-present",
+      "input_sha256": "46424d29a147f8f4237b11b245b0477bd34a922fcc2f5ea79acf7cc562101acc",
+      "policy": "scribe-json-v1",
+      "producer": {
+        "id": "fixture-reference-author",
+        "sha256": "1336f1a2361daf971b3fd4591b92e751398a38518bcb44c5b432104e8f379f27"
+      },
+      "result_sha256": "e99534725e1a008cc3fada0fd448c4c1f744b9019e400305682508a428bdac58",
+      "result": {"data":{"source":"inert","observation":"present"},"verdict":"vulnerable","complete":true,"disposition":"completed"}
+    },
+    {
+      "workflow": "synthetic-negative",
+      "case_id": "marker-absent",
+      "input_sha256": "6481a4f2ded691e39cb4054cc83218681fc447429c0313bb5cf730ba45fcd745",
+      "policy": "scribe-json-v1",
+      "producer": {
+        "id": "fixture-reference-author",
+        "sha256": "1336f1a2361daf971b3fd4591b92e751398a38518bcb44c5b432104e8f379f27"
+      },
+      "result_sha256": "967ab20864f14f09023a49ff756bd0bdd885f1ec6c1b72fff9cffb2b5d7601e2",
+      "result": {"data":{"source":"inert","observation":"absent"},"verdict":"not_vulnerable","complete":true,"disposition":"completed"}
+    }
+  ]
+}
