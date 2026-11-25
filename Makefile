@@ -44,7 +44,8 @@ cross-compile:
 
 
 .PHONY: acceptance-local
-# Controlled local sockets and SDK fixtures; not a live consumer workflow gate.
+# Controlled local sockets and SDK fixtures. Set PINGPP_REPO to include the
+# separate checkout's live emitter integration.
 acceptance-local: acceptance
 	go test -race -count=1 ./runtime/lua54 -run TestMarkerCorpus
 	go test -race -count=1 . -run 'Test(CancellationPersistenceAcceptance|NestedMatcherSelection)$$'

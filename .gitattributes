@@ -1,2 +1,13 @@
+# Byte-pinned first-party fixtures and protocol goldens use LF on every checkout.
+testdata/api-v1.txt text eol=lf
+testdata/api-signatures-v1.txt text eol=lf
+testdata/events-v1.golden.json text eol=lf
+testdata/sirius/*.lua text eol=lf
+adapter/pingpp/testdata/*.jsonl text eol=lf
+
 # Preserve upstream fixtures, including intentional output whitespace.
 internal/thirdparty/golua/** -whitespace
+
+# Keep compatibility fixture pins and evidence snapshot stable across platforms.
+compat/fixtures/*.nse text eol=lf
+compat/report.json text eol=lf

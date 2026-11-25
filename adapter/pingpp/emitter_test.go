@@ -13,10 +13,10 @@ import (
 func TestRealEmitter(t *testing.T) {
 	repo := os.Getenv("PINGPP_REPO")
 	if repo == "" {
-		repo = "/home/agi/Projects/sirius-workspace/minor-projects/ping++"
+		t.Skip("set PINGPP_REPO to enable the external ping++ emitter integration")
 	}
 	if _, err := os.Stat(filepath.Join(repo, "cmd/pingpp-scan/main.go")); err != nil {
-		t.Skip("ping++ emitter unavailable")
+		t.Fatalf("PINGPP_REPO must point to a ping++ checkout: %v", err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
